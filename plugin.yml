@@ -1,0 +1,12 @@
+name: tetrdotjar
+main: cabbageroll.tetrjar.Pluginmain
+version: 1.0
+api-version: 1.12.2
+commands:
+    startgame:
+        description: Start/restart game
+        usage: /<command>
+    sendinput:
+        description: Send keyboard inputs
+        usage: /<command>
+    
