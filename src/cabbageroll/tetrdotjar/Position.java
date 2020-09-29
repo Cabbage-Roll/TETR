@@ -1,7 +1,9 @@
 package cabbageroll.tetrdotjar;
 
 public class Position {
-    public static int[][] stage=new int[41][12];
+    public static final int STAGESIZEX=10;
+    public static final int STAGESIZEY=40;
+    public static int[][] stage=new int[STAGESIZEY][STAGESIZEX];
     public static int[][] block=new int[4][4];
 
     public static int block_current=-1;
@@ -15,20 +17,19 @@ public class Position {
     {
         int i;
         int j;
+        int collision;
         
         for(i = 0; i < b_size; i += 1)
         {
             for(j = 0; j < b_size; j += 1)
             {
-                if((y+i<0 || y+i>20) || (x+j<0 || x+j>11)) {
-
-                    System.out.println(""+i+","+j+"   "+x+","+y);
-                    continue;
+                ///code fix that prevents OOBE and makes walls solid
+                collision=1;
+                if((0<=y+i && y+i<STAGESIZEY) && (0<=x+j && x+j<STAGESIZEX)) {
+                    collision=stage[y + i][x + j];
                 }
-
-                System.out.println(""+stage[y + i][x + j]+","+block[i][j]+",  "+i+","+j+"   "+x+","+y);
                 
-                if(stage[y + i][x + j] > 0 && block[i][j] > 0) {
+                if(collision > 0 && block[i][j] > 0) {
                     return true;
                 }
             }

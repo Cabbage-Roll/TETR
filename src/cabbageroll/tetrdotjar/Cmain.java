@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 public class Cmain {    
     public static int lines=0;
-    public static int next_blocks=5;
+    public static int next_blocks=7;
     public static boolean gameover = false;
     public static int score = 0;
     public static int counter = 0;
@@ -15,6 +15,7 @@ public class Cmain {
     public static World world;
     public static Player player;
     public static int combo=-1;
+    public static boolean power=false;
     
     
     public static void updateScore(){
@@ -22,24 +23,23 @@ public class Cmain {
         
         if(Tspin.spun){
             score+=lines*1000;
+            if(combo>4) {
+                power=true;
+            }
+            player.playSound(player.getLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 1f, 0.75f);
         }
+        
         System.out.println("combo: "+combo);
         Tspin.spun=false;
         if(combo>=0) {
-            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-12)/(double)12));
+            if(power) {
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1f, (float)Math.pow(2,(combo*2-12)/(double)12));
+            }else {
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-12)/(double)12));
+            }
         }
     }
     
-    ///title unfinished
-    public static String title(String input){/*
-        do{
-            input = getch();
-        }while(input!= '1' && input != '2' && input !='3');
-*/
-        return input;
-    }
-    
-
     public static void makenextblock() {
         Position.x = 4;
         Position.y = 20;
@@ -52,11 +52,11 @@ public class Cmain {
 
         Bags.shiftbag1();
 
-
+        ///prints next blocks
         for(int k=0;k<next_blocks;k++){
-            for(int i = 0; i < 4; i += 1)
+            for(int i = 0; i < 4; i ++)
             {
-                for(int j = 0; j < 4; j += 1)
+                for(int j = 0; j < 4; j ++)
                 {
                     if(Blocklist.block_list[Bags.bag1[k]][i][j] == 0)
                     {
@@ -70,8 +70,6 @@ public class Cmain {
             }
         }
 
-        ///i or o
-        ///iojstzl
         if(Position.block_current == 2 || Position.block_current == 4)
             Position.block_size = 4;
         else
@@ -84,7 +82,8 @@ public class Cmain {
                 Position.block[i][j] = Blocklist.block_list[Position.block_current][i][j];
             }
         }
-        ///block out
+        
+        //check if its possible then print it
         for(int i = 0; i < Position.block_size; i += 1)
         {
             for(int j = 0; j < Position.block_size; j += 1)
@@ -103,27 +102,18 @@ public class Cmain {
     }
     
     public static void initGame(){
-        for(int y = 0; y < 41; y += 1)
-        {
-            for(int x = 0; x < 12; x += 1)
-            {
-                if(x == 0 || x == 11 || y == 40)
-                {
-                    Position.stage[y][x] = 1;
-                    Printing.colprintxy(x, y, 0, 15);
-                }
-                else
-                {
-                    Position.stage[y][x] = 0;
-                    Printing.colprintxy(x, y, 0, 0);
-                }
+        for(int y = 0; y < Position.STAGESIZEY; y ++){
+            for(int x = 0; x < Position.STAGESIZEX; x ++){
+                Position.stage[y][x] = 0;
+                Printing.colprintxy(x, y, 0, 0);
             }
         }
+        Tspin.spun=false;
         combo=-1;
+        power=false;
         score = 0;
         held=false;
         gameover = false;
-        Bags.bag1[0] = -1;
         block_hold = -1;
         Bags.generatebag2();
         for(int i=0;i<7;i++){
@@ -132,6 +122,12 @@ public class Cmain {
         Bags.generatebag2();
         updateScore();
         makenextblock();
+        //make hold piece white
+        for(int i = 0; i < 4; i += 1){
+            for(int j = 0; j < 4; j += 1){
+                Printing.colprintxy(j-7,i+3,15,0);
+            }
+        }
     }
     
     public static void dropBlock(){
@@ -150,6 +146,7 @@ public class Cmain {
 
         if(held==false){
 
+            //print current block into hold slot
             for(int i = 0; i < 4; i += 1)
             {
                 for(int j = 0; j < 4; j += 1)
@@ -164,7 +161,8 @@ public class Cmain {
                     }
                 }
             }
-
+            
+            //erase current block from board
             for (int i = 0; i < 4; i+=1)
             {
                 for (int j = 0; j < 4; j+=1)
@@ -176,16 +174,18 @@ public class Cmain {
                 }
             }
 
-            if(block_hold == -1)
-            {
+            
+            //first hold
+            if(block_hold == -1){
                 block_hold=Position.block_current;
                 makenextblock();
-            }
-            else
-            {
+            }else{
+                //swap
                 temp=Position.block_current;
                 Position.block_current=block_hold;
                 block_hold=temp;
+                
+                //spawn new block
                 Position.x = 4;
                 Position.y = 20;
                 Position.rotation=0;
@@ -193,14 +193,17 @@ public class Cmain {
                     Position.block_size = 4;
                 else
                     Position.block_size = 3;
-                for(int i = 0; i < Position.block_size; i += 1){
-                    for(int j = 0; j < Position.block_size; j += 1){
+                
+                for(int i = 0; i < Position.block_size; i++){
+                    for(int j = 0; j < Position.block_size; j++){
                         Position.block[i][j] = Blocklist.block_list[Position.block_current][i][j];
                     }
                 }
+                
             }
         }else{
-
+            //already held
+            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
         }
         held=true;
     }
@@ -259,10 +262,11 @@ public class Cmain {
     public static void checkPlaced(){
         boolean lineclean;
         lines = 0;
-        for(int i = Position.y; i < 40 && i < (Position.y + Position. block_size); i += 1)
+        ///suspicious condition
+        for(int i = Position.y; i < Position.STAGESIZEY && i < (Position.y + Position.block_size); i++)
         {
             lineclean = true;
-            for(int j = 1; j < 11; j += 1)
+            for(int j = 0; j < Position.STAGESIZEX; j++)
             {
                 if(Position.stage[i][j] == 0)
                 {
@@ -272,14 +276,18 @@ public class Cmain {
             }
             if(lineclean)
             {
-                for(int j=1;j<11;j++){
+                //old problem fix
+                for(int j=0;j<Position.STAGESIZEX;j++){
+                    
                     Position.stage[0][j] = 0;
                     Printing.colprintxy(j,0,0,0);
                 }
-                lines += 1;
-                for(int k = i; k > 0; k -= 1)
+                //end
+                
+                lines++;
+                for(int k = i; k > 0; k--)
                 {
-                    for(int j = 1; j < 11; j += 1)
+                    for(int j = 0; j <Position.STAGESIZEX; j ++)
                     {
                         Position.stage[k][j] = Position.stage[k - 1][j];
                         if(Position.stage[k][j] > 0)
@@ -295,11 +303,15 @@ public class Cmain {
 
             }
         }
+        
+        
         if(lines>0) {
             combo++;
-        }else {
+        }else{
             combo=-1;
         }
+        
+        
         switch(lines)
         {
         case 1:
@@ -313,6 +325,9 @@ public class Cmain {
             break;
         case 4:
             score += 1200;
+            if(combo>4) {
+                power=true;
+            }
             break;
         }
         updateScore();
@@ -332,15 +347,12 @@ public class Cmain {
         }
     }
     
-    public static void cmain(){
-        do{
-            initGame();
-            while(!gameover)
-            {
-                Playgame.playgame();
-            }
-        }while(true);
-    }
+    /*public static void cmain(){
+        initGame();
+        while(!gameover){
+            Playgame.playgame();
+        }
+    }*/
 
     
 }

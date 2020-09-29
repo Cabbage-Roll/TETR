@@ -47,8 +47,8 @@ public class Rotate {
             }
 
             Position.rotation--;
-            if(Position.rotation==-1){
-                Position.rotation=3;
+            if(Position.rotation<0){
+                Position.rotation+=4;
             }
 
             break;
@@ -60,8 +60,8 @@ public class Rotate {
             }
 
             Position.rotation++;
-            if(Position.rotation==4){
-                Position.rotation=0;
+            if(Position.rotation>3){
+                Position.rotation-=4;
             }
 
             break;
@@ -72,6 +72,9 @@ public class Rotate {
                 }
             }
             Position.rotation+=2;
+            if(Position.rotation>3){
+                Position.rotation-=4;
+            }
             break;
         }
 
@@ -93,6 +96,7 @@ public class Rotate {
                     }
                 }
                 Position.rotation=oldrotation;
+                System.out.println("All tests failed");
                 return;
             }
         }
