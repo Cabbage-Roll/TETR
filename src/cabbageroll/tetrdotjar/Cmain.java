@@ -42,7 +42,7 @@ public class Cmain {
     
     public static void makenextblock() {
         Position.x = 3;
-        Position.y = 30;
+        Position.y = 10;
         Position.rotation = 0;
         ///the first block
         Position.block_current = Bags.bag1[0];
@@ -187,7 +187,7 @@ public class Cmain {
                 
                 //spawn new block
                 Position.x = 3;
-                Position.y = 30;
+                Position.y = 10;
                 Position.rotation=0;
                 if(Position.block_current == 2 || Position.block_current == 4)
                     Position.block_size = 4;
