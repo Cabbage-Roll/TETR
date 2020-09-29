@@ -1,3 +1,4 @@
+
 package cabbageroll.tetrdotjar;
 
 public class Position {

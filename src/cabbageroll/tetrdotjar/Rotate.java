@@ -111,7 +111,17 @@ public class Rotate {
         {
             for (j = 0; j < Position.block_size; j+=1)
             {
-                if(Position.stage[Position.y + i][Position.x + j] == 0 && Position.block[i][j] == 0)
+                //OOBE FIX
+                if((Position.x+j<0 || Position.STAGESIZEX<=Position.x+j) || (Position.y+i<0 || Position.STAGESIZEY<=Position.y+i)) {
+                    Printing.colprintxy(j + Position.x,i + Position.y,0,15);
+                }else if(
+                    
+                    Position.stage[Position.y + i]
+                    [Position.x + j] == 0 
+                    && Position.block[i]
+                            [j] == 0
+                            
+                )
                 {
                     Printing.colprintxy(j + Position.x,i + Position.y,0,0);
                 }
