@@ -1,4 +1,4 @@
-package cabbageroll.tetrjar;
+package cabbageroll.tetrdotjar;
 
 public class Rotate {
 
@@ -93,9 +93,10 @@ public class Rotate {
                     }
                 }
                 Position.rotation=oldrotation;
+                return;
             }
         }
-
+        
         Moveblock.moveBlock(
                   Position.x+Kicktable.kicks[piece_type][0][special][tries],
                   Position.y-Kicktable.kicks[piece_type][1][special][tries]

@@ -1,4 +1,4 @@
-package cabbageroll.tetrjar;
+package cabbageroll.tetrdotjar;
 
 import org.bukkit.DyeColor;
 import org.bukkit.Material;

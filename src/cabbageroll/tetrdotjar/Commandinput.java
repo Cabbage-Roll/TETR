@@ -1,4 +1,4 @@
-package cabbageroll.tetrjar;
+package cabbageroll.tetrdotjar;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -7,7 +7,12 @@ import org.bukkit.command.CommandSender;
 public class Commandinput implements CommandExecutor{
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        Cmain.userInput(args[0]);
+        if(args.length==2) {
+            for(int i=0;i<Integer.parseInt(args[1]);i++)
+                Cmain.userInput(args[0]);
+        }
+        else
+            Cmain.userInput(args[0]);
         return true;
     }
 }

@@ -1,4 +1,4 @@
-package cabbageroll.tetrjar;
+package cabbageroll.tetrdotjar;
 
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -7,7 +7,6 @@ public class Playgame {
         new BukkitRunnable(){ //BukkitRunnable, not Runnable
              @Override
              public void run() {
-                System.out.println("counter: "+Cmain.counter);
                 if(Cmain.counter >= 100){
                     if(!Position.isCollide(Position.x, Position.y + 1, Position.block_size)){
                         Moveblock.moveBlock(Position.x, Position.y + 1);
@@ -18,7 +17,7 @@ public class Playgame {
                         }
                         Cmain.counter=0;
                 }
-                Cmain.counter+=10;
+                Cmain.counter+=0;
                 
                 if(Cmain.gameover) {
                     this.cancel();

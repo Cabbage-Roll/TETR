@@ -1,4 +1,4 @@
-package cabbageroll.tetrjar;
+package cabbageroll.tetrdotjar;
 
 public class Bags {
 

@@ -1,4 +1,4 @@
-package cabbageroll.tetrjar;
+package cabbageroll.tetrdotjar;
 
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -14,6 +14,7 @@ public class Cmain {
     public static boolean held=false;
     public static World world;
     public static Player player;
+    public static int combo=-1;
     
     
     public static void updateScore(){
@@ -22,8 +23,11 @@ public class Cmain {
         if(Tspin.spun){
             score+=lines*1000;
         }
-        
+        System.out.println("combo: "+combo);
         Tspin.spun=false;
+        if(combo>=0) {
+            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-12)/(double)12));
+        }
     }
     
     ///title unfinished
@@ -38,7 +42,7 @@ public class Cmain {
 
     public static void makenextblock() {
         Position.x = 4;
-        Position.y = 0;
+        Position.y = 20;
         Position.rotation = 0;
         ///the first block
         Position.block_current = Bags.bag1[0];
@@ -92,18 +96,18 @@ public class Cmain {
                 }
                 else if(Position.block[i][j] > 0)
                 {
-                    Printing.colprintxy(j + Position.x,i,0,Position.block[i][j]);
+                    Printing.colprintxy(j + Position.x,i + Position.y,0,Position.block[i][j]);
                 }
             }
         }
     }
     
     public static void initGame(){
-        for(int y = 0; y < 21; y += 1)
+        for(int y = 0; y < 41; y += 1)
         {
             for(int x = 0; x < 12; x += 1)
             {
-                if(x == 0 || x == 11 || y == 20)
+                if(x == 0 || x == 11 || y == 40)
                 {
                     Position.stage[y][x] = 1;
                     Printing.colprintxy(x, y, 0, 15);
@@ -115,6 +119,7 @@ public class Cmain {
                 }
             }
         }
+        combo=-1;
         score = 0;
         held=false;
         gameover = false;
@@ -137,7 +142,6 @@ public class Cmain {
             Moveblock.moveBlock(Position.x, Position.y + 1);
         }
         score += lines;
-        updateScore();
         counter = 100;
     }
     
@@ -183,7 +187,7 @@ public class Cmain {
                 Position.block_current=block_hold;
                 block_hold=temp;
                 Position.x = 4;
-                Position.y = 0;
+                Position.y = 20;
                 Position.rotation=0;
                 if(Position.block_current == 2 || Position.block_current == 4)
                     Position.block_size = 4;
@@ -255,7 +259,7 @@ public class Cmain {
     public static void checkPlaced(){
         boolean lineclean;
         lines = 0;
-        for(int i = Position.y; i < 20 && i < (Position.y + Position. block_size); i += 1)
+        for(int i = Position.y; i < 40 && i < (Position.y + Position. block_size); i += 1)
         {
             lineclean = true;
             for(int j = 1; j < 11; j += 1)
@@ -291,22 +295,23 @@ public class Cmain {
 
             }
         }
+        if(lines>0) {
+            combo++;
+        }else {
+            combo=-1;
+        }
         switch(lines)
         {
         case 1:
-            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1f, 0.5f);
             score += 40;
             break;
         case 2:
-            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1f, 1f);
             score += 100;
             break;
         case 3:
-            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1f, 1.5f);
             score += 300;
             break;
         case 4:
-            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1f, 2f);
             score += 1200;
             break;
         }

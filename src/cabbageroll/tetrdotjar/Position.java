@@ -1,7 +1,7 @@
-package cabbageroll.tetrjar;
+package cabbageroll.tetrdotjar;
 
 public class Position {
-    public static int[][] stage=new int[21][12];
+    public static int[][] stage=new int[41][12];
     public static int[][] block=new int[4][4];
 
     public static int block_current=-1;
@@ -21,11 +21,16 @@ public class Position {
             for(j = 0; j < b_size; j += 1)
             {
                 if((y+i<0 || y+i>20) || (x+j<0 || x+j>11)) {
+
+                    System.out.println(""+i+","+j+"   "+x+","+y);
                     continue;
                 }
+
+                System.out.println(""+stage[y + i][x + j]+","+block[i][j]+",  "+i+","+j+"   "+x+","+y);
                 
-                if(stage[y + i][x + j] > 0 && block[i][j] > 0)
+                if(stage[y + i][x + j] > 0 && block[i][j] > 0) {
                     return true;
+                }
             }
         }
         return false;
