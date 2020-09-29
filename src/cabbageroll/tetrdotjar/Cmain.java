@@ -41,8 +41,8 @@ public class Cmain {
     }
     
     public static void makenextblock() {
-        Position.x = 4;
-        Position.y = 20;
+        Position.x = 3;
+        Position.y = 30;
         Position.rotation = 0;
         ///the first block
         Position.block_current = Bags.bag1[0];
@@ -125,7 +125,7 @@ public class Cmain {
         //make hold piece white
         for(int i = 0; i < 4; i += 1){
             for(int j = 0; j < 4; j += 1){
-                Printing.colprintxy(j-7,i+3,15,0);
+                Printing.colprintxy(j-7,i+3,0,15);
             }
         }
     }
@@ -186,8 +186,8 @@ public class Cmain {
                 block_hold=temp;
                 
                 //spawn new block
-                Position.x = 4;
-                Position.y = 20;
+                Position.x = 3;
+                Position.y = 30;
                 Position.rotation=0;
                 if(Position.block_current == 2 || Position.block_current == 4)
                     Position.block_size = 4;
