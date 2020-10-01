@@ -36,7 +36,6 @@ public class Pluginmain extends JavaPlugin implements Listener{
         int itemId = event.getNewSlot();
         ItemStack item = Cmain.player.getInventory().getItem(itemId);
         if (item == null) {
-            System.out.println("item is null");
             return;
         }
         
@@ -44,9 +43,7 @@ public class Pluginmain extends JavaPlugin implements Listener{
         
         if(item.hasItemMeta()) {
             name = item.getItemMeta().getDisplayName();
-            System.out.println("test: "+name);
             Cmain.userInput(name);
-            System.out.println("success");
             Cmain.player.getInventory().setHeldItemSlot(8);
         }
 

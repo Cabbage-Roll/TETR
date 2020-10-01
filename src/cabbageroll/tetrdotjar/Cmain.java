@@ -60,7 +60,7 @@ public class Cmain {
                 {
                     if(Blocklist.block_list[Bags.bag1[k]][i][j] == 0)
                     {
-                        Printing.colprintxy(j + 13,i + 0 + k*4,0,0);
+                        Printing.colprintxy(j + 13,i + 0 + k*4,0,42);
                     }
                     else
                     {
@@ -105,7 +105,7 @@ public class Cmain {
         for(int y = 0; y < Position.STAGESIZEY; y ++){
             for(int x = 0; x < Position.STAGESIZEX; x ++){
                 Position.stage[y][x] = 0;
-                Printing.colprintxy(x, y, 0, 0);
+                Printing.colprintxy(x, y, 0, 42);
             }
         }
         Tspin.spun=false;
@@ -122,10 +122,9 @@ public class Cmain {
         Bags.generatebag2();
         updateScore();
         makenextblock();
-        //make hold piece white
         for(int i = 0; i < 4; i += 1){
             for(int j = 0; j < 4; j += 1){
-                Printing.colprintxy(j-7,i+3,0,15);
+                Printing.colprintxy(j-7,i+3,0,42);
             }
         }
     }
@@ -153,7 +152,7 @@ public class Cmain {
                 {
                     if(Blocklist.block_list[Position.block_current][i][j] == 0)
                     {
-                        Printing.colprintxy(j-7,i+3,0,0);
+                        Printing.colprintxy(j-7,i+3,0,42);
                     }
                     else
                     {
@@ -199,7 +198,7 @@ public class Cmain {
                         Position.block[i][j] = Blocklist.block_list[Position.block_current][i][j];
                     }
                 }
-                
+                //////////////////////d9djtm ptimz the peice
             }
         }else{
             //already held
@@ -280,7 +279,7 @@ public class Cmain {
                 for(int j=0;j<Position.STAGESIZEX;j++){
                     
                     Position.stage[0][j] = 0;
-                    Printing.colprintxy(j,0,0,0);
+                    Printing.colprintxy(j,0,0,42);
                 }
                 //end
                 
@@ -296,7 +295,7 @@ public class Cmain {
                         }
                         else
                         {
-                            Printing.colprintxy(j,k,0,0);
+                            Printing.colprintxy(j,k,0,42);
                         }
                     }
                 }
@@ -309,6 +308,7 @@ public class Cmain {
             combo++;
         }else{
             combo=-1;
+            power=false;
         }
         
         
@@ -346,13 +346,5 @@ public class Cmain {
             }
         }
     }
-    
-    /*public static void cmain(){
-        initGame();
-        while(!gameover){
-            Playgame.playgame();
-        }
-    }*/
-
     
 }

@@ -11,6 +11,11 @@ public class Printing {
 
     public static void colprintxy(int x,int y, int z, int color) {
         Block b = Cmain.world.getBlockAt(gx+x,gy-y,gz+z);
+        if(color==42){
+            b.setType(Material.AIR);
+        }else if(color==69){
+            return;
+        }else{
         b.setType(Material.CONCRETE);
         if(color==0)
             b.setData(DyeColor.BLACK.getWoolData());
@@ -30,6 +35,7 @@ public class Printing {
             b.setData(DyeColor.PURPLE.getWoolData());
         else if(color==15)
             b.setData(DyeColor.WHITE.getWoolData());
+        }
     }
     
 }

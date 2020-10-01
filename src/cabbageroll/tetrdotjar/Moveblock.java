@@ -13,7 +13,7 @@ public class Moveblock {
             {
                 if(Position.block[i][j] > 0)
                 {
-                    Printing.colprintxy(j + Position.x,i + Position.y,0,0);
+                    Printing.colprintxy(j + Position.x,i + Position.y,0,42);
                 }
             }
         }
