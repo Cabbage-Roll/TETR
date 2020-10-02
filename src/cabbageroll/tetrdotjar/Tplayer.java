@@ -6,6 +6,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class Tplayer {
     /*
@@ -34,7 +35,7 @@ public class Tplayer {
     public int[] bag2=new int[7];
     public int lines=0;
     public int next_blocks=7;
-    public boolean gameover = false;
+    public boolean gameover=false;
     public int score = 0;
     public int counter = 0;
     public int block_hold = -1;
@@ -264,7 +265,7 @@ public class Tplayer {
     public void moveBlock(int x, int y){
         for (int i=0;i<block_size;i++){
             for (int j=0;j<block_size;j++){
-                if(Position.block[i][j] > 0){
+                if(block[i][j] > 0){
                     colPrint(j+this.x, i+this.y, 0, 42);
                 }
             }
@@ -302,17 +303,17 @@ public class Tplayer {
         case "Y":
         case "z":
         case "Z":
-            rotateBlock(Rotate.CCW);
+            rotateBlock(CCW);
             break;
         case "x":
         case "X":
-            rotateBlock(Rotate.CW);
+            rotateBlock(CW);
             break;
         case "space":
             dropBlock();
             break;
         case "up":
-            rotateBlock(Rotate.R180);
+            rotateBlock(R180);
             break;
         case "c":
         case "C":
@@ -387,7 +388,7 @@ public class Tplayer {
     }
     
     public void rotateBlock(int d){
-        int piece_type=Position.block_size-3;
+        int piece_type=block_size-3;
         int special=-1;
         int tries=0;
         int maxtries=5;
@@ -445,9 +446,9 @@ public class Tplayer {
                 }
             }
 
-            Position.rotation--;
-            if(Position.rotation<0){
-                Position.rotation+=4;
+            rotation--;
+            if(rotation<0){
+                rotation+=4;
             }
 
             break;
@@ -619,5 +620,26 @@ public class Tplayer {
         }
     }
     
-    
+    public void playGame() {
+        new BukkitRunnable(){ //BukkitRunnable, not Runnable
+             @Override
+             public void run() {
+                if(counter>=100){
+                    if(!isCollide(x, y+1, block_size)){
+                        moveBlock(x, y+1);
+                        }else{
+                            placeBlock();
+                            checkPlaced();
+                            makeNextBlock();
+                        }
+                        counter=0;
+                }
+                counter+=0;
+                
+                if(gameover) {
+                    this.cancel();
+                }
+             }
+        }.runTaskTimer(Pluginmain.plugin, 0, 5); //Repeating task with 0 ticks initial delay, run once per 20 ticks (one second). Make sure you pass a valid instance of your plugin.
+    }
 }

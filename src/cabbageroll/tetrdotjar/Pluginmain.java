@@ -11,40 +11,41 @@ import org.bukkit.entity.Player;
 
 
 public class Pluginmain extends JavaPlugin implements Listener{
+
+    public static Tplayer sp;
+    public static Duel duel;
+    
     static JavaPlugin plugin;
     @Override
     public void onEnable() {
         plugin=this;
         System.out.println("Plugin started");
         getServer().getPluginManager().registerEvents(this, this);
-        this.getCommand("startgame").setExecutor(new Startgame());
         this.getCommand("sendinput").setExecutor(new Commandinput());
-
+        this.getCommand("startgame").setExecutor(new Startgame());
+        this.getCommand("startduel").setExecutor(new Startduel());
+        this.getCommand("duelinput").setExecutor(new Duelinput());
     }
     
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event)
-    {
-        event.setJoinMessage("" + event.getPlayer().getName() + "!");
-        Cmain.player=event.getPlayer();
-        Cmain.world=Cmain.player.getWorld();
-        Cmain.initGame();
+    public void onPlayerJoin(PlayerJoinEvent event){
+        event.setJoinMessage("Welcome " + event.getPlayer().getName() + "!");
     }
     
     @EventHandler
-    public void onItemHeld(PlayerItemHeldEvent event) {
+    public void onItemHeld(PlayerItemHeldEvent event){
         int itemId = event.getNewSlot();
-        ItemStack item = Cmain.player.getInventory().getItem(itemId);
-        if (item == null) {
+        ItemStack item = Pluginmain.sp.player.getInventory().getItem(itemId);
+        if(item == null){
             return;
         }
         
-        String name="adgjmptw";
+        String name="invalid";
         
-        if(item.hasItemMeta()) {
-            name = item.getItemMeta().getDisplayName();
-            Cmain.userInput(name);
-            Cmain.player.getInventory().setHeldItemSlot(8);
+        if(item.hasItemMeta()){
+            name=item.getItemMeta().getDisplayName();
+            Pluginmain.sp.userInput(name);
+            Pluginmain.sp.player.getInventory().setHeldItemSlot(8);
         }
 
     }

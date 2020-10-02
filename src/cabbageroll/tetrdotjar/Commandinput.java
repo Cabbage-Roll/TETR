@@ -9,10 +9,10 @@ public class Commandinput implements CommandExecutor{
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if(args.length==2) {
             for(int i=0;i<Integer.parseInt(args[1]);i++)
-                Cmain.userInput(args[0]);
+                Pluginmain.sp.userInput(args[0]);
         }
         else
-            Cmain.userInput(args[0]);
+            Pluginmain.sp.userInput(args[0]);
         return true;
     }
 }
