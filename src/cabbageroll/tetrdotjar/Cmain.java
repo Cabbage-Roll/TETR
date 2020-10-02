@@ -40,6 +40,7 @@ public class Cmain {
         }
     }
     
+    ///tplayer
     public static void makenextblock() {
         Position.x = 3;
         Position.y = 10;
@@ -346,5 +347,4 @@ public class Cmain {
             }
         }
     }
-    
 }
