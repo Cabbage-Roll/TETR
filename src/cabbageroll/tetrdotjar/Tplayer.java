@@ -126,7 +126,8 @@ public class Tplayer {
         //check if its possible then print it
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
-                if(stage[i][j + x]>0 && block[i][j]>0){
+                if(stage[i+y][j+x]>0 && block[i][j]>0){
+                    player.playSound(player.getLocation(), Sound.BLOCK_PISTON_CONTRACT, 1f, 1f);
                     gameover=true;
                     return;
                 }
@@ -636,7 +637,7 @@ public class Tplayer {
                 }
                 counter+=0;
                 
-                if(gameover) {
+                if(gameover){
                     this.cancel();
                 }
                 System.out.println("loop");

@@ -6,8 +6,6 @@ import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.event.EventHandler;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 
 public class Pluginmain extends JavaPlugin implements Listener{
