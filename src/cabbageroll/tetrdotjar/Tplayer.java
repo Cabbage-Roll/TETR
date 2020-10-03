@@ -639,6 +639,7 @@ public class Tplayer {
                 if(gameover) {
                     this.cancel();
                 }
+                System.out.println("loop");
              }
         }.runTaskTimer(Pluginmain.plugin, 0, 5); //Repeating task with 0 ticks initial delay, run once per 20 ticks (one second). Make sure you pass a valid instance of your plugin.
     }

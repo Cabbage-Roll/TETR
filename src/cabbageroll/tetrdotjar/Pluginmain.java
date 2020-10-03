@@ -13,7 +13,7 @@ import org.bukkit.entity.Player;
 public class Pluginmain extends JavaPlugin implements Listener{
 
     public static Tplayer sp;
-    public static Duel duel;
+    public static Duel match;
     
     static JavaPlugin plugin;
     @Override
