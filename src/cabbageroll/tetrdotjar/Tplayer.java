@@ -1,5 +1,9 @@
 package cabbageroll.tetrdotjar;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -7,6 +11,11 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import com.xxmicloxx.NoteBlockAPI.model.Playlist;
+import com.xxmicloxx.NoteBlockAPI.model.Song;
+import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
+import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
 
 public class Tplayer {
     /*
@@ -54,6 +63,12 @@ public class Tplayer {
     public int block_size;
     public int rotation;
     public boolean spun=false;
+    
+    public static Playlist slist;
+    public static RadioSongPlayer rsp;
+
+    public static Song[] sarr=new Song[3];
+    
 
     public Tplayer(){
         
@@ -186,7 +201,18 @@ public class Tplayer {
         }
     }
     
-    public void initGame(){
+    public void initGame(){        
+        
+        int random=(int)(Math.random()*3);
+        rsp.playSong(random);
+        if(rsp.isPlaying()==false) {
+            rsp.setPlaying(true);
+        }
+        
+        
+        
+        
+        /***********trash ended************/
         for(int y=0;y<STAGESIZEY;y++){
             for(int x=0;x<STAGESIZEX;x++){
                 stage[y][x]=0;

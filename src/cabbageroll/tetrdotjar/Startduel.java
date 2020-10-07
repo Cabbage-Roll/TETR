@@ -1,9 +1,14 @@
 package cabbageroll.tetrdotjar;
 
+import java.io.File;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import com.xxmicloxx.NoteBlockAPI.model.Song;
+import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
+import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
 
 public class Startduel implements CommandExecutor{
     @Override
@@ -12,6 +17,7 @@ public class Startduel implements CommandExecutor{
             Pluginmain.match.stop();
             Pluginmain.match=null;
         }
+        Player p=(Player)sender;
         
         Tplayer temp=new Tplayer();
         Player player1 = Pluginmain.plugin.getServer().getPlayer(args[0]);
@@ -28,7 +34,7 @@ public class Startduel implements CommandExecutor{
         temp2.gz=Integer.parseInt(args[7]);
         temp2.player=player2;
         temp2.world=player2.getWorld();
-        
+     
         Pluginmain.match=new Duel(temp,temp2);
         
         return true;

@@ -5,11 +5,18 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
+
 public class Startgame implements CommandExecutor{
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        
         Pluginmain.sp=new Tplayer();
         Player player=(Player)sender;
+        
+        /***trash***/
+        Tplayer.rsp.addPlayer(player);
+        
         Pluginmain.sp.player=player;
         Pluginmain.sp.world=player.getWorld();
         Pluginmain.sp.gx=Integer.parseInt(args[0]);
