@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 
 public class Room {
 
-    public List<Tplayer> plist=new ArrayList<>();
+    public List<Table> plist=new ArrayList<>();
     public String name;
     public Player host;
     
@@ -31,14 +31,14 @@ public class Room {
     
     //doesnt check for duplicates
     public void addPlayer(Player p){
-        Tplayer temp=new Tplayer();
+        Table temp=new Table();
         temp.player=p;
         plist.add(plist.size(),temp);
     }
     
     //doesnt check for host
     public void removePlayer(Player p){
-        Tplayer temp;
+        Table temp;
         for(int i=0;i<plist.size();i++){
             temp=plist.get(i);
             if(temp.player==p){

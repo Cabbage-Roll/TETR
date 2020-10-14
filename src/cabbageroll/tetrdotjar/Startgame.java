@@ -5,17 +5,17 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
 
 public class Startgame implements CommandExecutor{
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         
-        Pluginmain.sp=new Tplayer();
+        Pluginmain.sp=new Table();
         Player player=(Player)sender;
         
         /***trash***/
-        Tplayer.rsp.addPlayer(player);
+        Table.rsp.addPlayer(player);
+        ///////
         
         Pluginmain.sp.player=player;
         Pluginmain.sp.world=player.getWorld();
@@ -24,6 +24,9 @@ public class Startgame implements CommandExecutor{
         Pluginmain.sp.gz=Integer.parseInt(args[2]);
         Pluginmain.sp.initGame();
         Pluginmain.sp.playGame();
+        
+        Pluginmain.testing.openInventory(player);
+        
         return true;
     }
 }

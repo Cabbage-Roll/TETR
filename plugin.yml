@@ -15,4 +15,8 @@ commands:
     duelinput:
         description: send duel inputs
         usage: /<command>
+    editpiece:
+        description: edit the appearance of piece. please dont use unless you know how to
+        usage: /<command>
+    
     

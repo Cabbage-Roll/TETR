@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Duel {
-    public List<Tplayer> plist=new ArrayList<>();
+    public List<Table> plist=new ArrayList<>();
     public static int num=2;
     
-    Duel(Tplayer x, Tplayer y){
+    Duel(Table x, Table y){
         plist.add(x);
         x.initGame();
         x.playGame();

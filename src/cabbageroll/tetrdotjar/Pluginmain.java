@@ -18,7 +18,8 @@ import org.bukkit.event.EventHandler;
 
 public class Pluginmain extends JavaPlugin implements Listener{
 
-    public static Tplayer sp;
+    public static ExampleGui testing=new ExampleGui();
+    public static Table sp;
     public static Duel match;
     
     static JavaPlugin plugin;
@@ -27,16 +28,18 @@ public class Pluginmain extends JavaPlugin implements Listener{
         plugin=this;
         System.out.println("Plugin started");
         getServer().getPluginManager().registerEvents(this, this);
+        getServer().getPluginManager().registerEvents(testing, this);
         this.getCommand("sendinput").setExecutor(new Commandinput());
         this.getCommand("startgame").setExecutor(new Startgame());
         this.getCommand("startduel").setExecutor(new Startduel());
         this.getCommand("duelinput").setExecutor(new Duelinput());
+        this.getCommand("editpiece").setExecutor(new Editpiece());
         //trash
-        Tplayer.sarr[0]=NBSDecoder.parse(new File("plugins\\Tetr\\song36.nbs"));
-        Tplayer.sarr[1]=NBSDecoder.parse(new File("plugins\\Tetr\\metblast.nbs"));
-        Tplayer.sarr[2]=NBSDecoder.parse(new File("plugins\\Tetr\\newgrass.nbs"));
-        Tplayer.slist=new Playlist(Tplayer.sarr);
-        Tplayer.rsp=new RadioSongPlayer(Tplayer.slist);
+        Table.sarr[0]=NBSDecoder.parse(new File("plugins\\Tetr\\song36.nbs"));
+        Table.sarr[1]=NBSDecoder.parse(new File("plugins\\Tetr\\metblast.nbs"));
+        Table.sarr[2]=NBSDecoder.parse(new File("plugins\\Tetr\\newgrass.nbs"));
+        Table.slist=new Playlist(Table.sarr);
+        Table.rsp=new RadioSongPlayer(Table.slist);
         //tend
     }
     

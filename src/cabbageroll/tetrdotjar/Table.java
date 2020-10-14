@@ -1,9 +1,5 @@
 package cabbageroll.tetrdotjar;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -15,65 +11,62 @@ import org.bukkit.scheduler.BukkitRunnable;
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
 import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
-import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
 
-public class Tplayer {
-    /*
-     bags-here done
-     blocklist-its own file
-     cmain-here done
-     commandinput-unk
-     kicktable-its own file
-     moveblock-here done
-     playgame-unk
-     pluginmain-its own file
-     position-here done
-     printing-here done
-     rotate-here done
-     startgame-unk
-     tspin-here done
-    */
-    public static final int CCW=0;
-    public static final int CW=1;
-    public static final int R180=2;
-    public int gx=0;
-    public int gy=0;
-    public int gz=0;
-    public int bag_counter=0;
-    public int[] bag1=new int[7];
-    public int[] bag2=new int[7];
-    public int lines=0;
-    public int next_blocks=7;
-    public boolean gameover=false;
-    public int score = 0;
-    public int counter = 0;
-    public int block_hold = -1;
-    public boolean held=false;
-    public World world;
-    public Player player;
-    public int combo=-1;
-    public boolean power=false;
-    public final int STAGESIZEX=10;
-    public final int STAGESIZEY=40;
-    public int[][] stage=new int[STAGESIZEY][STAGESIZEX];
-    public int[][] block=new int[4][4];
-    public int block_current=-1;
-    public int x;
-    public int y;
-    public int block_size;
-    public int rotation;
-    public boolean spun=false;
+public class Table {
+
+    World world;
+    Player player;
     
-    public static Playlist slist;
-    public static RadioSongPlayer rsp;
-
-    public static Song[] sarr=new Song[3];
+    static final int CCW=0;
+    static final int CW=1;
+    static final int R180=2;
     
+    int gx=0;
+    int gy=0;
+    int gz=0;
+    
+    //bag variables
+    int bag_counter=0;
+    int[] bag1=new int[7];
+    int[] bag2=new int[7];
+    int next_blocks=7;
+    int block_hold=-1;
+    int block_current=-1;
+    
+    int lines=0;
+    int score=0;//unused for now
+    int counter=0;//gravity variable
+    int combo=-1;
+    
+    //board variables
+    final int STAGESIZEX=10;
+    final int STAGESIZEY=40;
+    int[][] stage=new int[STAGESIZEY][STAGESIZEX];
+    int[][] block=new int[4][4];
+    
+    //piece variables
+    int x;
+    int y;
+    int block_size;
+    int rotation;
+    
+    boolean spun=false;//tspin
+    boolean gameover=false;
+    boolean held=false;
+    boolean power=false;//spike
+    
+    //retarded
+    static Playlist slist;
+    static RadioSongPlayer rsp;
 
-    public Tplayer(){
-        
+    static Song[] sarr=new Song[3];
+    
+    
+    public Table(){
+        //???
     }
     
+    //works as intended
     public void shiftBag1(){
         if(bag_counter>6){
             generateBag2();
@@ -88,6 +81,7 @@ public class Tplayer {
         bag_counter++;
     }
     
+    //works as intended
     public void generateBag2(){
         bag_counter=0;
         for(int i=0;i<7;i++){
@@ -99,7 +93,8 @@ public class Tplayer {
             }
         }
     }
- 
+
+    //improve
     public void makeNextBlock(){
         x = 3;
         y = 10;
@@ -125,11 +120,7 @@ public class Tplayer {
             }
         }
 
-        if(block_current==2 || block_current==4){
-            block_size=4;
-        }else{
-            block_size=3;
-        }
+        doBlockSize();
         
         ///spawn block
         for(int i=0;i<block_size;i++){
@@ -153,6 +144,7 @@ public class Tplayer {
         }
     }
     
+    //improve
     public boolean isCollide(int x, int y, int b_size){
         int collision;
         
@@ -172,6 +164,7 @@ public class Tplayer {
         return false;
     }
     
+    //improve
     public void colPrint(int x, int y, int z, int color) {
         Block b=world.getBlockAt(gx+x,gy-y,gz+z);
         if(color==42){
@@ -201,14 +194,14 @@ public class Tplayer {
         }
     }
     
-    public void initGame(){        
+    //maybe works
+    public void initGame(){
         
         int random=(int)(Math.random()*3);
         rsp.playSong(random);
         if(rsp.isPlaying()==false) {
             rsp.setPlaying(true);
         }
-        
         
         
         
@@ -240,6 +233,7 @@ public class Tplayer {
         }
     }
     
+    //maybe works
     public void tSpin(){
         int truth=0;
         if(stage[y][x]>0)
@@ -257,6 +251,7 @@ public class Tplayer {
         }
     }
     
+    //improve
     public void updateScore(){
         held=false;
         
@@ -279,6 +274,7 @@ public class Tplayer {
         }
     }
     
+    //improve
     public void dropBlock(){
         int lines = 0;
         while(!isCollide(x, y+1, block_size)){
@@ -289,19 +285,21 @@ public class Tplayer {
         counter=100;
     }
     
+    //works as intended
     public void moveBlock(int x, int y){
-        for (int i=0;i<block_size;i++){
-            for (int j=0;j<block_size;j++){
+        for(int i=0;i<block_size;i++){
+            for(int j=0;j<block_size;j++){
                 if(block[i][j] > 0){
                     colPrint(j+this.x, i+this.y, 0, 42);
                 }
             }
         }
-        this.x = x;
-        this.y = y;
+        
+        this.x=x;
+        this.y=y;
 
-        for (int i=0;i<block_size;i++){
-            for (int j=0;j<block_size;j++){
+        for(int i=0;i<block_size;i++){
+            for(int j=0;j<block_size;j++){
                 if(block[i][j]>0){
                     colPrint(j+this.x, i+this.y, 0, block[i][j]);
                 }
@@ -309,57 +307,66 @@ public class Tplayer {
         }
     }
     
+    //works as intended
     public void userInput(String input){
-        switch (input){
-        case "right":
-            if (!isCollide(x+1, y, block_size)){
-                moveBlock(x+1, y);
-            }
-            break;
-        case "left":
-            if (!isCollide(x-1, y, block_size)){
-                moveBlock(x-1, y);
-            }
-            break;
-        case "down":
-            if (!isCollide(x, y+1, block_size)){
-                moveBlock(x, y+1);
-            }
-            break;
+        switch(input){
         case "y":
-        case "Y":
-        case "z":
-        case "Z":
             rotateBlock(CCW);
             break;
         case "x":
-        case "X":
             rotateBlock(CW);
             break;
-        case "space":
-            dropBlock();
+        case "c":
+            holdBlock();
             break;
+            
+        case "left":
+            if(!isCollide(x-1, y, block_size)){
+                moveBlock(x-1, y);
+            }
+            break;
+        case "right":
+            if(!isCollide(x+1, y, block_size)){
+                moveBlock(x+1, y);
+            }
+            break;
+            
+
         case "up":
             rotateBlock(R180);
             break;
-        case "c":
-        case "C":
-            holdBlock();
+        case "down":
+            if(!isCollide(x, y+1, block_size)){
+                moveBlock(x, y+1);
+            }
+            break;
+        
+        case "space":
+            dropBlock();
             break;
         case "l":
-        case "L":
             gameover=true;
             break;
+            
         default:
-            System.out.println("Nothing.");
+            System.out.println("Wrong input");
         }
     }
     
+    //works as intended
+    public void doBlockSize(){
+        if(block_current==2 || block_current==4){
+            block_size=4;
+        }else{
+            block_size=3;
+        }
+    }
+    
+    //maybe works
     public void holdBlock(){
         int temp;
 
-        if(held==false){
-
+        if(!held){
             //print current block into hold slot
             for(int i=0;i<4;i++){
                 for(int j=0;j<4;j++){
@@ -375,12 +382,12 @@ public class Tplayer {
             for (int i=0;i<4;i++){
                 for(int j=0;j<4;j++){
                     if(block[i][j]>0){
-                        colPrint(j+x, i+y, 0, 0);
+                        colPrint(j+x, i+y, 0, 42);
                     }
                 }
             }
 
-            //first hold
+            //if first hold
             if(block_hold==-1){
                 block_hold=block_current;
                 makeNextBlock();
@@ -394,19 +401,31 @@ public class Tplayer {
                 x=3;
                 y=10;
                 rotation=0;
-                if(block_current==2 || block_current==4){
-                    block_size=4;
-                }else{
-                    block_size=3;
-                }
+                doBlockSize();
                 
                 for(int i=0;i<block_size;i++){
                     for(int j=0;j<block_size;j++){
                         block[i][j] = Blocklist.block_list[block_current][i][j];
                     }
                 }
-                //////////////////////d9djtm ptimz the peice
+                
+                //check if its possible then print it
+                for(int i=0;i<block_size;i++){
+                    for(int j=0;j<block_size;j++){
+                        if(stage[i+y][j+x]>0 && block[i][j]>0){
+                            player.playSound(player.getLocation(), Sound.BLOCK_PISTON_CONTRACT, 1f, 1f);
+                            gameover=true;
+                            return;
+                        }
+                        else if(block[i][j]>0){
+                            colPrint(j+x,i+y,0,block[i][j]);
+                        }
+                    }
+                }
+                
+                
             }
+            
         }else{
             //already held
             player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
@@ -414,6 +433,7 @@ public class Tplayer {
         held=true;
     }
     
+    //improve
     public void rotateBlock(int d){
         int piece_type=block_size-3;
         int special=-1;
@@ -572,6 +592,7 @@ public class Tplayer {
         }
     }
     
+    //maybe works
     public void checkPlaced(){
         boolean lineclean;
         lines=0;
@@ -636,6 +657,7 @@ public class Tplayer {
         updateScore();
     }
 
+    //maybe works
     public void placeBlock(){
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
@@ -647,6 +669,7 @@ public class Tplayer {
         }
     }
     
+    //improve
     public void playGame() {
         new BukkitRunnable(){ //BukkitRunnable, not Runnable
              @Override

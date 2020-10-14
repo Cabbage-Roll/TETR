@@ -9,7 +9,7 @@ public class Duelinput implements CommandExecutor{
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         Player player=(Player)sender;
-        Tplayer temp;
+        Table temp;
         
         for(int g=0;g<Duel.num;g++){
             temp=Pluginmain.match.plist.get(g);
