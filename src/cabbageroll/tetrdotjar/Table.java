@@ -58,7 +58,6 @@ public class Table {
     //retarded
     static Playlist slist;
     static RadioSongPlayer rsp;
-
     static Song[] sarr=new Song[3];
     
     
@@ -66,7 +65,7 @@ public class Table {
         //???
     }
     
-    //works as intended
+    //works
     public void shiftBag1(){
         if(bag_counter>6){
             generateBag2();
@@ -81,7 +80,7 @@ public class Table {
         bag_counter++;
     }
     
-    //works as intended
+    //works
     public void generateBag2(){
         bag_counter=0;
         for(int i=0;i<7;i++){
@@ -94,11 +93,27 @@ public class Table {
         }
     }
 
+    //works
+    public void spawnBlock(){
+
+        if(block_current==2 || block_current==4){
+            block_size=4;
+        }else{
+            block_size=3;
+        }
+        
+        for(int i=0;i<block_size;i++){
+            for(int j=0;j<block_size;j++){
+                block[i][j] = Blocklist.block_list[block_current][i][j];
+            }
+        }    
+    }
+    
     //improve
     public void makeNextBlock(){
-        x = 3;
-        y = 10;
-        rotation = 0;
+        x=3;
+        y=10;
+        rotation=0;
         ///the first block
         block_current = bag1[0];
         if(bag1[0] == -1){
@@ -120,14 +135,7 @@ public class Table {
             }
         }
 
-        doBlockSize();
-        
-        ///spawn block
-        for(int i=0;i<block_size;i++){
-            for(int j=0;j<block_size;j++){
-                block[i][j] = Blocklist.block_list[block_current][i][j];
-            }
-        }
+        spawnBlock();
         
         //check if its possible then print it
         for(int i=0;i<block_size;i++){
@@ -144,19 +152,20 @@ public class Table {
         }
     }
     
-    //improve
-    public boolean isCollide(int x, int y, int b_size){
-        int collision;
+    //works
+    public boolean isCollide(int x, int y){
+        int temp;
         
-        for(int i=0;i<b_size;i++){
-            for(int j=0;j<b_size;j++){
+        for(int i=0;i<block_size;i++){
+            for(int j=0;j<block_size;j++){
                 ///code fix that prevents OOBE and makes walls solid
-                collision=1;
+                temp=1;
+                
                 if((0<=y+i && y+i<STAGESIZEY) && (0<=x+j && x+j<STAGESIZEX)){
-                    collision=stage[y+i][x+j];
+                    temp=stage[y+i][x+j];
                 }
                 
-                if(collision>0 && block[i][j]>0){
+                if(temp>0 && block[i][j]>0){
                     return true;
                 }
             }
@@ -165,7 +174,7 @@ public class Table {
     }
     
     //improve
-    public void colPrint(int x, int y, int z, int color) {
+    public void colPrint(int x, int y, int z, int color){
         Block b=world.getBlockAt(gx+x,gy-y,gz+z);
         if(color==42){
             b.setType(Material.AIR);
@@ -233,7 +242,7 @@ public class Table {
         }
     }
     
-    //maybe works
+    //needs improvement
     public void tSpin(){
         int truth=0;
         if(stage[y][x]>0)
@@ -253,18 +262,15 @@ public class Table {
     
     //improve
     public void updateScore(){
-        held=false;
-        
         if(spun){
             score+=lines*1000;
-            if(combo>4){
+            if(combo>3){
                 power=true;
             }
             player.playSound(player.getLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 1f, 0.75f);
         }
         
         System.out.println("combo: "+combo);
-        spun=false;
         if(combo>=0){
             if(power){
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1f, (float)Math.pow(2,(combo*2-12)/(double)12));
@@ -272,12 +278,15 @@ public class Table {
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-12)/(double)12));
             }
         }
+        
+        spun=false;
+        held=false;
     }
     
     //improve
     public void dropBlock(){
         int lines = 0;
-        while(!isCollide(x, y+1, block_size)){
+        while(!isCollide(x, y+1)){
             lines++;
             moveBlock(x, y+1);
         }
@@ -285,7 +294,7 @@ public class Table {
         counter=100;
     }
     
-    //works as intended
+    //works
     public void moveBlock(int x, int y){
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
@@ -307,7 +316,7 @@ public class Table {
         }
     }
     
-    //works as intended
+    //works
     public void userInput(String input){
         switch(input){
         case "y":
@@ -321,12 +330,12 @@ public class Table {
             break;
             
         case "left":
-            if(!isCollide(x-1, y, block_size)){
+            if(!isCollide(x-1, y)){
                 moveBlock(x-1, y);
             }
             break;
         case "right":
-            if(!isCollide(x+1, y, block_size)){
+            if(!isCollide(x+1, y)){
                 moveBlock(x+1, y);
             }
             break;
@@ -336,7 +345,7 @@ public class Table {
             rotateBlock(R180);
             break;
         case "down":
-            if(!isCollide(x, y+1, block_size)){
+            if(!isCollide(x, y+1)){
                 moveBlock(x, y+1);
             }
             break;
@@ -352,16 +361,7 @@ public class Table {
             System.out.println("Wrong input");
         }
     }
-    
-    //works as intended
-    public void doBlockSize(){
-        if(block_current==2 || block_current==4){
-            block_size=4;
-        }else{
-            block_size=3;
-        }
-    }
-    
+
     //maybe works
     public void holdBlock(){
         int temp;
@@ -401,13 +401,7 @@ public class Table {
                 x=3;
                 y=10;
                 rotation=0;
-                doBlockSize();
-                
-                for(int i=0;i<block_size;i++){
-                    for(int j=0;j<block_size;j++){
-                        block[i][j] = Blocklist.block_list[block_current][i][j];
-                    }
-                }
+                spawnBlock();
                 
                 //check if its possible then print it
                 for(int i=0;i<block_size;i++){
@@ -529,16 +523,14 @@ public class Table {
             if(d==R180) {
                 if(!(isCollide(
                     x+Kicktable.kicks_180[piece_type][0][special][tries],
-                    y-Kicktable.kicks_180[piece_type][1][special][tries],
-                    block_size
+                    y-Kicktable.kicks_180[piece_type][1][special][tries]
                     ))){
                         break;
                     }
             }else{
                 if(!(isCollide(
                     x+Kicktable.kicks[piece_type][0][special][tries],
-                    y-Kicktable.kicks[piece_type][1][special][tries],
-                    block_size
+                    y-Kicktable.kicks[piece_type][1][special][tries]
                     ))){
                         break;
                     }
@@ -670,12 +662,12 @@ public class Table {
     }
     
     //improve
-    public void playGame() {
+    public void playGame(){
         new BukkitRunnable(){ //BukkitRunnable, not Runnable
              @Override
              public void run() {
                 if(counter>=100){
-                    if(!isCollide(x, y+1, block_size)){
+                    if(!isCollide(x, y+1)){
                         moveBlock(x, y+1);
                         }else{
                             placeBlock();
@@ -691,6 +683,6 @@ public class Table {
                 }
                 System.out.println("loop");
              }
-        }.runTaskTimer(Pluginmain.plugin, 0, 5); //Repeating task with 0 ticks initial delay, run once per 20 ticks (one second). Make sure you pass a valid instance of your plugin.
+        }.runTaskTimer(Pluginmain.plugin, 0, 0); //Repeating task with 0 ticks initial delay, run once per 20 ticks (one second). Make sure you pass a valid instance of your plugin.
     }
 }
