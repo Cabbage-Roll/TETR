@@ -25,7 +25,7 @@ public class Startgame implements CommandExecutor{
         Pluginmain.sp.initGame();
         Pluginmain.sp.playGame();
         
-        Pluginmain.testing.openInventory(player);
+       //Pluginmain.testing.openInventory(player);
         
         return true;
     }

@@ -29,7 +29,7 @@ public class Table {
     int bag_counter=0;
     int[] bag1=new int[7];
     int[] bag2=new int[7];
-    int next_blocks=7;
+    int next_blocks=5;
     int block_hold=-1;
     int block_current=-1;
     
@@ -49,6 +49,8 @@ public class Table {
     int y;
     int block_size;
     int rotation;
+    int ghostx;
+    int ghosty;
     
     boolean spun=false;//tspin
     boolean gameover=false;
@@ -66,7 +68,82 @@ public class Table {
     }
     
     //works
-    public void shiftBag1(){
+    void printStaticBlock(int x, int y, int block){
+        for(int i=0;i<4;i++){
+            for(int j=0;j<4;j++){
+                if(Blocklist.block_list[block][i][j]==0){
+                    colPrint(j+x, i+y, 0, 42);
+                }else{
+                    colPrint(j+x, i+y, 0, Blocklist.block_list[block][i][j]);
+                }
+            }
+        }
+    }
+    
+    //works
+    void sendTheTitle(){
+        String s1="";
+        String s2="";
+        String s3="";
+        if(combo>=1){
+                s2=String.valueOf(combo)+" COMBO";
+        }
+        
+        if(spun){
+            s3="§5T-SPIN§r";
+        }
+        
+        if(lines==1){
+            s1="SINGLE";
+        }else if(lines==2){
+            s1="DOUBLE";
+        }else if(lines==3){
+            s1="TRIPLE";
+        }else if(lines==4){
+            s1="QUAD";
+        }
+        
+        s1=s3+" "+s1+"                ";
+        s2=s2+"                                ";
+        
+        player.sendTitle(s1, s2, 0, 20, 10);
+    }
+    
+    //works
+    void removeGhost(){
+      //fill with air
+        for(int i=0;i<block_size;i++){
+            for(int j=0;j<block_size;j++){
+                if(block[i][j]>0){
+                    colPrint(j+ghostx, i+ghosty, 0, 42);
+                }
+            }
+        }
+    }
+    
+    //works
+    void drawGhost(){
+        int temp=y;
+        while(!isCollide(x, temp+1)){
+            temp++;
+        }
+        
+        //update ghost position
+        ghostx=x;
+        ghosty=temp;
+
+        //print white ghost
+        for(int i=0;i<block_size;i++){
+            for(int j=0;j<block_size;j++){
+                if(block[i][j]>0){
+                    colPrint(j+ghostx, i+ghosty, 0, 15);
+                }
+            }
+        }
+    }
+    
+    //works
+    void shiftBag1(){
         if(bag_counter>6){
             generateBag2();
         }
@@ -81,7 +158,7 @@ public class Table {
     }
     
     //works
-    public void generateBag2(){
+    void generateBag2(){
         bag_counter=0;
         for(int i=0;i<7;i++){
             bag2[i]=(int)(Math.random()*7);
@@ -94,8 +171,11 @@ public class Table {
     }
 
     //works
-    public void spawnBlock(){
-
+    void spawnBlock(){
+        x=3;
+        y=20;
+        rotation=0;
+        
         if(block_current==2 || block_current==4){
             block_size=4;
         }else{
@@ -109,35 +189,20 @@ public class Table {
         }    
     }
     
-    //improve
-    public void makeNextBlock(){
-        x=3;
-        y=10;
-        rotation=0;
-        ///the first block
-        block_current = bag1[0];
-        if(bag1[0] == -1){
-            shiftBag1();
-        }
-
+    //works
+    void makeNextBlock(){
+        block_current=bag1[0];
         shiftBag1();
 
         ///prints next blocks
-        for(int k=0;k<next_blocks;k++){
-            for(int i=0;i<4;i++){
-                for(int j=0;j<4;j++){
-                    if(Blocklist.block_list[bag1[k]][i][j] == 0){
-                        colPrint(j + 13,i + 0 + k*4,0,42);
-                    }else{
-                        colPrint(j + 13,i + 0 + k*4,0,Blocklist.block_list[bag1[k]][i][j]);
-                    }
-                }
-            }
+        for(int i=0;i<next_blocks;i++){
+            printStaticBlock(13, 20+i*4, bag1[i]);
         }
-
-        spawnBlock();
         
-        //check if its possible then print it
+        spawnBlock();
+        drawGhost();
+        
+        //check if its possible then print it (at same time)
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(stage[i+y][j+x]>0 && block[i][j]>0){
@@ -150,10 +215,11 @@ public class Table {
                 }
             }
         }
+        
     }
     
     //works
-    public boolean isCollide(int x, int y){
+    boolean isCollide(int x, int y){
         int temp;
         
         for(int i=0;i<block_size;i++){
@@ -174,7 +240,7 @@ public class Table {
     }
     
     //improve
-    public void colPrint(int x, int y, int z, int color){
+    void colPrint(int x, int y, int z, int color){
         Block b=world.getBlockAt(gx+x,gy-y,gz+z);
         if(color==42){
             b.setType(Material.AIR);
@@ -203,18 +269,17 @@ public class Table {
         }
     }
     
-    //maybe works
-    public void initGame(){
+    //improve
+    void initGame(){
         
+        /****trash******/
         int random=(int)(Math.random()*3);
         rsp.playSong(random);
         if(rsp.isPlaying()==false) {
             rsp.setPlaying(true);
         }
-        
-        
-        
         /***********trash ended************/
+        
         for(int y=0;y<STAGESIZEY;y++){
             for(int x=0;x<STAGESIZEX;x++){
                 stage[y][x]=0;
@@ -222,28 +287,33 @@ public class Table {
             }
         }
         spun=false;
-        combo=-1;
-        power=false;
-        score=0;
-        held=false;
         gameover=false;
+        held=false;
+        power=false;
+        
+        combo=-1;
+        score=0;
         block_hold=-1;
+        
         generateBag2();
         for(int i=0;i<7;i++){
             bag1[i]=bag2[i];
         }
         generateBag2();
-        updateScore();
+        
+        
         makeNextBlock();
+        
+        //fill hold place with air
         for(int i=0;i<4;i++){
             for(int j=0;j<4;j++){
-                colPrint(j-7,i+3,0,42);
+                colPrint(j-7,i+20,0,42);
             }
         }
     }
     
-    //needs improvement
-    public void tSpin(){
+    //improve now
+    void tSpin(){
         int truth=0;
         if(stage[y][x]>0)
             truth++;
@@ -260,8 +330,8 @@ public class Table {
         }
     }
     
-    //improve
-    public void updateScore(){
+    //improve now
+    void updateScore(){
         if(spun){
             score+=lines*1000;
             if(combo>3){
@@ -278,14 +348,15 @@ public class Table {
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-12)/(double)12));
             }
         }
-        
+
+        sendTheTitle();
         spun=false;
         held=false;
     }
     
     //improve
-    public void dropBlock(){
-        int lines = 0;
+    void dropBlock(){
+        int lines=0;
         while(!isCollide(x, y+1)){
             lines++;
             moveBlock(x, y+1);
@@ -295,7 +366,8 @@ public class Table {
     }
     
     //works
-    public void moveBlock(int x, int y){
+    void moveBlock(int x, int y){
+        //fill with air
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(block[i][j] > 0){
@@ -304,9 +376,13 @@ public class Table {
             }
         }
         
+        //update position
         this.x=x;
         this.y=y;
 
+        removeGhost();
+        drawGhost();
+        //print piece
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(block[i][j]>0){
@@ -317,7 +393,7 @@ public class Table {
     }
     
     //works
-    public void userInput(String input){
+    void userInput(String input){
         switch(input){
         case "y":
             rotateBlock(CCW);
@@ -340,7 +416,6 @@ public class Table {
             }
             break;
             
-
         case "up":
             rotateBlock(R180);
             break;
@@ -356,27 +431,25 @@ public class Table {
         case "l":
             gameover=true;
             break;
+        case "instant":
+            while(!isCollide(x, y+1)){
+                moveBlock(x, y+1);
+            }
+            break;
             
         default:
             System.out.println("Wrong input");
         }
     }
 
-    //maybe works
-    public void holdBlock(){
+    //improve now
+    void holdBlock(){
         int temp;
 
         if(!held){
+            removeGhost();
             //print current block into hold slot
-            for(int i=0;i<4;i++){
-                for(int j=0;j<4;j++){
-                    if(Blocklist.block_list[block_current][i][j]==0){
-                        colPrint(j-7, i+3, 0, 42);
-                    }else{
-                        colPrint(j-7, i+3, 0, Blocklist.block_list[block_current][i][j]);
-                    }
-                }
-            }
+            printStaticBlock(-7, 20, block_current);
             
             //erase current block from board
             for (int i=0;i<4;i++){
@@ -398,12 +471,12 @@ public class Table {
                 block_hold=temp;
                 
                 //spawn new block
-                x=3;
-                y=10;
-                rotation=0;
+                
                 spawnBlock();
                 
                 //check if its possible then print it
+                drawGhost();
+                
                 for(int i=0;i<block_size;i++){
                     for(int j=0;j<block_size;j++){
                         if(stage[i+y][j+x]>0 && block[i][j]>0){
@@ -417,7 +490,6 @@ public class Table {
                     }
                 }
                 
-                
             }
             
         }else{
@@ -427,8 +499,8 @@ public class Table {
         held=true;
     }
     
-    //improve
-    public void rotateBlock(int d){
+    //improve now
+    void rotateBlock(int d){
         int piece_type=block_size-3;
         int special=-1;
         int tries=0;
@@ -479,6 +551,7 @@ public class Table {
                 special=7;
         }
 
+        removeGhost();
         switch(d){
         case CCW:
             for(int i=0;i<block_size;i++){
@@ -496,7 +569,7 @@ public class Table {
         case CW:
             for(int i=0;i<block_size;i++){
                 for(int j=0;j<block_size;j++){
-                    block[i][j]=temp[block_size - 1 - j][i];
+                    block[i][j]=temp[block_size-1-j][i];
                 }
             }
 
@@ -544,6 +617,7 @@ public class Table {
                     }
                 }
                 rotation=oldrotation;
+                drawGhost();
                 System.out.println("All tests failed");
                 return;
             }
@@ -557,7 +631,7 @@ public class Table {
             }
         }
         
-        if(d==R180) {
+        if(d==R180){
             x+=Kicktable.kicks_180[piece_type][0][special][tries];
             y-=Kicktable.kicks_180[piece_type][1][special][tries];
         }else{
@@ -566,6 +640,7 @@ public class Table {
         }
         
         ///if it succeeds show it
+        drawGhost();
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 //OOBE FIX
@@ -584,8 +659,8 @@ public class Table {
         }
     }
     
-    //maybe works
-    public void checkPlaced(){
+    //improve now
+    void checkPlaced(){
         boolean lineclean;
         lines=0;
         
@@ -649,8 +724,8 @@ public class Table {
         updateScore();
     }
 
-    //maybe works
-    public void placeBlock(){
+    //improve now
+    void placeBlock(){
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(block[i][j]>0){
@@ -662,7 +737,7 @@ public class Table {
     }
     
     //improve
-    public void playGame(){
+   	void playGame(){
         new BukkitRunnable(){ //BukkitRunnable, not Runnable
              @Override
              public void run() {
