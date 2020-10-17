@@ -19,7 +19,7 @@ import org.bukkit.event.EventHandler;
 public class Pluginmain extends JavaPlugin implements Listener{
 
     public static ExampleGui testing=new ExampleGui();
-    public static Table sp;
+    public static Table sp=new Table();;
     public static Duel match;
     
     static JavaPlugin plugin;
@@ -38,6 +38,11 @@ public class Pluginmain extends JavaPlugin implements Listener{
         Table.sarr[0]=NBSDecoder.parse(new File("plugins\\Tetr\\song36.nbs"));
         Table.sarr[1]=NBSDecoder.parse(new File("plugins\\Tetr\\metblast.nbs"));
         Table.sarr[2]=NBSDecoder.parse(new File("plugins\\Tetr\\newgrass.nbs"));
+        Table.sarr[3]=NBSDecoder.parse(new File("plugins\\Tetr\\d02.nbs"));
+        Table.sarr[4]=NBSDecoder.parse(new File("plugins\\Tetr\\tetris.nbs"));
+        Table.sarr[5]=NBSDecoder.parse(new File("plugins\\Tetr\\1812overture.nbs"));
+        Table.sarr[6]=NBSDecoder.parse(new File("plugins\\Tetr\\revenge.nbs"));
+        
         Table.slist=new Playlist(Table.sarr);
         Table.rsp=new RadioSongPlayer(Table.slist);
         //tend

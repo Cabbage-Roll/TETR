@@ -10,7 +10,6 @@ public class Startgame implements CommandExecutor{
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         
-        Pluginmain.sp=new Table();
         Player player=(Player)sender;
         
         /***trash***/
@@ -23,7 +22,6 @@ public class Startgame implements CommandExecutor{
         Pluginmain.sp.gy=Integer.parseInt(args[1]);
         Pluginmain.sp.gz=Integer.parseInt(args[2]);
         Pluginmain.sp.initGame();
-        Pluginmain.sp.playGame();
         
        //Pluginmain.testing.openInventory(player);
         

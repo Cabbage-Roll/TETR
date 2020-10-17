@@ -1,5 +1,6 @@
 package cabbageroll.tetrdotjar;
 
+import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -7,6 +8,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
 import com.xxmicloxx.NoteBlockAPI.model.Song;
@@ -16,6 +18,8 @@ public class Table {
 
     World world;
     Player player;
+    int looptick;
+    BukkitTask task;
     
     static final int CCW=0;
     static final int CW=1;
@@ -53,6 +57,7 @@ public class Table {
     int ghosty;
     
     boolean spun=false;//tspin
+    boolean mini=false;
     boolean gameover=false;
     boolean held=false;
     boolean power=false;//spike
@@ -60,7 +65,7 @@ public class Table {
     //retarded
     static Playlist slist;
     static RadioSongPlayer rsp;
-    static Song[] sarr=new Song[3];
+    static Song[] sarr=new Song[7];
     
     
     public Table(){
@@ -90,7 +95,11 @@ public class Table {
         }
         
         if(spun){
-            s3="§5T-SPIN§r";
+            if(mini){
+                s3="§5t-spin§r";
+            }else{
+                s3="§5T-SPIN§r";
+            }
         }
         
         if(lines==1){
@@ -103,10 +112,13 @@ public class Table {
             s1="QUAD";
         }
         
+        //dont kill old title if its empty
+        if(s1!="" || s2!=""){
         s1=s3+" "+s1+"                ";
         s2=s2+"                                ";
         
-        player.sendTitle(s1, s2, 0, 20, 10);
+            player.sendTitle(s1, s2, 0, 20, 10);
+        }
     }
     
     //works
@@ -123,14 +135,13 @@ public class Table {
     
     //works
     void drawGhost(){
-        int temp=y;
-        while(!isCollide(x, temp+1)){
-            temp++;
+        ghosty=y;
+        while(!isCollide(x, ghosty+1)){
+            ghosty++;
         }
         
         //update ghost position
         ghostx=x;
-        ghosty=temp;
 
         //print white ghost
         for(int i=0;i<block_size;i++){
@@ -272,8 +283,12 @@ public class Table {
     //improve
     void initGame(){
         
+        if(task!=null){
+            task.cancel();
+        }
+        
         /****trash******/
-        int random=(int)(Math.random()*3);
+        int random=(int)(Math.random()*7);
         rsp.playSong(random);
         if(rsp.isPlaying()==false) {
             rsp.setPlaying(true);
@@ -310,23 +325,49 @@ public class Table {
                 colPrint(j-7,i+20,0,42);
             }
         }
+        
+        looptick=0;
+        playGame();
     }
     
     //improve now
     void tSpin(){
         int truth=0;
-        if(stage[y][x]>0)
+        if(stage[y][x]>0){
             truth++;
-        if(stage[y+2][x]>0)
+        }
+        if(stage[y][x+2]>0){
             truth++;
-        if(stage[y][x+2]>0)
+        }
+        if(stage[y+2][x]>0){
             truth++;
-        if(stage[y+2][x+2]>0)
+        }
+        if(stage[y+2][x+2]>0){
             truth++;
+        }
         if(truth>=3){
             spun=true;
+            mini=true;
+            if(rotation==0){
+                if(stage[y][x]>0 && stage[y][x+2]>0){
+                    mini=false;
+                }
+            }else if(rotation==1){
+                if(stage[y][x+2]>0 && stage[y+2][x+2]>0){
+                    mini=false;
+                }
+            }else if(rotation==2){
+                if(stage[y+2][x+2]>0 && stage[y+2][x]>0){
+                    mini=false;
+                }
+            }else if(rotation==3){
+                if(stage[y+2][x]>0 && stage[y][x]>0){
+                    mini=false;
+                }
+            }
         }else{
             spun=false;
+            mini=false;
         }
     }
     
@@ -351,6 +392,7 @@ public class Table {
 
         sendTheTitle();
         spun=false;
+        mini=false;
         held=false;
     }
     
@@ -593,7 +635,7 @@ public class Table {
         }
 
         for(tries=0;tries<maxtries;tries++){
-            if(d==R180) {
+            if(d==R180){
                 if(!(isCollide(
                     x+Kicktable.kicks_180[piece_type][0][special][tries],
                     y-Kicktable.kicks_180[piece_type][1][special][tries]
@@ -639,8 +681,8 @@ public class Table {
             y-=Kicktable.kicks[piece_type][1][special][tries];
         }
         
-        ///if it succeeds show it
         drawGhost();
+        ///if it succeeds show it
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 //OOBE FIX
@@ -653,9 +695,15 @@ public class Table {
                 }
             }
         }
-
+        
+        
         if(block_current==6){
+            if((d!=R180 && tries==4) && (special==0 || special==3 || special==4 || special==7)){
+                spun=true;
+                mini=false;
+            }else{
             tSpin();
+            }
         }
     }
     
@@ -736,28 +784,28 @@ public class Table {
         }
     }
     
-    //improve
+    //works
    	void playGame(){
-        new BukkitRunnable(){ //BukkitRunnable, not Runnable
-             @Override
-             public void run() {
-                if(counter>=100){
-                    if(!isCollide(x, y+1)){
-                        moveBlock(x, y+1);
-                        }else{
-                            placeBlock();
-                            checkPlaced();
-                            makeNextBlock();
-                        }
-                        counter=0;
-                }
-                counter+=0;
-                
-                if(gameover){
-                    this.cancel();
-                }
-                System.out.println("loop");
-             }
-        }.runTaskTimer(Pluginmain.plugin, 0, 0); //Repeating task with 0 ticks initial delay, run once per 20 ticks (one second). Make sure you pass a valid instance of your plugin.
+   	    task=new BukkitRunnable(){
+   	        @Override
+   	        public void run() {
+   	            if(counter>=100){
+   	                if(!isCollide(x, y+1)){
+   	                    moveBlock(x, y+1);
+   	                    }else{
+   	                        placeBlock();
+   	                        checkPlaced();
+   	                        makeNextBlock();
+   	                    }
+   	                    counter=0;
+   	            }
+   	            counter+=0;
+   	            
+   	            if(gameover){
+   	                this.cancel();
+   	            }
+   	            System.out.println(looptick++%20);
+   	       }
+   	    }.runTaskTimer(Pluginmain.plugin, 0, 0);
     }
 }
