@@ -11,8 +11,12 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
+import com.xxmicloxx.NoteBlockAPI.model.RepeatMode;
 import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
+
+import fr.minuskube.netherboard.Netherboard;
+import fr.minuskube.netherboard.bukkit.BPlayerBoard;
 
 public class Table {
 
@@ -20,6 +24,7 @@ public class Table {
     Player player;
     int looptick;
     BukkitTask task;
+    BPlayerBoard board;
     
     static final int CCW=0;
     static final int CW=1;
@@ -41,6 +46,7 @@ public class Table {
     int score=0;//unused for now
     int counter=0;//gravity variable
     int combo=-1;
+    int b2b=-1;
     
     //board variables
     final int STAGESIZEX=10;
@@ -65,7 +71,6 @@ public class Table {
     //retarded
     static Playlist slist;
     static RadioSongPlayer rsp;
-    static Song[] sarr=new Song[7];
     
     
     public Table(){
@@ -91,7 +96,7 @@ public class Table {
         String s2="";
         String s3="";
         if(combo>=1){
-                s2=String.valueOf(combo)+" COMBO";
+            s2=String.valueOf(combo)+" COMBO";
         }
         
         if(spun){
@@ -112,6 +117,10 @@ public class Table {
             s1="QUAD";
         }
         
+        if(lines==0 && spun){
+            s1=" ";
+        }
+        
         //dont kill old title if its empty
         if(s1!="" || s2!=""){
         s1=s3+" "+s1+"                ";
@@ -119,6 +128,11 @@ public class Table {
         
             player.sendTitle(s1, s2, 0, 20, 10);
         }
+    }
+
+    //new
+    void sendTheScoreboard(){
+        
     }
     
     //works
@@ -288,8 +302,9 @@ public class Table {
         }
         
         /****trash******/
-        int random=(int)(Math.random()*7);
+        int random=(int)(Math.random()*Pluginmain.numberofsongs);
         rsp.playSong(random);
+        rsp.setRepeatMode(RepeatMode.ONE);
         if(rsp.isPlaying()==false) {
             rsp.setPlaying(true);
         }
@@ -309,6 +324,7 @@ public class Table {
         combo=-1;
         score=0;
         block_hold=-1;
+        b2b=-1;
         
         generateBag2();
         for(int i=0;i<7;i++){
@@ -328,6 +344,10 @@ public class Table {
         
         looptick=0;
         playGame();
+
+
+        board = Netherboard.instance().createBoard(player, "Stats");
+        board.clear();
     }
     
     //improve now
@@ -373,6 +393,12 @@ public class Table {
     
     //improve now
     void updateScore(){
+        if((spun && lines>0) || lines==4){
+            b2b++;
+        }else if(lines>0){
+            b2b=-1;
+        }
+        
         if(spun){
             score+=lines*1000;
             if(combo>3){
@@ -391,6 +417,8 @@ public class Table {
         }
 
         sendTheTitle();
+        board.set("§6§lB2B", b2b);
+        
         spun=false;
         mini=false;
         held=false;

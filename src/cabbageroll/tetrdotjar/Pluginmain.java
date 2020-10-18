@@ -3,6 +3,7 @@ package cabbageroll.tetrdotjar;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
+import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
 import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
 
@@ -19,8 +20,12 @@ import org.bukkit.event.EventHandler;
 public class Pluginmain extends JavaPlugin implements Listener{
 
     public static ExampleGui testing=new ExampleGui();
-    public static Table sp=new Table();;
+    public static Table sp=new Table();
     public static Duel match;
+    public static int numberofsongs;
+    String[] pathnames;
+    String xd;
+    static Song[] sarr;
     
     static JavaPlugin plugin;
     @Override
@@ -35,15 +40,18 @@ public class Pluginmain extends JavaPlugin implements Listener{
         this.getCommand("duelinput").setExecutor(new Duelinput());
         this.getCommand("editpiece").setExecutor(new Editpiece());
         //trash
-        Table.sarr[0]=NBSDecoder.parse(new File("plugins\\Tetr\\song36.nbs"));
-        Table.sarr[1]=NBSDecoder.parse(new File("plugins\\Tetr\\metblast.nbs"));
-        Table.sarr[2]=NBSDecoder.parse(new File("plugins\\Tetr\\newgrass.nbs"));
-        Table.sarr[3]=NBSDecoder.parse(new File("plugins\\Tetr\\d02.nbs"));
-        Table.sarr[4]=NBSDecoder.parse(new File("plugins\\Tetr\\tetris.nbs"));
-        Table.sarr[5]=NBSDecoder.parse(new File("plugins\\Tetr\\1812overture.nbs"));
-        Table.sarr[6]=NBSDecoder.parse(new File("plugins\\Tetr\\revenge.nbs"));
+        File f = new File("plugins\\Tetr");
+        numberofsongs=f.listFiles().length;
+        pathnames=new String[numberofsongs];
+        sarr=new Song[numberofsongs];
+        pathnames = f.list();
+        for(int i=0;i<numberofsongs;i++){
+            xd="plugins\\Tetr\\"+pathnames[i];
+            System.out.print(numberofsongs);
+            sarr[i]=NBSDecoder.parse(new File(xd));
+        }
         
-        Table.slist=new Playlist(Table.sarr);
+        Table.slist=new Playlist(sarr);
         Table.rsp=new RadioSongPlayer(Table.slist);
         //tend
     }
