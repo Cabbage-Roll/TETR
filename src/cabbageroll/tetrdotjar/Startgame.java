@@ -1,19 +1,14 @@
 package cabbageroll.tetrdotjar;
 
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.conversations.*;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 public class Startgame implements CommandExecutor{
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         
-        BukkitTask task=null;
         Player player=(Player)sender;
         
         if(args.length!=3 && args.length!=9){
@@ -49,9 +44,6 @@ public class Startgame implements CommandExecutor{
         }
         
         Pluginmain.sp.initGame();
-        
-        SkinEditor.openGUI(player);
-        
         return true;
     }
 }

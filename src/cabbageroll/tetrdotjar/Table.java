@@ -1,11 +1,11 @@
 package cabbageroll.tetrdotjar;
 
-import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -17,6 +17,20 @@ import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
 
 public class Table {
+    
+    //ZLOSIJT,air,ghost,border
+    public static ItemStack[] blocks={
+        new ItemStack(Material.CONCRETE, 1, (short) 14),
+        new ItemStack(Material.CONCRETE, 1, (short) 1),
+        new ItemStack(Material.CONCRETE, 1, (short) 4),
+        new ItemStack(Material.CONCRETE, 1, (short) 5),
+        new ItemStack(Material.CONCRETE, 1, (short) 3),
+        new ItemStack(Material.CONCRETE, 1, (short) 11),
+        new ItemStack(Material.CONCRETE, 1, (short) 10),
+        new ItemStack(Material.AIR),
+        new ItemStack(Material.CONCRETE, 1, (short) 0),
+        new ItemStack(Material.IRON_BLOCK)
+    };
 
     World world;
     Player player;
@@ -86,14 +100,18 @@ public class Table {
     
     
     //new
+    @SuppressWarnings("deprecation")
     void printSingleBlock(int x, int y, int z, int color){
         Block b=world.getBlockAt(x, y, z);
-        if(color==42){
-            b.setType(Material.AIR);
-        }else if(color==69){
+        if(color==69){
             return;
-        }else{
-        b.setType(Material.CONCRETE);
+        }
+        
+        b.setType(blocks[color].getType());
+
+        b.setData(blocks[color].getData().getData());
+        
+        /*
         if(color==0)
             b.setData(DyeColor.BLACK.getWoolData());
         else if(color==4)
@@ -111,8 +129,7 @@ public class Table {
         else if(color==13)
             b.setData(DyeColor.PURPLE.getWoolData());
         else if(color==15)
-            b.setData(DyeColor.WHITE.getWoolData());
-        }
+            b.setData(DyeColor.WHITE.getWoolData());*/
     }
     
     //new
@@ -153,11 +170,7 @@ public class Table {
     void printStaticBlock(int x, int y, int block){
         for(int i=0;i<4;i++){
             for(int j=0;j<4;j++){
-                if(Blocklist.block_list[block][i][j]==0){
-                    colPrint(j+x, i+y, 42);
-                }else{
-                    colPrint(j+x, i+y, Blocklist.block_list[block][i][j]);
-                }
+                colPrint(j+x, i+y, Blocklist.block_list[block][i][j]);
             }
         }
     }
@@ -212,8 +225,8 @@ public class Table {
       //fill with air
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
-                if(block[i][j]>0){
-                    colPrint(j+ghostx, i+ghosty, 42);
+                if(block[i][j]!=7){
+                    colPrint(j+ghostx, i+ghosty, 7);
                 }
             }
         }
@@ -232,8 +245,8 @@ public class Table {
         //print white ghost
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
-                if(block[i][j]>0){
-                    colPrint(j+ghostx, i+ghosty, 15);
+                if(block[i][j]!=7){
+                    colPrint(j+ghostx, i+ghosty, 8);
                 }
             }
         }
@@ -302,14 +315,12 @@ public class Table {
         //check if its possible then print it (at same time)
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
-                if(stage[i+y][j+x]>0 && block[i][j]>0){
+                if(stage[i+y][j+x]!=7 && block[i][j]!=7){
                     player.playSound(player.getLocation(), Sound.BLOCK_PISTON_CONTRACT, 1f, 1f);
                     gameover=true;
                     return;
                 }
-                else if(block[i][j]>0){
-                    colPrint(j+x, i+y, block[i][j]);
-                }
+                colPrint(j+x, i+y, block[i][j]);
             }
         }
         
@@ -322,13 +333,13 @@ public class Table {
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 ///code fix that prevents OOBE and makes walls solid
-                temp=1;
+                temp=9;
                 
                 if((0<=y+i && y+i<STAGESIZEY) && (0<=x+j && x+j<STAGESIZEX)){
                     temp=stage[y+i][x+j];
                 }
                 
-                if(temp>0 && block[i][j]>0){
+                if(temp!=7 && block[i][j]!=7){
                     return true;
                 }
             }
@@ -338,8 +349,6 @@ public class Table {
     
     //IMPROVE
     void colPrint(int x, int y, int color){
-        Block b;
-
         int ti;
         int tj;
         int tk;
@@ -399,8 +408,8 @@ public class Table {
         
         for(int y=0;y<STAGESIZEY;y++){
             for(int x=0;x<STAGESIZEX;x++){
-                stage[y][x]=0;
-                colPrint(x, y, 42);
+                stage[y][x]=7;
+                colPrint(x, y, 7);
             }
         }
         spun=false;
@@ -428,7 +437,7 @@ public class Table {
         //fill hold place with air
         for(int i=0;i<4;i++){
             for(int j=0;j<4;j++){
-                colPrint(j-7, i+20, 42);
+                colPrint(j-7, i+20, 7);
             }
         }
         
@@ -440,35 +449,35 @@ public class Table {
     //works
     void tSpin(){
         int truth=0;
-        if(stage[y][x]>0){
+        if(stage[y][x]!=7){
             truth++;
         }
-        if(stage[y][x+2]>0){
+        if(stage[y][x+2]!=7){
             truth++;
         }
-        if(stage[y+2][x]>0){
+        if(stage[y+2][x]!=7){
             truth++;
         }
-        if(stage[y+2][x+2]>0){
+        if(stage[y+2][x+2]!=7){
             truth++;
         }
         if(truth>=3){
             spun=true;
             mini=true;
             if(rotation==0){
-                if(stage[y][x]>0 && stage[y][x+2]>0){
+                if(stage[y][x]!=7 && stage[y][x+2]!=7){
                     mini=false;
                 }
             }else if(rotation==1){
-                if(stage[y][x+2]>0 && stage[y+2][x+2]>0){
+                if(stage[y][x+2]!=7 && stage[y+2][x+2]!=7){
                     mini=false;
                 }
             }else if(rotation==2){
-                if(stage[y+2][x+2]>0 && stage[y+2][x]>0){
+                if(stage[y+2][x+2]!=7 && stage[y+2][x]!=7){
                     mini=false;
                 }
             }else if(rotation==3){
-                if(stage[y+2][x]>0 && stage[y][x]>0){
+                if(stage[y+2][x]!=7 && stage[y][x]!=7){
                     mini=false;
                 }
             }
@@ -545,8 +554,8 @@ public class Table {
         //fill with air
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
-                if(block[i][j] > 0){
-                    colPrint(j+this.x, i+this.y, 42);
+                if(block[i][j]!=7){
+                    colPrint(j+this.x, i+this.y, 7);
                 }
             }
         }
@@ -560,7 +569,7 @@ public class Table {
         //print piece
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
-                if(block[i][j]>0){
+                if(block[i][j]!=7){
                     colPrint(j+this.x, i+this.y, block[i][j]);
                 }
             }
@@ -629,8 +638,8 @@ public class Table {
             //erase current block from board
             for (int i=0;i<4;i++){
                 for(int j=0;j<4;j++){
-                    if(block[i][j]>0){
-                        colPrint(j+x, i+y, 42);
+                    if(block[i][j]!=7){
+                        colPrint(j+x, i+y, 7);
                     }
                 }
             }
@@ -654,14 +663,12 @@ public class Table {
                 
                 for(int i=0;i<block_size;i++){
                     for(int j=0;j<block_size;j++){
-                        if(stage[i+y][j+x]>0 && block[i][j]>0){
+                        if(stage[i+y][j+x]!=7 && block[i][j]!=7){
                             player.playSound(player.getLocation(), Sound.BLOCK_PISTON_CONTRACT, 1f, 1f);
                             gameover=true;
                             return;
                         }
-                        else if(block[i][j]>0){
-                            colPrint(j+x, i+y, block[i][j]);
-                        }
+                        colPrint(j+x, i+y, block[i][j]);
                     }
                 }
                 
@@ -800,8 +807,8 @@ public class Table {
         
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
-                if(temp[i][j]>0){
-                    colPrint(j+x, i+y, 42);
+                if(temp[i][j]!=7){
+                    colPrint(j+x, i+y, 7);
                 }
             }
         }
@@ -821,9 +828,9 @@ public class Table {
                 //OOBE FIX
                 if((x+j<0 || STAGESIZEX<=x+j) || (y+i<0 || STAGESIZEY<=y+i)) {
                     colPrint(j+x, i+y, 69);
-                }else if(stage[y+i][x+j]==0 && block[i][j]==0){
-                    colPrint(j+x, i+y, 42);
-                }else if(block[i][j] > 0){
+                }else if(stage[y+i][x+j]==7 && block[i][j]==7){
+                    colPrint(j+x, i+y, 7);
+                }else if(block[i][j]!=7){
                     colPrint(j+x, i+y, block[i][j]);
                 }
             }
@@ -849,7 +856,7 @@ public class Table {
         for(int i=y;i<STAGESIZEY && i<(y+block_size);i++){
             lineclean=true;
             for(int j=0;j<STAGESIZEX;j++){
-                if(stage[i][j] == 0){
+                if(stage[i][j]==7){
                     lineclean=false;
                     break;
                 }
@@ -857,8 +864,8 @@ public class Table {
             if(lineclean){
                 //old problem fix
                 for(int j=0;j<STAGESIZEX;j++){
-                    stage[0][j]=0;
-                    colPrint(j, 0, 42);
+                    stage[0][j]=7;
+                    colPrint(j, 0, 7);
                 }
                 //end
                 
@@ -866,10 +873,10 @@ public class Table {
                 for(int k=i;k>0;k--){
                     for(int j=0;j<STAGESIZEX;j++){
                         stage[k][j]=stage[k-1][j];
-                        if(stage[k][j] > 0){
+                        if(stage[k][j]!=7){
                             colPrint(j, k, stage[k][j]);
                         }else{
-                            colPrint(j, k, 42);
+                            colPrint(j, k, 7);
                         }
                     }
                 }
@@ -912,7 +919,7 @@ public class Table {
     void placeBlock(){
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
-                if(block[i][j]>0){
+                if(block[i][j]!=7){
                     colPrint(j+x, i+y, block[i][j]);
                     stage[i+y][j+x]=block[i][j];
                 }

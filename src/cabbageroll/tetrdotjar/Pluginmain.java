@@ -19,7 +19,6 @@ import org.bukkit.event.EventHandler;
 
 public class Pluginmain extends JavaPlugin implements Listener{
 
-    public static ExampleGui testing=new ExampleGui();
     public static Table sp=new Table();
     public static Duel match;
     public static int numberofsongs;
@@ -33,12 +32,13 @@ public class Pluginmain extends JavaPlugin implements Listener{
         plugin=this;
         System.out.println("Plugin started");
         getServer().getPluginManager().registerEvents(this, this);
-        getServer().getPluginManager().registerEvents(testing, this);
         this.getCommand("sendinput").setExecutor(new Commandinput());
         this.getCommand("startgame").setExecutor(new Startgame());
         this.getCommand("startduel").setExecutor(new Startduel());
         this.getCommand("duelinput").setExecutor(new Duelinput());
         this.getCommand("editpiece").setExecutor(new Editpiece());
+        this.getCommand("skineditor").setExecutor(new OpenSkinEditor());
+        getServer().getPluginManager().registerEvents(new SkinEditor(), this);
         //trash
         File f = new File("plugins\\tetr");
         numberofsongs=f.listFiles().length;
