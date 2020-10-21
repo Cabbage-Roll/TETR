@@ -40,14 +40,16 @@ public class Pluginmain extends JavaPlugin implements Listener{
         this.getCommand("duelinput").setExecutor(new Duelinput());
         this.getCommand("editpiece").setExecutor(new Editpiece());
         //trash
-        File f = new File("plugins\\Tetr");
+        File f = new File("plugins\\tetr");
         numberofsongs=f.listFiles().length;
+
+        System.out.print(numberofsongs+" song(s) loaded");
+        
         pathnames=new String[numberofsongs];
         sarr=new Song[numberofsongs];
         pathnames = f.list();
         for(int i=0;i<numberofsongs;i++){
-            xd="plugins\\Tetr\\"+pathnames[i];
-            System.out.print(numberofsongs);
+            xd="plugins\\tetr\\"+pathnames[i];
             sarr[i]=NBSDecoder.parse(new File(xd));
         }
         

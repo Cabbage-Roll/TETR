@@ -1,6 +1,5 @@
 package cabbageroll.tetrdotjar;
 
-import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -12,7 +11,6 @@ import org.bukkit.scheduler.BukkitTask;
 
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
 import com.xxmicloxx.NoteBlockAPI.model.RepeatMode;
-import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
 
 import fr.minuskube.netherboard.Netherboard;
@@ -33,6 +31,17 @@ public class Table {
     int gx=0;
     int gy=0;
     int gz=0;
+    int m1x=1;
+    int m1y=0;
+    int m2x=0;
+    int m2y=-1;
+    int m3x=0;
+    int m3y=0;
+    
+    //printing variables
+    int coni;
+    int conj;
+    int conk;
     
     //bag variables
     int bag_counter=0;
@@ -47,6 +56,9 @@ public class Table {
     int counter=0;//gravity variable
     int combo=-1;
     int b2b=-1;
+    
+    int totallines=0;
+    int totalblocks=0;
     
     //board variables
     final int STAGESIZEX=10;
@@ -73,8 +85,68 @@ public class Table {
     static RadioSongPlayer rsp;
     
     
-    public Table(){
-        //???
+    //new
+    void printSingleBlock(int x, int y, int z, int color){
+        Block b=world.getBlockAt(x, y, z);
+        if(color==42){
+            b.setType(Material.AIR);
+        }else if(color==69){
+            return;
+        }else{
+        b.setType(Material.CONCRETE);
+        if(color==0)
+            b.setData(DyeColor.BLACK.getWoolData());
+        else if(color==4)
+            b.setData(DyeColor.RED.getWoolData());
+        else if(color==6)
+            b.setData(DyeColor.ORANGE.getWoolData());
+        else if(color==14)
+            b.setData(DyeColor.YELLOW.getWoolData());
+        else if(color==10)
+            b.setData(DyeColor.LIME.getWoolData());
+        else if(color==3)
+            b.setData(DyeColor.LIGHT_BLUE.getWoolData());
+        else if(color==1)
+            b.setData(DyeColor.BLUE.getWoolData());
+        else if(color==13)
+            b.setData(DyeColor.PURPLE.getWoolData());
+        else if(color==15)
+            b.setData(DyeColor.WHITE.getWoolData());
+        }
+    }
+    
+    //new
+    void initScoreboard(){
+        board=Netherboard.instance().createBoard(player, "Stats");
+        
+        board.clear();
+        
+        board.set(" ", 5);
+        board.set("Lines: "+totallines, 4);
+        board.set("Pieces: "+totalblocks, 3);
+        board.set("Score: "+score, 2);
+        board.set("", 1);
+        board.set(""+b2b, 0);
+        
+    }
+    
+    //new
+    void sendTheScoreboard(){
+        if(b2b>0){
+            board.set("§6§lB2B x"+b2b, 1);
+        }else{
+            board.set("", 1);
+        }
+        
+        if(combo>0){
+            board.set("COMBO "+combo, 5);
+        }else{
+            board.set(" ", 5);
+        }
+        
+        board.set("Lines: "+totallines, 4);
+        board.set("Pieces: "+totalblocks, 3);
+        board.set("Score: "+score, 2);
     }
     
     //works
@@ -82,9 +154,9 @@ public class Table {
         for(int i=0;i<4;i++){
             for(int j=0;j<4;j++){
                 if(Blocklist.block_list[block][i][j]==0){
-                    colPrint(j+x, i+y, 0, 42);
+                    colPrint(j+x, i+y, 42);
                 }else{
-                    colPrint(j+x, i+y, 0, Blocklist.block_list[block][i][j]);
+                    colPrint(j+x, i+y, Blocklist.block_list[block][i][j]);
                 }
             }
         }
@@ -95,6 +167,7 @@ public class Table {
         String s1="";
         String s2="";
         String s3="";
+        String s4="         ";
         if(combo>=1){
             s2=String.valueOf(combo)+" COMBO";
         }
@@ -121,27 +194,26 @@ public class Table {
             s1=" ";
         }
         
+        if(totallines*10==totalblocks*4){
+            s4="§6§lALL CLEAR§r";
+        }
+        
         //dont kill old title if its empty
         if(s1!="" || s2!=""){
-        s1=s3+" "+s1+"                ";
+        s1=s3+" "+s1+"       "+s4;
         s2=s2+"                                ";
         
             player.sendTitle(s1, s2, 0, 20, 10);
         }
     }
 
-    //new
-    void sendTheScoreboard(){
-        
-    }
-    
     //works
     void removeGhost(){
       //fill with air
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(block[i][j]>0){
-                    colPrint(j+ghostx, i+ghosty, 0, 42);
+                    colPrint(j+ghostx, i+ghosty, 42);
                 }
             }
         }
@@ -161,7 +233,7 @@ public class Table {
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(block[i][j]>0){
-                    colPrint(j+ghostx, i+ghosty, 0, 15);
+                    colPrint(j+ghostx, i+ghosty, 15);
                 }
             }
         }
@@ -236,7 +308,7 @@ public class Table {
                     return;
                 }
                 else if(block[i][j]>0){
-                    colPrint(j+x,i+y,0,block[i][j]);
+                    colPrint(j+x, i+y, block[i][j]);
                 }
             }
         }
@@ -264,33 +336,44 @@ public class Table {
         return false;
     }
     
-    //improve
-    void colPrint(int x, int y, int z, int color){
-        Block b=world.getBlockAt(gx+x,gy-y,gz+z);
-        if(color==42){
-            b.setType(Material.AIR);
-        }else if(color==69){
-            return;
+    //IMPROVE
+    void colPrint(int x, int y, int color){
+        Block b;
+
+        int ti;
+        int tj;
+        int tk;
+        
+        if(coni<0){
+            ti=-1;
+        }else if(coni>0){
+            ti=1;
         }else{
-        b.setType(Material.CONCRETE);
-        if(color==0)
-            b.setData(DyeColor.BLACK.getWoolData());
-        else if(color==4)
-            b.setData(DyeColor.RED.getWoolData());
-        else if(color==6)
-            b.setData(DyeColor.ORANGE.getWoolData());
-        else if(color==14)
-            b.setData(DyeColor.YELLOW.getWoolData());
-        else if(color==10)
-            b.setData(DyeColor.LIME.getWoolData());
-        else if(color==3)
-            b.setData(DyeColor.LIGHT_BLUE.getWoolData());
-        else if(color==1)
-            b.setData(DyeColor.BLUE.getWoolData());
-        else if(color==13)
-            b.setData(DyeColor.PURPLE.getWoolData());
-        else if(color==15)
-            b.setData(DyeColor.WHITE.getWoolData());
+            ti=0;
+        }
+        
+        if(conj<0){
+            tj=-1;
+        }else if(conj>0){
+            tj=1;
+        }else{
+            tj=0;
+        }
+        
+        if(conk<0){
+            tk=-1;
+        }else if(conk>0){
+            tk=1;
+        }else{
+            tk=0;
+        }
+        
+        for(int i=0;i<=coni;i++){
+            for(int j=0;j<=conj;j++){
+                for(int k=0;k<=conk;k++){
+                    printSingleBlock(gx+x*m1x+y*m1y+(i==coni?0:i)*ti, gy+x*m2x+y*m2y+(j==conj?0:j)*tj, gz+x*m3x+y*m3y+(k==conk?0:k)*tk, color);
+                }
+            }
         }
     }
     
@@ -310,10 +393,14 @@ public class Table {
         }
         /***********trash ended************/
         
+        coni=Math.max((int)Math.abs(m1x),(int)Math.abs(m1y));
+        conj=Math.max((int)Math.abs(m2x),(int)Math.abs(m2y));
+        conk=Math.max((int)Math.abs(m3x),(int)Math.abs(m3y));
+        
         for(int y=0;y<STAGESIZEY;y++){
             for(int x=0;x<STAGESIZEX;x++){
                 stage[y][x]=0;
-                colPrint(x, y, 0, 42);
+                colPrint(x, y, 42);
             }
         }
         spun=false;
@@ -325,6 +412,9 @@ public class Table {
         score=0;
         block_hold=-1;
         b2b=-1;
+        
+        totallines=0;
+        totalblocks=0;
         
         generateBag2();
         for(int i=0;i<7;i++){
@@ -338,19 +428,16 @@ public class Table {
         //fill hold place with air
         for(int i=0;i<4;i++){
             for(int j=0;j<4;j++){
-                colPrint(j-7,i+20,0,42);
+                colPrint(j-7, i+20, 42);
             }
         }
         
         looptick=0;
         playGame();
-
-
-        board = Netherboard.instance().createBoard(player, "Stats");
-        board.clear();
+        initScoreboard();
     }
     
-    //improve now
+    //works
     void tSpin(){
         int truth=0;
         if(stage[y][x]>0){
@@ -407,7 +494,6 @@ public class Table {
             player.playSound(player.getLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 1f, 0.75f);
         }
         
-        System.out.println("combo: "+combo);
         if(combo>=0){
             if(power){
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1f, (float)Math.pow(2,(combo*2-12)/(double)12));
@@ -417,11 +503,30 @@ public class Table {
         }
 
         sendTheTitle();
-        board.set("§6§lB2B", b2b);
+        sendTheScoreboard();
         
         spun=false;
         mini=false;
         held=false;
+        /*
+        SINGLE:100
+        DOUBLE:300
+        TRIPLE:500
+        QUAD:800
+        TSPIN_MINI:100
+        TSPIN:400
+        TSPIN_MINI_SINGLE:200
+        TSPIN_SINGLE:800
+        TSPIN_MINI_DOUBLE:400
+        TSPIN_DOUBLE:1200
+        TSPIN_TRIPLE:1600
+        TSPIN_QUAD:2600
+        BACKTOBACK_MULTIPLIER:1.5
+        COMBO:50
+        ALL_CLEAR:3500
+        SOFTDROP:1
+        HARDDROP:2
+        */
     }
     
     //improve
@@ -441,7 +546,7 @@ public class Table {
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(block[i][j] > 0){
-                    colPrint(j+this.x, i+this.y, 0, 42);
+                    colPrint(j+this.x, i+this.y, 42);
                 }
             }
         }
@@ -456,7 +561,7 @@ public class Table {
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(block[i][j]>0){
-                    colPrint(j+this.x, i+this.y, 0, block[i][j]);
+                    colPrint(j+this.x, i+this.y, block[i][j]);
                 }
             }
         }
@@ -525,7 +630,7 @@ public class Table {
             for (int i=0;i<4;i++){
                 for(int j=0;j<4;j++){
                     if(block[i][j]>0){
-                        colPrint(j+x, i+y, 0, 42);
+                        colPrint(j+x, i+y, 42);
                     }
                 }
             }
@@ -555,7 +660,7 @@ public class Table {
                             return;
                         }
                         else if(block[i][j]>0){
-                            colPrint(j+x,i+y,0,block[i][j]);
+                            colPrint(j+x, i+y, block[i][j]);
                         }
                     }
                 }
@@ -569,7 +674,7 @@ public class Table {
         held=true;
     }
     
-    //improve now
+    //IMPROVE
     void rotateBlock(int d){
         int piece_type=block_size-3;
         int special=-1;
@@ -696,7 +801,7 @@ public class Table {
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(temp[i][j]>0){
-                    colPrint(j+x, i+y, 0, 42);
+                    colPrint(j+x, i+y, 42);
                 }
             }
         }
@@ -715,11 +820,11 @@ public class Table {
             for(int j=0;j<block_size;j++){
                 //OOBE FIX
                 if((x+j<0 || STAGESIZEX<=x+j) || (y+i<0 || STAGESIZEY<=y+i)) {
-                    colPrint(j+x, i+y, 0, 69);
+                    colPrint(j+x, i+y, 69);
                 }else if(stage[y+i][x+j]==0 && block[i][j]==0){
-                    colPrint(j+x, i+y, 0, 42);
+                    colPrint(j+x, i+y, 42);
                 }else if(block[i][j] > 0){
-                    colPrint(j+x, i+y, 0, block[i][j]);
+                    colPrint(j+x, i+y, block[i][j]);
                 }
             }
         }
@@ -753,7 +858,7 @@ public class Table {
                 //old problem fix
                 for(int j=0;j<STAGESIZEX;j++){
                     stage[0][j]=0;
-                    colPrint(j, 0, 0, 42);
+                    colPrint(j, 0, 42);
                 }
                 //end
                 
@@ -762,9 +867,9 @@ public class Table {
                     for(int j=0;j<STAGESIZEX;j++){
                         stage[k][j]=stage[k-1][j];
                         if(stage[k][j] > 0){
-                            colPrint(j, k, 0, stage[k][j]);
+                            colPrint(j, k, stage[k][j]);
                         }else{
-                            colPrint(j, k, 0, 42);
+                            colPrint(j, k, 42);
                         }
                     }
                 }
@@ -797,6 +902,9 @@ public class Table {
             }
             break;
         }
+        
+        totallines+=lines;
+        totalblocks+=1;
         updateScore();
     }
 
@@ -805,7 +913,7 @@ public class Table {
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(block[i][j]>0){
-                    colPrint(j+x, i+y, 0, block[i][j]);
+                    colPrint(j+x, i+y, block[i][j]);
                     stage[i+y][j+x]=block[i][j];
                 }
             }
@@ -832,8 +940,9 @@ public class Table {
    	            if(gameover){
    	                this.cancel();
    	            }
-   	            System.out.println(looptick++%20);
-   	       }
+   	            
+   	        board.set("Tick: "+looptick++%20, 0);
+   	        }
    	    }.runTaskTimer(Pluginmain.plugin, 0, 0);
     }
 }
