@@ -1,4 +1,4 @@
-package com.github.cabbageroll.tetr;
+package cabbageroll.tetr;
 
 public class Garbagetable {
 

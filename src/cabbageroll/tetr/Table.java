@@ -1,4 +1,4 @@
-package com.github.cabbageroll.tetr;
+package cabbageroll.tetr;
 
 import org.bukkit.Material;
 import org.bukkit.Sound;

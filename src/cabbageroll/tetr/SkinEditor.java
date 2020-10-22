@@ -1,4 +1,4 @@
-package com.github.cabbageroll.tetr;
+package cabbageroll.tetr;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -32,9 +32,13 @@ public class SkinEditor implements Listener {
         for(int i=19;i<26;i++){
             inv.setItem(i, border);
         }
-        for(int i=10;i<18;i+=2){
+        for(int i=10;i<18;i++){
             inv.setItem(i, border);
         }
+        for(int i=12;i<17;i++){
+            inv.setItem(i, border);
+        }
+        inv.setItem(10, border);
         
         //changeable blocks
         for(int i=0;i<7;i++){
