@@ -1,4 +1,4 @@
-package cabbageroll.tetrdotjar;
+package com.github.cabbageroll.tetr;
 
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -12,6 +12,7 @@ import org.bukkit.scheduler.BukkitTask;
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
 import com.xxmicloxx.NoteBlockAPI.model.RepeatMode;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
+import com.xxmicloxx.NoteBlockAPI.songplayer.SongPlayer;
 
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
@@ -28,8 +29,14 @@ public class Table {
         new ItemStack(Material.CONCRETE, 1, (short) 11),
         new ItemStack(Material.CONCRETE, 1, (short) 10),
         new ItemStack(Material.AIR),
-        new ItemStack(Material.CONCRETE, 1, (short) 0),
-        new ItemStack(Material.IRON_BLOCK)
+        new ItemStack(Material.IRON_BLOCK),
+        new ItemStack(Material.STAINED_GLASS, 1, (short) 14),
+        new ItemStack(Material.STAINED_GLASS, 1, (short) 1),
+        new ItemStack(Material.STAINED_GLASS, 1, (short) 4),
+        new ItemStack(Material.STAINED_GLASS, 1, (short) 5),
+        new ItemStack(Material.STAINED_GLASS, 1, (short) 3),
+        new ItemStack(Material.STAINED_GLASS, 1, (short) 11),
+        new ItemStack(Material.STAINED_GLASS, 1, (short) 10),
     };
 
     World world;
@@ -242,11 +249,11 @@ public class Table {
         //update ghost position
         ghostx=x;
 
-        //print white ghost
+        //print ghost
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(block[i][j]!=7){
-                    colPrint(j+ghostx, i+ghosty, 8);
+                    colPrint(j+ghostx, i+ghosty, 9+block[i][j]);
                 }
             }
         }
@@ -400,6 +407,7 @@ public class Table {
         if(rsp.isPlaying()==false) {
             rsp.setPlaying(true);
         }
+        player.sendMessage("Playing: "+rsp.getSong().getPath());
         /***********trash ended************/
         
         coni=Math.max((int)Math.abs(m1x),(int)Math.abs(m1y));
@@ -430,7 +438,6 @@ public class Table {
             bag1[i]=bag2[i];
         }
         generateBag2();
-        
         
         makeNextBlock();
         

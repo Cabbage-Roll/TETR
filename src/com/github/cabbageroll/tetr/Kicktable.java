@@ -1,4 +1,4 @@
-package cabbageroll.tetrdotjar;
+package com.github.cabbageroll.tetr;
 
 public class Kicktable {
 

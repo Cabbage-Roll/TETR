@@ -1,4 +1,4 @@
-package cabbageroll.tetrdotjar;
+package com.github.cabbageroll.tetr;
 
 import org.bukkit.conversations.ConversationContext;
 import org.bukkit.conversations.Prompt;

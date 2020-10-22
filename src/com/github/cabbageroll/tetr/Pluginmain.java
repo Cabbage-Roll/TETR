@@ -1,4 +1,4 @@
-package cabbageroll.tetrdotjar;
+package com.github.cabbageroll.tetr;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -13,23 +13,43 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
+import java.io.IOException;
 
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.EventHandler;
 
 
 public class Pluginmain extends JavaPlugin implements Listener{
 
+    public static File customYml;
+    public static FileConfiguration customConfig;
+    public static void saveCustomYml(FileConfiguration ymlConfig, File ymlFile) {
+        try {
+        ymlConfig.save(ymlFile);
+        } catch (IOException e) {
+        e.printStackTrace();
+        }
+    }
+
+    static JavaPlugin plugin;
     public static Table sp=new Table();
     public static Duel match;
     public static int numberofsongs;
     String[] pathnames;
     String xd;
     static Song[] sarr;
-    
-    static JavaPlugin plugin;
     @Override
     public void onEnable() {
         plugin=this;
+        
+        
+        customYml = new File(plugin.getDataFolder()+"/tetr.yml");
+        
+        customConfig = YamlConfiguration.loadConfiguration(customYml);
+
+        
+        
         System.out.println("Plugin started");
         getServer().getPluginManager().registerEvents(this, this);
         this.getCommand("sendinput").setExecutor(new Commandinput());

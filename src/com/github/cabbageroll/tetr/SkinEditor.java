@@ -1,4 +1,4 @@
-package cabbageroll.tetrdotjar;
+package com.github.cabbageroll.tetr;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -40,9 +40,13 @@ public class SkinEditor implements Listener {
         for(int i=0;i<7;i++){
             inv.setItem(28+i, Table.blocks[i]);
         }
+
+        for(int i=0;i<7;i++){
+            inv.setItem(37+i, Table.blocks[i+9]);
+        }
+        
         inv.setItem(11, Table.blocks[7]);
-        inv.setItem(13, Table.blocks[8]);
-        inv.setItem(15, Table.blocks[9]);
+        
         
         player.openInventory(inv);
 
@@ -62,7 +66,8 @@ public class SkinEditor implements Listener {
         Inventory inv=e.getInventory();
         Player p=(Player)e.getPlayer();
         if(isopen.containsKey(p)){
-            if(inv.getName().equalsIgnoreCase("Skin editor") && isopen.get(e.getPlayer())){
+            if(isopen.get(e.getPlayer())){
+                //save blocks
                 for(int i=0;i<7;i++){
                     if(inv.getItem(28+i)!=null){
                         Table.blocks[i]=inv.getItem(28+i);
@@ -70,15 +75,46 @@ public class SkinEditor implements Listener {
                         Table.blocks[i]=new ItemStack(Material.AIR);
                     }
                 }
-                for(int i=0;i<3;i++){
-                    if(inv.getItem(11+2*i)!=null){
-                        Table.blocks[7+i]=inv.getItem(11+2*i);
+                
+                //save ghost
+                for(int i=0;i<7;i++){
+                    if(inv.getItem(37+i)!=null){
+                        Table.blocks[i+9]=inv.getItem(37+i);
                     }else{
-                        Table.blocks[7+i]=new ItemStack(Material.AIR);
+                        Table.blocks[i+9]=new ItemStack(Material.AIR);
                     }
                 }
+                
+                //other
+                if(inv.getItem(11)!=null){
+                    Table.blocks[7]=inv.getItem(11);
+                }else{
+                    Table.blocks[7]=new ItemStack(Material.AIR);
+                }
+                
                 e.getPlayer().sendMessage("Skin saved");
                 isopen.put(p, false);
+                
+                //saving to file
+                Pluginmain.customConfig.set("blockZ", Table.blocks[0].serialize());
+                Pluginmain.customConfig.set("blockL", Table.blocks[1].serialize());
+                Pluginmain.customConfig.set("blockO", Table.blocks[2].serialize());
+                Pluginmain.customConfig.set("blockS", Table.blocks[3].serialize());
+                Pluginmain.customConfig.set("blockI", Table.blocks[4].serialize());
+                Pluginmain.customConfig.set("blockJ", Table.blocks[5].serialize());
+                Pluginmain.customConfig.set("blockT", Table.blocks[6].serialize());
+                
+                Pluginmain.customConfig.set("ghostZ", Table.blocks[9].serialize());
+                Pluginmain.customConfig.set("ghostL", Table.blocks[10].serialize());
+                Pluginmain.customConfig.set("ghostO", Table.blocks[11].serialize());
+                Pluginmain.customConfig.set("ghostS", Table.blocks[12].serialize());
+                Pluginmain.customConfig.set("ghostI", Table.blocks[13].serialize());
+                Pluginmain.customConfig.set("ghostJ", Table.blocks[14].serialize());
+                Pluginmain.customConfig.set("ghostT", Table.blocks[15].serialize());
+                
+                Pluginmain.customConfig.set("background", Table.blocks[7].serialize());
+                
+                Pluginmain.saveCustomYml(Pluginmain.customConfig, Pluginmain.customYml);
             }
         }
     }

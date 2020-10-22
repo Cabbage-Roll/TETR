@@ -1,4 +1,4 @@
-package cabbageroll.tetrdotjar;
+package com.github.cabbageroll.tetr;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
