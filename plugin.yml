@@ -1,4 +1,4 @@
-name: tetr
+name: TETR
 main: cabbageroll.tetr.Pluginmain
 version: 1.0
 api-version: 1.12.2
@@ -8,15 +8,6 @@ commands:
         usage: /<command>
     startgame:
         description: singleplayer
-        usage: /<command>
-    startduel:
-        description: 1v1 game
-        usage: /<command>
-    duelinput:
-        description: send duel inputs
-        usage: /<command>
-    editpiece:
-        description: edit the appearance of piece. please dont use unless you know how to
         usage: /<command>
     skineditor:
         description: Edit appearance of the blocks

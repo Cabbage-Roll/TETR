@@ -59,9 +59,21 @@ public class SkinEditor implements Listener {
     
     @EventHandler
     public void onInventoryClick(final InventoryClickEvent e){
-        if(e.getCurrentItem().getType()==Material.THIN_GLASS){
-            e.setCancelled(true);
-            return;
+
+        Player p=(Player)e.getWhoClicked();
+        if(isopen.containsKey(p)){
+            if(isopen.get(p)){
+                if(e.getCurrentItem().getType()==Material.THIN_GLASS){
+                    e.setCancelled(true);
+                    return;
+                }
+                
+                if(e.getCurrentItem().getType()==Material.AIR && e.getSlot()==11 && e.getCursor().getType()==Material.AIR){
+                    Table.transparent=!Table.transparent;
+                    p.sendMessage("Transparency turned "+(Table.transparent?"on":"off"));
+                    return;
+                }
+            }
         }
     }
     

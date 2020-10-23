@@ -30,17 +30,17 @@ public class Startgame implements CommandExecutor{
         Pluginmain.sp.player=player;
         Pluginmain.sp.world=player.getWorld();
         
-        Pluginmain.sp.gx=Integer.parseInt(args[0]);
-        Pluginmain.sp.gy=Integer.parseInt(args[1]);
-        Pluginmain.sp.gz=Integer.parseInt(args[2]);
+        Pluginmain.sp.gx=Byte.parseByte(args[0]);
+        Pluginmain.sp.gy=Byte.parseByte(args[1]);
+        Pluginmain.sp.gz=Byte.parseByte(args[2]);
         
         if(args.length==9){
-            Pluginmain.sp.m1x=Integer.parseInt(args[3]);
-            Pluginmain.sp.m1y=Integer.parseInt(args[4]);
-            Pluginmain.sp.m2x=Integer.parseInt(args[5]);
-            Pluginmain.sp.m2y=Integer.parseInt(args[6]);
-            Pluginmain.sp.m3x=Integer.parseInt(args[7]);
-            Pluginmain.sp.m3y=Integer.parseInt(args[8]);
+            Pluginmain.sp.m1x=Byte.parseByte(args[3]);
+            Pluginmain.sp.m1y=Byte.parseByte(args[4]);
+            Pluginmain.sp.m2x=Byte.parseByte(args[5]);
+            Pluginmain.sp.m2y=Byte.parseByte(args[6]);
+            Pluginmain.sp.m3x=Byte.parseByte(args[7]);
+            Pluginmain.sp.m3y=Byte.parseByte(args[8]);
         }
         
         Pluginmain.sp.initGame();

@@ -2,7 +2,7 @@ package cabbageroll.tetr;
 
 public class Blocklist {
 
-public static int[][][] block_list=
+public static byte[][][] block_list=
 {
     {
         {0,0,7,7},

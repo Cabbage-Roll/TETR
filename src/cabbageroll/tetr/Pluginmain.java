@@ -44,7 +44,7 @@ public class Pluginmain extends JavaPlugin implements Listener{
         plugin=this;
         
         
-        customYml = new File(plugin.getDataFolder()+"/tetr.yml");
+        customYml = new File(plugin.getDataFolder()+"/config.yml");
         
         customConfig = YamlConfiguration.loadConfiguration(customYml);
 
@@ -54,13 +54,10 @@ public class Pluginmain extends JavaPlugin implements Listener{
         getServer().getPluginManager().registerEvents(this, this);
         this.getCommand("sendinput").setExecutor(new Commandinput());
         this.getCommand("startgame").setExecutor(new Startgame());
-        this.getCommand("startduel").setExecutor(new Startduel());
-        this.getCommand("duelinput").setExecutor(new Duelinput());
-        this.getCommand("editpiece").setExecutor(new Editpiece());
         this.getCommand("skineditor").setExecutor(new OpenSkinEditor());
         getServer().getPluginManager().registerEvents(new SkinEditor(), this);
         //trash
-        File f = new File("plugins\\tetr");
+        File f = new File("plugins\\TETR\\songs");
         numberofsongs=f.listFiles().length;
 
         System.out.print(numberofsongs+" song(s) loaded");
@@ -69,13 +66,13 @@ public class Pluginmain extends JavaPlugin implements Listener{
         sarr=new Song[numberofsongs];
         pathnames = f.list();
         for(int i=0;i<numberofsongs;i++){
-            xd="plugins\\tetr\\"+pathnames[i];
+            xd="plugins\\TETR\\songs\\"+pathnames[i];
             sarr[i]=NBSDecoder.parse(new File(xd));
         }
         
         Table.slist=new Playlist(sarr);
         Table.rsp=new RadioSongPlayer(Table.slist);
-        //tend
+        //tRASH end
     }
     
     @EventHandler
@@ -85,19 +82,37 @@ public class Pluginmain extends JavaPlugin implements Listener{
     
     @EventHandler
     public void onItemHeld(PlayerItemHeldEvent event){
-        int itemId = event.getNewSlot();
-        ItemStack item = Pluginmain.sp.player.getInventory().getItem(itemId);
-        if(item == null){
-            return;
-        }
-        
-        String name="invalid";
-        
-        if(item.hasItemMeta()){
-            name=item.getItemMeta().getDisplayName();
-            Pluginmain.sp.userInput(name);
+        if(Pluginmain.sp.task!=null){
+            int itemId = event.getNewSlot();
+            switch(itemId){
+            case 0:
+                Pluginmain.sp.userInput("y");
+                break;
+            case 1:
+                Pluginmain.sp.userInput("x");
+                break;
+            case 2:
+                Pluginmain.sp.userInput("c");
+                break;
+            case 3:
+                Pluginmain.sp.userInput("space");
+                break;
+            case 4:
+                Pluginmain.sp.userInput("up");
+                break;
+            case 5:
+                Pluginmain.sp.userInput("instant");
+                break;
+            case 6:
+                Pluginmain.sp.userInput("left");
+                break;
+            case 7:
+                Pluginmain.sp.userInput("right");
+                break;
+            case 8:
+                return;
+            }
             Pluginmain.sp.player.getInventory().setHeldItemSlot(8);
         }
-
     }
 }

@@ -15,17 +15,17 @@ public class Startduel implements CommandExecutor{
         
         Table temp=new Table();
         Player player1 = Pluginmain.plugin.getServer().getPlayer(args[0]);
-        temp.gx=Integer.parseInt(args[1]);
-        temp.gy=Integer.parseInt(args[2]);
-        temp.gz=Integer.parseInt(args[3]);
+        temp.gx=Byte.parseByte(args[1]);
+        temp.gy=Byte.parseByte(args[2]);
+        temp.gz=Byte.parseByte(args[3]);
         temp.player=player1;
         temp.world=player1.getWorld();
         
         Table temp2=new Table();
         Player player2 = Pluginmain.plugin.getServer().getPlayer(args[4]);
-        temp2.gx=Integer.parseInt(args[5]);
-        temp2.gy=Integer.parseInt(args[6]);
-        temp2.gz=Integer.parseInt(args[7]);
+        temp2.gx=Byte.parseByte(args[5]);
+        temp2.gy=Byte.parseByte(args[6]);
+        temp2.gz=Byte.parseByte(args[7]);
         temp2.player=player2;
         temp2.world=player2.getWorld();
      

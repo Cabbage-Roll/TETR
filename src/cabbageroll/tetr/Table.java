@@ -1,5 +1,6 @@
 package cabbageroll.tetr;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -12,7 +13,6 @@ import org.bukkit.scheduler.BukkitTask;
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
 import com.xxmicloxx.NoteBlockAPI.model.RepeatMode;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
-import com.xxmicloxx.NoteBlockAPI.songplayer.SongPlayer;
 
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
@@ -38,7 +38,8 @@ public class Table {
         new ItemStack(Material.STAINED_GLASS, 1, (short) 11),
         new ItemStack(Material.STAINED_GLASS, 1, (short) 10),
     };
-
+    public static boolean transparent=false;
+    
     World world;
     Player player;
     int looptick;
@@ -109,34 +110,24 @@ public class Table {
     //new
     @SuppressWarnings("deprecation")
     void printSingleBlock(int x, int y, int z, int color){
-        Block b=world.getBlockAt(x, y, z);
         if(color==69){
             return;
         }
         
+        if(color==7 && transparent){
+            Block b=world.getBlockAt(x, y, z);
+            player.sendBlockChange(new Location(world, x, y, z), b.getType(), b.getData());
+            return;
+        }
+        
+        player.sendBlockChange(new Location(world, x, y, z), blocks[color].getType(), blocks[color].getData().getData());
+        /*real block
+        Block b=world.getBlockAt(x, y, z);
+        
         b.setType(blocks[color].getType());
 
         b.setData(blocks[color].getData().getData());
-        
-        /*
-        if(color==0)
-            b.setData(DyeColor.BLACK.getWoolData());
-        else if(color==4)
-            b.setData(DyeColor.RED.getWoolData());
-        else if(color==6)
-            b.setData(DyeColor.ORANGE.getWoolData());
-        else if(color==14)
-            b.setData(DyeColor.YELLOW.getWoolData());
-        else if(color==10)
-            b.setData(DyeColor.LIME.getWoolData());
-        else if(color==3)
-            b.setData(DyeColor.LIGHT_BLUE.getWoolData());
-        else if(color==1)
-            b.setData(DyeColor.BLUE.getWoolData());
-        else if(color==13)
-            b.setData(DyeColor.PURPLE.getWoolData());
-        else if(color==15)
-            b.setData(DyeColor.WHITE.getWoolData());*/
+        */
     }
     
     //new
@@ -327,7 +318,9 @@ public class Table {
                     gameover=true;
                     return;
                 }
-                colPrint(j+x, i+y, block[i][j]);
+                if(block[i][j]!=7){
+                    colPrint(j+x, i+y, block[i][j]);
+                }
             }
         }
         
@@ -451,6 +444,7 @@ public class Table {
         looptick=0;
         playGame();
         initScoreboard();
+        player.getInventory().setHeldItemSlot(8);
     }
     
     //works
@@ -643,8 +637,8 @@ public class Table {
             printStaticBlock(-7, 20, block_current);
             
             //erase current block from board
-            for (int i=0;i<4;i++){
-                for(int j=0;j<4;j++){
+            for (int i=0;i<block_size;i++){
+                for(int j=0;j<block_size;j++){
                     if(block[i][j]!=7){
                         colPrint(j+x, i+y, 7);
                     }
@@ -675,7 +669,9 @@ public class Table {
                             gameover=true;
                             return;
                         }
-                        colPrint(j+x, i+y, block[i][j]);
+                        if(block[i][j]!=7){
+                            colPrint(j+x, i+y, block[i][j]);
+                        }
                     }
                 }
                 
@@ -832,12 +828,7 @@ public class Table {
         ///if it succeeds show it
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
-                //OOBE FIX
-                if((x+j<0 || STAGESIZEX<=x+j) || (y+i<0 || STAGESIZEY<=y+i)) {
-                    colPrint(j+x, i+y, 69);
-                }else if(stage[y+i][x+j]==7 && block[i][j]==7){
-                    colPrint(j+x, i+y, 7);
-                }else if(block[i][j]!=7){
+                if(block[i][j]!=7){
                     colPrint(j+x, i+y, block[i][j]);
                 }
             }
@@ -949,10 +940,11 @@ public class Table {
    	                    }
    	                    counter=0;
    	            }
-   	            counter+=0;
+   	            counter+=totallines/4;
    	            
    	            if(gameover){
-   	                this.cancel();
+   	                task.cancel();
+   	                task=null;
    	            }
    	            
    	        board.set("Tick: "+looptick++%20, 0);
