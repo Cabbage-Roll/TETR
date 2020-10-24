@@ -10,9 +10,10 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
+import java.util.Map;
 
 public class SkinEditor implements Listener {
-    static HashMap<Player, Boolean> isopen=new HashMap<Player, Boolean>();
+    static Map<Player, Boolean> isopen=new HashMap<Player, Boolean>();
     public static void openGUI(Player player){
         Inventory inv=Bukkit.createInventory(null, 54, "Skin editor");
         ItemStack border=new ItemStack(Material.THIN_GLASS);

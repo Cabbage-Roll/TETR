@@ -1,5 +1,9 @@
 package cabbageroll.tetr;
 
+import java.util.ArrayList;
+import java.util.Random;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -9,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
 import com.xxmicloxx.NoteBlockAPI.model.RepeatMode;
@@ -17,27 +22,28 @@ import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
 
-public class Table {
+public class Table{
     
     //ZLOSIJT,air,ghost,border
-    public static ItemStack[] blocks={
-        new ItemStack(Material.CONCRETE, 1, (short) 14),
-        new ItemStack(Material.CONCRETE, 1, (short) 1),
-        new ItemStack(Material.CONCRETE, 1, (short) 4),
-        new ItemStack(Material.CONCRETE, 1, (short) 5),
-        new ItemStack(Material.CONCRETE, 1, (short) 3),
-        new ItemStack(Material.CONCRETE, 1, (short) 11),
-        new ItemStack(Material.CONCRETE, 1, (short) 10),
-        new ItemStack(Material.AIR),
-        new ItemStack(Material.IRON_BLOCK),
-        new ItemStack(Material.STAINED_GLASS, 1, (short) 14),
-        new ItemStack(Material.STAINED_GLASS, 1, (short) 1),
-        new ItemStack(Material.STAINED_GLASS, 1, (short) 4),
-        new ItemStack(Material.STAINED_GLASS, 1, (short) 5),
-        new ItemStack(Material.STAINED_GLASS, 1, (short) 3),
-        new ItemStack(Material.STAINED_GLASS, 1, (short) 11),
-        new ItemStack(Material.STAINED_GLASS, 1, (short) 10),
-    };
+    public static ItemStack[] blocks=new ItemStack[]{
+            new ItemStack(Material.CONCRETE, 1, (short) 14),
+            new ItemStack(Material.CONCRETE, 1, (short) 1),
+            new ItemStack(Material.CONCRETE, 1, (short) 4),
+            new ItemStack(Material.CONCRETE, 1, (short) 5),
+            new ItemStack(Material.CONCRETE, 1, (short) 3),
+            new ItemStack(Material.CONCRETE, 1, (short) 11),
+            new ItemStack(Material.CONCRETE, 1, (short) 10),
+            new ItemStack(Material.AIR),
+            new ItemStack(Material.IRON_BLOCK),
+            new ItemStack(Material.STAINED_GLASS, 1, (short) 14),
+            new ItemStack(Material.STAINED_GLASS, 1, (short) 1),
+            new ItemStack(Material.STAINED_GLASS, 1, (short) 4),
+            new ItemStack(Material.STAINED_GLASS, 1, (short) 5),
+            new ItemStack(Material.STAINED_GLASS, 1, (short) 3),
+            new ItemStack(Material.STAINED_GLASS, 1, (short) 11),
+            new ItemStack(Material.STAINED_GLASS, 1, (short) 10),
+        };
+    
     public static boolean transparent=false;
     
     World world;
@@ -45,13 +51,14 @@ public class Table {
     int looptick;
     BukkitTask task;
     BPlayerBoard board;
+    ArrayList<Player> whotosendblocksto;
     
     static final int CCW=0;
     static final int CW=1;
     static final int R180=2;
     
-    int gx=0;
-    int gy=0;
+    int gx;
+    int gy=50;
     int gz=0;
     int m1x=1;
     int m1y=0;
@@ -66,6 +73,7 @@ public class Table {
     int conk;
     
     //bag variables
+    Random gen;
     int bag_counter=0;
     int[] bag1=new int[7];
     int[] bag2=new int[7];
@@ -102,32 +110,32 @@ public class Table {
     boolean held=false;
     boolean power=false;//spike
     
-    //retarded
-    static Playlist slist;
-    static RadioSongPlayer rsp;
-    
+    Table(Player p, int magic){
+        player=p;
+        world=p.getWorld();
+        gx=100+magic*30;
+    }
     
     //new
     @SuppressWarnings("deprecation")
     void printSingleBlock(int x, int y, int z, int color){
+        
         if(color==69){
             return;
         }
         
+        
         if(color==7 && transparent){
             Block b=world.getBlockAt(x, y, z);
-            player.sendBlockChange(new Location(world, x, y, z), b.getType(), b.getData());
+            for(Player player: whotosendblocksto){
+                player.sendBlockChange(new Location(world, x, y, z), b.getType(), b.getData());
+            }
             return;
         }
         
-        player.sendBlockChange(new Location(world, x, y, z), blocks[color].getType(), blocks[color].getData().getData());
-        /*real block
-        Block b=world.getBlockAt(x, y, z);
-        
-        b.setType(blocks[color].getType());
-
-        b.setData(blocks[color].getData().getData());
-        */
+        for(Player player: whotosendblocksto){
+            player.sendBlockChange(new Location(world, x, y, z), blocks[color].getType(), blocks[color].getData().getData());
+        }
     }
     
     //new
@@ -269,7 +277,7 @@ public class Table {
     void generateBag2(){
         bag_counter=0;
         for(int i=0;i<7;i++){
-            bag2[i]=(int)(Math.random()*7);
+            bag2[i]=(int)(gen.nextInt(7));
             for(int j=0;j<i;j++){
                 if(bag2[i]==bag2[j]){
                     i--;
@@ -387,21 +395,12 @@ public class Table {
     }
     
     //improve
-    void initGame(){
+    void initGame(long seed){
+        gen=new Random(seed);
         
         if(task!=null){
             task.cancel();
         }
-        
-        /****trash******/
-        int random=(int)(Math.random()*Pluginmain.numberofsongs);
-        rsp.playSong(random);
-        rsp.setRepeatMode(RepeatMode.ONE);
-        if(rsp.isPlaying()==false) {
-            rsp.setPlaying(true);
-        }
-        player.sendMessage("Playing: "+rsp.getSong().getPath());
-        /***********trash ended************/
         
         coni=Math.max((int)Math.abs(m1x),(int)Math.abs(m1y));
         conj=Math.max((int)Math.abs(m2x),(int)Math.abs(m2y));
@@ -496,12 +495,64 @@ public class Table {
             b2b=-1;
         }
         
+        if(lines>0){
+            combo++;
+        }else{
+            combo=-1;
+            power=false;
+        }
+        
         if(spun){
-            score+=lines*1000;
-            if(combo>3){
-                power=true;
-            }
             player.playSound(player.getLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 1f, 0.75f);
+            if(mini){
+                switch(lines){
+                case 0:
+                    score+=100;
+                    break;
+                case 1:
+                    score+=200*(b2b>0?1.5:1);
+                    break;
+                case 2:
+                    score+=400*(b2b>0?1.5:1);
+                    break;
+                }
+            }else{
+                switch(lines){
+                case 0:
+                    score+=400;
+                    break;
+                case 1:
+                    score+=800*(b2b>0?1.5:1);
+                    break;
+                case 2:
+                    score+=1200*(b2b>0?1.5:1);
+                    break;
+                case 3:
+                    score+=1600*(b2b>0?1.5:1);
+                    break;
+                }
+            }
+            
+        }else{
+            switch(lines){
+            case 1:
+                score+=100;
+                break;
+            case 2:
+                score+=300;
+                break;
+            case 3:
+                score+=500;
+                break;
+            case 4:
+                score+=800*(b2b>0?1.5:1);
+                break;
+            }
+        }
+        
+        //condition for triggering power...
+        if(combo>3){
+            power=true;
         }
         
         if(combo>=0){
@@ -510,6 +561,11 @@ public class Table {
             }else{
                 player.playSound(player.getLocation(), Sound.BLOCK_NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-12)/(double)12));
             }
+            score+=combo*50;
+        }
+        
+        if(totallines*10==totalblocks*4){
+            score+=3500;
         }
 
         sendTheTitle();
@@ -518,6 +574,8 @@ public class Table {
         spun=false;
         mini=false;
         held=false;
+        
+    }
         /*
         SINGLE:100
         DOUBLE:300
@@ -537,16 +595,15 @@ public class Table {
         SOFTDROP:1
         HARDDROP:2
         */
-    }
     
     //improve
     void dropBlock(){
         int lines=0;
-        while(!isCollide(x, y+1)){
+        while(!isCollide(x, y+lines+1)){
             lines++;
-            moveBlock(x, y+1);
         }
-        score+=lines;
+        moveBlock(x, y+lines);
+        score+=lines*2;
         counter=100;
     }
     
@@ -582,31 +639,40 @@ public class Table {
         switch(input){
         case "y":
             rotateBlock(CCW);
+            counter=0;
             break;
         case "x":
             rotateBlock(CW);
+            counter=0;
             break;
         case "c":
             holdBlock();
+            counter=0;
             break;
             
         case "left":
             if(!isCollide(x-1, y)){
                 moveBlock(x-1, y);
+                counter=0;
             }
             break;
         case "right":
             if(!isCollide(x+1, y)){
                 moveBlock(x+1, y);
+                counter=0;
             }
             break;
             
         case "up":
             rotateBlock(R180);
+            counter=0;
             break;
         case "down":
             if(!isCollide(x, y+1)){
                 moveBlock(x, y+1);
+                counter=0;
+                score+=1;
+                sendTheScoreboard();
             }
             break;
         
@@ -618,7 +684,7 @@ public class Table {
             break;
         case "instant":
             while(!isCollide(x, y+1)){
-                moveBlock(x, y+1);
+                userInput("down");
             }
             break;
             
@@ -849,6 +915,18 @@ public class Table {
     void checkPlaced(){
         boolean lineclean;
         lines=0;
+        int hr=0;
+        
+        //find highest row
+        for(int k=0;k<STAGESIZEY;k++){
+            for(int j=0;j<STAGESIZEX;j++){
+                if(stage[k][j]!=7){
+                    hr=k;
+                    k=STAGESIZEY;
+                    break;
+                }
+            }
+        }
         
         ///suspicious condition
         for(int i=y;i<STAGESIZEY && i<(y+block_size);i++){
@@ -860,6 +938,7 @@ public class Table {
                 }
             }
             if(lineclean){
+                
                 //old problem fix
                 for(int j=0;j<STAGESIZEX;j++){
                     stage[0][j]=7;
@@ -868,45 +947,15 @@ public class Table {
                 //end
                 
                 lines++;
-                for(int k=i;k>0;k--){
+                for(int k=i;k>hr-lines;k--){
                     for(int j=0;j<STAGESIZEX;j++){
                         stage[k][j]=stage[k-1][j];
-                        if(stage[k][j]!=7){
-                            colPrint(j, k, stage[k][j]);
-                        }else{
-                            colPrint(j, k, 7);
-                        }
+                        colPrint(j, k, stage[k][j]);
                     }
                 }
             }
         }
         
-        
-        if(lines>0) {
-            combo++;
-        }else{
-            combo=-1;
-            power=false;
-        }
-        
-        
-        switch(lines){
-        case 1:
-            score+=40;
-            break;
-        case 2:
-            score+=100;
-            break;
-        case 3:
-            score+=300;
-            break;
-        case 4:
-            score+=1200;
-            if(combo>4){
-                power=true;
-            }
-            break;
-        }
         
         totallines+=lines;
         totalblocks+=1;

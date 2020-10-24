@@ -3,13 +3,15 @@ main: cabbageroll.tetr.Pluginmain
 version: 1.0
 api-version: 1.12.2
 commands:
-    sendinput:
-        description: Send keyboard inputs
-        usage: /<command>
-    startgame:
-        description: singleplayer
-        usage: /<command>
     skineditor:
         description: Edit appearance of the blocks
         usage: /<command>
-    
+    createroom:
+        description: Create a room
+        usage: /<command>
+    room:
+        description: Control the room
+        usage: /<command>
+    joinroom:
+        description: Join a room
+        usage: /<command>

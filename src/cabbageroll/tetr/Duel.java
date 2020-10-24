@@ -6,7 +6,7 @@ import java.util.List;
 public class Duel {
     public List<Table> plist=new ArrayList<>();
     public static int num=2;
-    
+    /*
     Duel(Table x, Table y){
         plist.add(x);
         x.initGame();
@@ -21,6 +21,6 @@ public class Duel {
             plist.get(0).gameover=true;
             plist.remove(0);
         }
-    }
+    }*/
     
 }
