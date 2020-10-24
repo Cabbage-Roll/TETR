@@ -12,6 +12,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import cabbageroll.tetr.Pluginmain;
+import cabbageroll.tetr.Room;
 import cabbageroll.tetr.Table;
 import cabbageroll.tetr.menus.*;
 
@@ -20,8 +21,11 @@ public class RoomMenu implements Listener{
     public static void openGUI(Player player){
         Inventory inv=Bukkit.createInventory(null, 54, "Room");
         
-        for(int i=0;i<Pluginmain.roomlist)
         
+        for(HashMap.Entry<String, Room> entry: Pluginmain.roomlist.entrySet()){
+            player.sendMessage(entry.getKey());
+        }
+            
         player.openInventory(inv);
         isopen.put(player, true);
     }

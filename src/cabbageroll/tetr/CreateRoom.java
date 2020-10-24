@@ -13,8 +13,8 @@ public class CreateRoom implements CommandExecutor{
             p.sendMessage("Please enter room name");
             return true;
         }
-        Pluginmain.roomlist.add(new Room(args[0],p));
-        p.sendMessage("made room");
+        /*Pluginmain.roomlist.add(new Room(args[0],p));
+        p.sendMessage("made room");*/
         return true;
     }
 }

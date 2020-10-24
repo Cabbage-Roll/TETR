@@ -8,6 +8,8 @@ import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
 import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
 
+import cabbageroll.tetr.menus.SkinMenu;
+
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -64,14 +66,9 @@ public class Pluginmain extends JavaPlugin implements Listener{
         System.out.println("Plugin started");
         getServer().getPluginManager().registerEvents(this, this);
         this.getCommand("skineditor").setExecutor(new OpenSkinEditor());
-        this.getCommand("createroom").setExecutor(new CreateRoom());
-        this.getCommand("joinroom").setExecutor(new JoinRoom());
-        this.getCommand("room").setExecutor(new RoomControls());
-        
-
         this.getCommand("tetr").setExecutor(new OpenMenu());
         
-        getServer().getPluginManager().registerEvents(new SkinEditor(), this);
+        getServer().getPluginManager().registerEvents(new cabbageroll.tetr.menus.SkinMenu(), this);
         //trash
         File f = new File(plugin.getDataFolder()+"\\songs");
         f.mkdirs();

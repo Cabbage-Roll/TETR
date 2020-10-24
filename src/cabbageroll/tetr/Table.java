@@ -19,6 +19,8 @@ import com.xxmicloxx.NoteBlockAPI.model.Playlist;
 import com.xxmicloxx.NoteBlockAPI.model.RepeatMode;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
 
+import cabbageroll.tetr.constants.Blocklist;
+import cabbageroll.tetr.constants.Kicktable;
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
 

@@ -23,10 +23,10 @@ public class OpenMenu implements CommandExecutor{
             SkinMenu.openGUI(p);
             break;
         case "make":
-            MakeRoomMenu.openGUI(p);
+            //MakeRoomMenu.openGUI(p);
             break;
         case "join":
-            JoinRoomMenu.openGUI(p);
+            //JoinRoomMenu.openGUI(p);
             break;
         }
         return true;

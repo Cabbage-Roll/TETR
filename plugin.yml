@@ -6,15 +6,6 @@ commands:
     skineditor:
         description: Edit appearance of the blocks
         usage: /<command>
-    createroom:
-        description: Create a room
-        usage: /<command>
-    room:
-        description: Control the room
-        usage: /<command>
-    joinroom:
-        description: Join a room
-        usage: /<command>
     tetr:
         description: open ui
         usage: /<command>

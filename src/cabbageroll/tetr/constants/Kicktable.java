@@ -1,4 +1,4 @@
-package cabbageroll.tetr;
+package cabbageroll.tetr.constants;
 
 public class Kicktable {
 

@@ -14,16 +14,13 @@ public class JoinRoom implements CommandExecutor{
         if(args.length==0){
             p.sendMessage("roomlist:");
 
-            for(Room room: Pluginmain.roomlist){
-                p.sendMessage(room.name);
-            }
             
             for(HashMap.Entry<String, Room> entry: Pluginmain.roomlist.entrySet()){
                 p.sendMessage(entry.getKey());
             }
                 
                 
-        }else if(args.length==1){
+        }/*else if(args.length==1){
             for(Room room: Pluginmain.roomlist){
                 if(args[0].equalsIgnoreCase(room.name)){
                     room.addPlayer(p);
@@ -37,7 +34,7 @@ public class JoinRoom implements CommandExecutor{
             for(Room room: Pluginmain.roomlist){
                 p.sendMessage(room.name);
             }
-        }
+        }*/
         return true;
     }
 }

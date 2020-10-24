@@ -63,7 +63,7 @@ public class HomeMenu implements Listener{
                 if(e.getSlot()==45){
                     p.closeInventory();
                     isopen.put(p, false);
-                    e.HomeMenu.openGUI(p);
+                    //e.HomeMenu.openGUI(p);
                     return;
                 }
             }
