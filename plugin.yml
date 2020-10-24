@@ -15,3 +15,6 @@ commands:
     joinroom:
         description: Join a room
         usage: /<command>
+    tetr:
+        description: open ui
+        usage: /<command>

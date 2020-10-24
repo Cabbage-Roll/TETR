@@ -1,4 +1,6 @@
-package cabbageroll.tetr;
+package cabbageroll.tetr.menus;
+
+import java.util.HashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -9,11 +11,12 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import java.util.HashMap;
-import java.util.Map;
 
-public class SkinEditor implements Listener {
-    static Map<Player, Boolean> isopen=new HashMap<Player, Boolean>();
+import cabbageroll.tetr.Pluginmain;
+import cabbageroll.tetr.Table;
+
+public class SkinMenu implements Listener{
+    static HashMap<Player, Boolean> isopen=new HashMap<Player, Boolean>();
     public static void openGUI(Player player){
         Inventory inv=Bukkit.createInventory(null, 54, "Skin editor");
         ItemStack border=new ItemStack(Material.THIN_GLASS);

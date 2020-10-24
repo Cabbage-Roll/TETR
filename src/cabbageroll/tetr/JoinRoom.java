@@ -1,5 +1,7 @@
 package cabbageroll.tetr;
 
+import java.util.HashMap;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -14,6 +16,10 @@ public class JoinRoom implements CommandExecutor{
 
             for(Room room: Pluginmain.roomlist){
                 p.sendMessage(room.name);
+            }
+            
+            for(HashMap.Entry<String, Room> entry: Pluginmain.roomlist.entrySet()){
+                p.sendMessage(entry.getKey());
             }
                 
                 

@@ -12,12 +12,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerVelocityEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -30,20 +32,20 @@ import org.bukkit.event.EventHandler;
 public class Pluginmain extends JavaPlugin implements Listener{
 
     //room list
-    public static ArrayList<Room> roomlist=new ArrayList<Room>();
+    public static HashMap<String,Room> roomlist=new HashMap<String,Room>();
+    public static HashMap<Player,String> lastui=new HashMap<Player,String>();
     
     public static File customYml;
     public static FileConfiguration customConfig;
-    public static void saveCustomYml(FileConfiguration ymlConfig, File ymlFile) {
-        try {
-        ymlConfig.save(ymlFile);
-        } catch (IOException e) {
-        e.printStackTrace();
+    public static void saveCustomYml(FileConfiguration ymlConfig, File ymlFile){
+        try{
+            ymlConfig.save(ymlFile);
+        }catch(IOException e){
+            e.printStackTrace();
         }
     }
 
     static JavaPlugin plugin;
-    public static Duel match;
     public static int numberofsongs;
     String[] pathnames;
     String xd;
@@ -65,6 +67,9 @@ public class Pluginmain extends JavaPlugin implements Listener{
         this.getCommand("createroom").setExecutor(new CreateRoom());
         this.getCommand("joinroom").setExecutor(new JoinRoom());
         this.getCommand("room").setExecutor(new RoomControls());
+        
+
+        this.getCommand("tetr").setExecutor(new OpenMenu());
         
         getServer().getPluginManager().registerEvents(new SkinEditor(), this);
         //trash
@@ -91,7 +96,14 @@ public class Pluginmain extends JavaPlugin implements Listener{
     
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event){
-        event.setJoinMessage("Welcome " + event.getPlayer().getName() + "!");
+        event.setJoinMessage("Welcome "+event.getPlayer().getName()+"! Use /tetr");
+        lastui.put(event.getPlayer(), "home");
+    }
+    
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event){
+        Player p=event.getPlayer();
+        lastui.remove(p);
     }
     
     @EventHandler
