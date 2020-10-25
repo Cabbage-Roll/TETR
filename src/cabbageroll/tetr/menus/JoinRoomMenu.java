@@ -9,11 +9,11 @@ import org.bukkit.inventory.ItemStack;
 
 import cabbageroll.tetr.Main;
 
-public class RoomMenu implements InventoryHolder{
+public class JoinRoomMenu implements InventoryHolder{
     private Inventory inventory=null;
-    public RoomMenu(Player player){
-        Main.lastui.put(player, "room");
-        Inventory inventory=Bukkit.createInventory(this, 54, "Room");
+    public JoinRoomMenu(Player player){
+        Main.lastui.put(player, "joinroom");
+        Inventory inventory=Bukkit.createInventory(this, 54, "Join room");
         ItemStack border=new ItemStack(Material.THIN_GLASS);
         //fill the border with glass
         for(int i=0;i<9;i++){

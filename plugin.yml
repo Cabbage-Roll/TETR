@@ -1,11 +1,8 @@
 name: TETR
-main: cabbageroll.tetr.Pluginmain
+main: cabbageroll.tetr.Main
 version: 1.0
 api-version: 1.12.2
 commands:
-    skineditor:
-        description: Edit appearance of the blocks
-        usage: /<command>
     tetr:
-        description: open ui
+        description: Open the window
         usage: /<command>

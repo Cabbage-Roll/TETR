@@ -12,21 +12,24 @@ public class OpenMenu implements CommandExecutor{
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
         Player p=(Player)sender;
-        switch(Pluginmain.lastui.get(p)){
+        switch(Main.lastui.get(p)){
         case "home":
-            HomeMenu.openGUI(p);
+            new HomeMenu(p);
+            break;
+        case "multiplayer":
+            new MultiplayerMenu(p);
+            break;
+        case "makeroom":
+            new MakeRoomMenu(p);
+            break;
+        case "joinroom":
+            new JoinRoomMenu(p);
             break;
         case "room":
-            RoomMenu.openGUI(p);
+            new RoomMenu(p);
             break;
         case "skin":
-            SkinMenu.openGUI(p);
-            break;
-        case "make":
-            //MakeRoomMenu.openGUI(p);
-            break;
-        case "join":
-            //JoinRoomMenu.openGUI(p);
+            new SkinMenu(p);
             break;
         }
         return true;

@@ -3,28 +3,24 @@ package cabbageroll.tetr;
 import java.util.ArrayList;
 import java.util.Random;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
-
-import com.xxmicloxx.NoteBlockAPI.model.Playlist;
-import com.xxmicloxx.NoteBlockAPI.model.RepeatMode;
-import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
-
 import cabbageroll.tetr.constants.Blocklist;
 import cabbageroll.tetr.constants.Kicktable;
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
 
-public class Table{
+public class Table implements Listener{
     
     //ZLOSIJT,air,ghost,border
     public static ItemStack[] blocks=new ItemStack[]{
@@ -1000,6 +996,43 @@ public class Table{
    	            
    	        board.set("Tick: "+looptick++%20, 0);
    	        }
-   	    }.runTaskTimer(Pluginmain.plugin, 0, 0);
+   	    }.runTaskTimer(Main.plugin, 0, 0);
+    }
+   	
+   	@EventHandler
+    public void onItemHeld(PlayerItemHeldEvent event){
+        Player p=event.getPlayer();
+        if(task!=null){
+            int itemId = event.getNewSlot();
+            switch(itemId){
+            case 0:
+                userInput("y");
+                break;
+            case 1:
+                userInput("x");
+                break;
+            case 2:
+                userInput("c");
+                break;
+            case 3:
+                userInput("space");
+                break;
+            case 4:
+                userInput("up");
+                break;
+            case 5:
+                userInput("instant");
+                break;
+            case 6:
+                userInput("left");
+                break;
+            case 7:
+                userInput("right");
+                break;
+            case 8:
+                return;
+            }
+            p.getInventory().setHeldItemSlot(8);
+        }
     }
 }

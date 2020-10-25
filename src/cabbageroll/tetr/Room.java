@@ -2,11 +2,8 @@ package cabbageroll.tetr;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
@@ -36,8 +33,8 @@ public class Room {
     }
     
     public void startRoom(){
-        if(Pluginmain.numberofsongs>0){
-            int random=(int)(Math.random()*Pluginmain.numberofsongs);
+        if(Main.numberofsongs>0){
+            int random=(int)(Math.random()*Main.numberofsongs);
             rsp.playSong(random);
             rsp.setRepeatMode(RepeatMode.ONE);
             if(rsp.isPlaying()==false){
@@ -50,7 +47,7 @@ public class Room {
             table.whotosendblocksto=new ArrayList<Player>(playerlist.keySet());
             table.initGame(seed);
             
-            if(Pluginmain.numberofsongs>0)
+            if(Main.numberofsongs>0)
                 table.player.sendMessage("Playing: "+rsp.getSong().getPath());
         }
     }
