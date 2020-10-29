@@ -24,6 +24,8 @@ public class Main extends JavaPlugin implements Listener{
     //room list
     public static HashMap<String,Room> roomlist=new HashMap<String,Room>();
     public static HashMap<Player,String> lastui=new HashMap<Player,String>();
+    public static HashMap<Player,String> inwhichroom=new HashMap<Player,String>();
+    
     
     public static File customYml;
     public static FileConfiguration customConfig;
@@ -59,7 +61,7 @@ public class Main extends JavaPlugin implements Listener{
         getServer().getPluginManager().registerEvents(this, this);
         
         //trash
-        File f = new File(plugin.getDataFolder()+"\\songs");
+        File f = new File(plugin.getDataFolder()+"/songs");
         f.mkdirs();
         numberofsongs=f.listFiles().length;
         if(numberofsongs>0){
@@ -69,7 +71,7 @@ public class Main extends JavaPlugin implements Listener{
             sarr=new Song[numberofsongs];
             pathnames = f.list();
             for(int i=0;i<numberofsongs;i++){
-                xd=plugin.getDataFolder()+"\\songs\\"+pathnames[i];
+                xd=plugin.getDataFolder()+"/songs/"+pathnames[i];
                 sarr[i]=NBSDecoder.parse(new File(xd));
             }
             

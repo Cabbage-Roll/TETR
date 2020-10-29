@@ -447,18 +447,41 @@ public class Table implements Listener{
     //works
     void tSpin(){
         int truth=0;
-        if(stage[y][x]!=7){
+        boolean wall=false;
+        if((y<0 || STAGESIZEY<=y) || (x<0 || STAGESIZEX<=x)){
+            truth++;
+            wall=true;
+        }else if(stage[y][x]!=7){
             truth++;
         }
-        if(stage[y][x+2]!=7){
+        
+        if((y<0 || STAGESIZEY<=y) || (x+2<0 || STAGESIZEX<=x+2)){
+            truth++;
+            wall=true;
+        }else if(stage[y][x+2]!=7){
             truth++;
         }
-        if(stage[y+2][x]!=7){
+        
+        if((y+2<0 || STAGESIZEY<=y+2) || (x<0 || STAGESIZEX<=x)){
+            truth++;
+            wall=true;
+        }else if(stage[y+2][x]!=7){
             truth++;
         }
-        if(stage[y+2][x+2]!=7){
+        
+        if((y+2<0 || STAGESIZEY<=y+2) || (x+2<0 || STAGESIZEX<=x+2)){
+            truth++;
+            wall=true;
+        }else if(stage[y+2][x+2]!=7){
             truth++;
         }
+        
+        if(truth>=3 && wall){
+            spun=true;
+            mini=true;
+            return;
+        }
+        
         if(truth>=3){
             spun=true;
             mini=true;
@@ -994,7 +1017,8 @@ public class Table implements Listener{
    	                task=null;
    	            }
    	            
-   	        board.set("Tick: "+looptick++%20, 0);
+   	        board.set("TIME "+looptick/20, 0);
+   	        looptick++;
    	        }
    	    }.runTaskTimer(Main.plugin, 0, 0);
     }
@@ -1002,7 +1026,7 @@ public class Table implements Listener{
    	@EventHandler
     public void onItemHeld(PlayerItemHeldEvent event){
         Player p=event.getPlayer();
-        if(task!=null){
+        if(task!=null && p==player){
             int itemId = event.getNewSlot();
             switch(itemId){
             case 0:

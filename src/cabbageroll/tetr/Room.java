@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
@@ -17,19 +19,26 @@ public class Room {
     public Player host;
     static Playlist slist;
     public RadioSongPlayer rsp;
+    public boolean running;
     
-    Room(String name, Player p){
-        rsp=new RadioSongPlayer(slist);
+    public Room(String name, Player p){
+        if(Main.numberofsongs>0){
+            rsp=new RadioSongPlayer(slist);
+        }
         this.name=name;
         host=p;
         addPlayer(p);
     }
     
     public void stopRoom(){
-        rsp.setPlaying(false);
+        if(Main.numberofsongs>0){
+            rsp.setPlaying(false);
+        }
         for(Table table: playerlist.values()){
             table.gameover=true;
         }
+        
+        running=false;
     }
     
     public void startRoom(){
@@ -47,15 +56,23 @@ public class Room {
             table.whotosendblocksto=new ArrayList<Player>(playerlist.keySet());
             table.initGame(seed);
             
-            if(Main.numberofsongs>0)
+            if(Main.numberofsongs>0){
                 table.player.sendMessage("Playing: "+rsp.getSong().getPath());
+            }
         }
+        
+        running=true;
     }
     
     //doesnt check for duplicates
     public void addPlayer(Player p){
-        playerlist.put(p,new Table(p,playerlist.size()));
-        rsp.addPlayer(p);
+        Table table=new Table(p,playerlist.size());
+        playerlist.put(p,table);
+        if(Main.numberofsongs>0){
+            rsp.addPlayer(p);
+        }
+        Main.inwhichroom.put(p, name);
+        Bukkit.getServer().getPluginManager().registerEvents(table, Main.plugin);
     }
     
     //doesnt check for host

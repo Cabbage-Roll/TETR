@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import cabbageroll.tetr.Main;
 
@@ -24,8 +25,19 @@ public class HomeMenu implements InventoryHolder{
         }
         
         //clickable items
-        inventory.setItem(9, new ItemStack(Material.APPLE));
+        ItemMeta itemmeta=null;
         
+        ItemStack multiplayer=new ItemStack(Material.DIRT);
+        itemmeta=multiplayer.getItemMeta();
+        itemmeta.setDisplayName("MULTIPLAYER");
+        multiplayer.setItemMeta(itemmeta);
+        inventory.setItem(9, multiplayer);
+        
+        ItemStack skineditor=new ItemStack(Material.DIRT);
+        itemmeta=skineditor.getItemMeta();
+        itemmeta.setDisplayName("SKIN EDITOR");
+        skineditor.setItemMeta(itemmeta);
+        inventory.setItem(10, skineditor);
         
         player.openInventory(inventory);
     }

@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import cabbageroll.tetr.Main;
 
@@ -24,9 +25,19 @@ public class MakeRoomMenu implements InventoryHolder{
         }
         
         //clickable items
-        inventory.setItem(9, new ItemStack(Material.DIRT));
-        inventory.setItem(10, new ItemStack(Material.GOLD_BLOCK));
-        inventory.setItem(36, new ItemStack(Material.BEDROCK));
+        ItemMeta itemmeta;
+        
+        ItemStack back=new ItemStack(Material.DIRT);
+        itemmeta=back.getItemMeta();
+        itemmeta.setDisplayName("BACK");
+        back.setItemMeta(itemmeta);
+        inventory.setItem(36, back);
+        
+        ItemStack newroom=new ItemStack(Material.COAL);
+        itemmeta=newroom.getItemMeta();
+        itemmeta.setDisplayName("new room with random name");
+        newroom.setItemMeta(itemmeta);
+        inventory.setItem(9, newroom);
         
         player.openInventory(inventory);
     }

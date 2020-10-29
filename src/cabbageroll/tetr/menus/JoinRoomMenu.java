@@ -6,8 +6,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import cabbageroll.tetr.Main;
+import cabbageroll.tetr.Room;
+import cabbageroll.tetr.Table;
 
 public class JoinRoomMenu implements InventoryHolder{
     private Inventory inventory=null;
@@ -24,9 +27,25 @@ public class JoinRoomMenu implements InventoryHolder{
         }
         
         //clickable items
-        inventory.setItem(9, new ItemStack(Material.DIRT));
-        inventory.setItem(10, new ItemStack(Material.GOLD_BLOCK));
-        inventory.setItem(36, new ItemStack(Material.BEDROCK));
+        ItemMeta itemmeta;
+        
+        ItemStack back=new ItemStack(Material.DIRT);
+        itemmeta=back.getItemMeta();
+        itemmeta.setDisplayName("BACK");
+        back.setItemMeta(itemmeta);
+        inventory.setItem(36, back);
+        
+        ItemStack listroom;
+        int i;
+        for(Room room: Main.roomlist.values()){
+            i=0;
+            listroom=new ItemStack(Material.COAL);
+            itemmeta=listroom.getItemMeta();
+            itemmeta.setDisplayName(room.name);
+            listroom.setItemMeta(itemmeta);
+            inventory.setItem(9+i, listroom);
+            i++;
+        }
         
         player.openInventory(inventory);
     }
