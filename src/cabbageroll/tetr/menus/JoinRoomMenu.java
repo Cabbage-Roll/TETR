@@ -10,7 +10,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import cabbageroll.tetr.Main;
 import cabbageroll.tetr.Room;
-import cabbageroll.tetr.Table;
 
 public class JoinRoomMenu implements InventoryHolder{
     private Inventory inventory=null;
@@ -36,12 +35,11 @@ public class JoinRoomMenu implements InventoryHolder{
         inventory.setItem(36, back);
         
         ItemStack listroom;
-        int i;
-        for(Room room: Main.roomlist.values()){
-            i=0;
+        int i=0;
+        for(Room room: Main.roommap.values()){
             listroom=new ItemStack(Material.COAL);
             itemmeta=listroom.getItemMeta();
-            itemmeta.setDisplayName(room.name);
+            itemmeta.setDisplayName(room.id);
             listroom.setItemMeta(itemmeta);
             inventory.setItem(9+i, listroom);
             i++;
@@ -51,7 +49,7 @@ public class JoinRoomMenu implements InventoryHolder{
     }
     
     @Override
-    public Inventory getInventory() {
+    public Inventory getInventory(){
         return inventory;
     }
 }

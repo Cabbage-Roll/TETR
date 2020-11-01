@@ -4,6 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
@@ -14,7 +15,7 @@ import cabbageroll.tetr.Main;
 import cabbageroll.tetr.Room;
 import cabbageroll.tetr.Table;
 
-public class Listen implements Listener{
+public class Listen implements Listener {
     @EventHandler
     void onInventoryClick(InventoryClickEvent event){
         Player player=(Player)event.getWhoClicked();
@@ -37,8 +38,7 @@ public class Listen implements Listener{
         }else if(event.getInventory().getHolder() instanceof MakeRoomMenu){
             event.setCancelled(true);
             if(event.getSlot()==9){
-                String s=String.valueOf(Math.random()*10000);
-                Main.roomlist.put(s, new Room(s,player));
+                new Room(player);
                 new RoomMenu(player);
             }else if(event.getSlot()==36){
                 new MultiplayerMenu(player);
@@ -46,7 +46,7 @@ public class Listen implements Listener{
         }else if(event.getInventory().getHolder() instanceof JoinRoomMenu){
             event.setCancelled(true);
             if(event.getCurrentItem().getType()==Material.COAL && event.getSlot()<27){
-                Main.roomlist.get(event.getCurrentItem().getItemMeta().getDisplayName()).addPlayer(player);
+                Main.roommap.get(event.getCurrentItem().getItemMeta().getDisplayName()).addPlayer(player);
                 new RoomMenu(player);
             }else if(event.getSlot()==36){
                 new MultiplayerMenu(player);
@@ -54,24 +54,27 @@ public class Listen implements Listener{
         }else if(event.getInventory().getHolder() instanceof RoomMenu){
             event.setCancelled(true);
             if(event.getSlot()==36){
+                Main.roommap.get(Main.inwhichroom.get(player)).removePlayer(player);
                 new MultiplayerMenu(player);
             }else if(event.getSlot()==49){
                 ItemMeta itemmeta;
-                if(Main.roomlist.get(Main.inwhichroom.get(player)).running){
-                    Main.roomlist.get(Main.inwhichroom.get(player)).stopRoom();
+                if(Main.roommap.get(Main.inwhichroom.get(player)).running){
+                    Main.roommap.get(Main.inwhichroom.get(player)).stopRoom();
                     ItemStack start=new ItemStack(Material.DIAMOND_SWORD);
                     itemmeta=start.getItemMeta();
                     itemmeta.setDisplayName("START");
                     start.setItemMeta(itemmeta);
                     event.getInventory().setItem(49, start);
                 }else{
-                    Main.roomlist.get(Main.inwhichroom.get(player)).startRoom();
+                    Main.roommap.get(Main.inwhichroom.get(player)).startRoom();
                     ItemStack item=new ItemStack(Material.ANVIL);
                     itemmeta=item.getItemMeta();
                     itemmeta.setDisplayName("ABORT");
                     item.setItemMeta(itemmeta);
                     event.getInventory().setItem(49, item);
                 }
+            }else if(event.getSlot()==53){
+                new SettingsMenu(player);
             }
         }else if(event.getInventory().getHolder() instanceof SkinMenu){
             if(event.getCurrentItem().getType()==Material.THIN_GLASS){
@@ -84,7 +87,67 @@ public class Listen implements Listener{
                 player.sendMessage("Transparency turned "+(Table.transparent?"on":"off"));
                 return;
             }
-        }   
+        }else if(event.getInventory().getHolder() instanceof SettingsMenu){
+            event.setCancelled(true);
+            
+            int by=0;
+            if(event.getClick()==ClickType.LEFT){
+                by=+1;
+            }else if(event.getClick()==ClickType.RIGHT){
+                by=-1;
+            }
+            
+            ItemMeta itemmeta;
+            ItemStack item=event.getInventory().getItem(event.getSlot());
+            itemmeta=item.getItemMeta();
+            
+            Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
+            
+            switch(event.getSlot()){
+            case 36:
+                new RoomMenu(player);
+                return;
+            case 11:
+                table.gx=player.getLocation().getBlockX();
+                table.gy=player.getLocation().getBlockY();
+                table.gz=player.getLocation().getBlockZ();
+                break;
+            case 12:
+                table.gx+=by;
+                break;
+            case 13:
+                table.gy+=by;
+                break;
+            case 14:
+                table.gz+=by;
+                break;
+            case 37:
+                table.m1x+=by;
+                break;
+            case 38:
+                table.m2x+=by;
+                break;
+            case 39:
+                table.m3x+=by;
+                break;
+            case 41:
+                table.m1y+=by;
+                break;
+            case 42:
+                table.m2y+=by;
+                break;
+            case 43:
+                table.m3y+=by;
+                break;
+            default:
+                return;
+            }
+            
+            item.setItemMeta(itemmeta);
+            event.getInventory().setItem(event.getSlot(), item);
+            new SettingsMenu(player);
+            
+        }
     }
     
     

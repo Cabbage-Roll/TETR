@@ -55,15 +55,15 @@ public class Table implements Listener{
     static final int CW=1;
     static final int R180=2;
     
-    int gx;
-    int gy=50;
-    int gz=0;
-    int m1x=1;
-    int m1y=0;
-    int m2x=0;
-    int m2y=-1;
-    int m3x=0;
-    int m3y=0;
+    public int gx=100;
+    public int gy=50;
+    public int gz=0;
+    public int m1x=1;
+    public int m1y=0;
+    public int m2x=0;
+    public int m2y=-1;
+    public int m3x=0;
+    public int m3y=0;
     
     //printing variables
     int coni;
@@ -108,10 +108,9 @@ public class Table implements Listener{
     boolean held=false;
     boolean power=false;//spike
     
-    Table(Player p, int magic){
+    Table(Player p){
         player=p;
         world=p.getWorld();
-        gx=100+magic*30;
     }
     
     //new
@@ -355,38 +354,16 @@ public class Table implements Listener{
     
     //IMPROVE
     void colPrint(int x, int y, int color){
-        int ti;
-        int tj;
-        int tk;
-        
-        if(coni<0){
-            ti=-1;
-        }else if(coni>0){
-            ti=1;
-        }else{
-            ti=0;
-        }
-        
-        if(conj<0){
-            tj=-1;
-        }else if(conj>0){
-            tj=1;
-        }else{
-            tj=0;
-        }
-        
-        if(conk<0){
-            tk=-1;
-        }else if(conk>0){
-            tk=1;
-        }else{
-            tk=0;
-        }
-        
+        //1,1,0
         for(int i=0;i<=coni;i++){
             for(int j=0;j<=conj;j++){
                 for(int k=0;k<=conk;k++){
-                    printSingleBlock(gx+x*m1x+y*m1y+(i==coni?0:i)*ti, gy+x*m2x+y*m2y+(j==conj?0:j)*tj, gz+x*m3x+y*m3y+(k==conk?0:k)*tk, color);
+                    printSingleBlock(
+                    gx+x*m1x+y*m1y+(i==coni?0:i),
+                    gy+x*m2x+y*m2y+(j==conj?0:j),
+                    gz+x*m3x+y*m3y+(k==conk?0:k),
+                    color
+                    );
                 }
             }
         }
@@ -1030,28 +1007,28 @@ public class Table implements Listener{
             int itemId = event.getNewSlot();
             switch(itemId){
             case 0:
-                userInput("y");
+                userInput("left");
                 break;
             case 1:
-                userInput("x");
+                userInput("right");
                 break;
             case 2:
-                userInput("c");
+                userInput("instant");
                 break;
             case 3:
                 userInput("space");
                 break;
             case 4:
-                userInput("up");
+                userInput("y");
                 break;
             case 5:
-                userInput("instant");
+                userInput("x");
                 break;
             case 6:
-                userInput("left");
+                userInput("up");
                 break;
             case 7:
-                userInput("right");
+                userInput("c");
                 break;
             case 8:
                 return;

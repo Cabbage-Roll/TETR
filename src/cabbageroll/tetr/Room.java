@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -13,29 +12,42 @@ import com.xxmicloxx.NoteBlockAPI.model.RepeatMode;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
 
 public class Room {
+    
+    static String makeID(){
+        String abc="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        StringBuilder result=new StringBuilder(4);
+        for(int i=0;i<4;i++){
+            int index=(int)(abc.length()*Math.random());
+            result.append(abc.charAt(index)); 
+        }
+        return result.toString();
+    } 
 
-    public Map<Player, Table> playerlist=new HashMap<Player, Table>();
-    public String name;
+    public ArrayList<Player> playerlist=new ArrayList<Player>();
+    public Map<Player,Table> playerboards=new HashMap<Player,Table>();
+    public String id;
     public Player host;
     static Playlist slist;
     public RadioSongPlayer rsp;
     public boolean running;
     
-    public Room(String name, Player p){
+    public Room(Player p){
         if(Main.numberofsongs>0){
             rsp=new RadioSongPlayer(slist);
         }
-        this.name=name;
+        id=makeID();
         host=p;
         addPlayer(p);
+        Main.roommap.put(id, this);
     }
     
     public void stopRoom(){
         if(Main.numberofsongs>0){
             rsp.setPlaying(false);
         }
-        for(Table table: playerlist.values()){
-            table.gameover=true;
+        
+        for(Player player: playerlist){
+            playerboards.get(player).gameover=true;
         }
         
         running=false;
@@ -52,8 +64,10 @@ public class Room {
         }
         
         long seed=System.currentTimeMillis();
-        for(Table table: playerlist.values()){
-            table.whotosendblocksto=new ArrayList<Player>(playerlist.keySet());
+        
+        for(Player player: playerlist){
+            Table table=playerboards.get(player);
+            table.whotosendblocksto=new ArrayList<Player>(playerlist);
             table.initGame(seed);
             
             if(Main.numberofsongs>0){
@@ -64,20 +78,33 @@ public class Room {
         running=true;
     }
     
-    //doesnt check for duplicates
-    public void addPlayer(Player p){
-        Table table=new Table(p,playerlist.size());
-        playerlist.put(p,table);
+    public void addPlayer(Player player){
+        Table table=new Table(player);
+        playerboards.put(player,table);
+        playerlist.add(player);
         if(Main.numberofsongs>0){
-            rsp.addPlayer(p);
+            rsp.addPlayer(player);
         }
-        Main.inwhichroom.put(p, name);
+        Main.inwhichroom.put(player, id);
         Bukkit.getServer().getPluginManager().registerEvents(table, Main.plugin);
     }
     
-    //doesnt check for host
-    public void removePlayer(Player p){
-        playerlist.remove(p);
+    public void removePlayer(Player player){
+        if(Main.numberofsongs>0){
+        rsp.removePlayer(player);
+        }
+        
+        playerboards.get(player).gameover=true;
+        playerlist.remove(player);
+        playerboards.remove(player);
+        Main.inwhichroom.remove(player);
+        if(player==host){
+            if(playerlist.size()==0){
+                Main.roommap.remove(id);
+            }else{
+                host=playerlist.get(0);
+            }
+        }
     }
     
 }

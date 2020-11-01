@@ -10,6 +10,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -21,8 +22,10 @@ import cabbageroll.tetr.menus.*;
 
 public class Main extends JavaPlugin implements Listener{
 
-    //room list
-    public static HashMap<String,Room> roomlist=new HashMap<String,Room>();
+    public static ArrayList<Room> roomlist=new ArrayList<Room>();
+    public static HashMap<String,Room> roommap=new HashMap<String,Room>();
+    
+    
     public static HashMap<Player,String> lastui=new HashMap<Player,String>();
     public static HashMap<Player,String> inwhichroom=new HashMap<Player,String>();
     

@@ -31,6 +31,9 @@ public class OpenMenu implements CommandExecutor{
         case "skin":
             new SkinMenu(p);
             break;
+        case "settings":
+            new SettingsMenu(p);
+            break;
         }
         return true;
     }
