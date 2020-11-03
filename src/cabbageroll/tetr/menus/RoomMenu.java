@@ -30,10 +30,10 @@ public class RoomMenu implements InventoryHolder{
         ItemStack item;
         ItemMeta itemmeta;
         
-        ItemStack head=new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+        item=new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
         int i=0;
         for(Player p: Main.roommap.get(Main.inwhichroom.get(player)).playerlist){
-            itemmeta=head.getItemMeta();
+            itemmeta=item.getItemMeta();
             itemmeta.setDisplayName(p.getName());
             if(Main.roommap.get(Main.inwhichroom.get(player)).host.equals(p)){
                 itemmeta.setLore(Arrays.asList("HOST"));
@@ -41,30 +41,39 @@ public class RoomMenu implements InventoryHolder{
                 itemmeta.setLore(null);
             }
 
-            head.setItemMeta(itemmeta);
-            inventory.setItem(9+i, head);
+            item.setItemMeta(itemmeta);
+            inventory.setItem(9+i, item);
             i++;
         }
         
         if(Main.roommap.get(Main.inwhichroom.get(player)).host.equals(player)){
-            item=new ItemStack(Material.DIAMOND_SWORD);
-            itemmeta=item.getItemMeta();
-            itemmeta.setDisplayName("START");
+            if(Main.roommap.get(Main.inwhichroom.get(player)).running){
+                item=new ItemStack(Material.ANVIL);
+                itemmeta=item.getItemMeta();
+                itemmeta.setDisplayName("ABORT");
+                item.setItemMeta(itemmeta);
+                inventory.setItem(49, item);
+            }else{
+                item=new ItemStack(Material.DIAMOND_SWORD);
+                itemmeta=item.getItemMeta();
+                itemmeta.setDisplayName("START");
+                item.setItemMeta(itemmeta);
+                inventory.setItem(49, item);
+            }
         }else{
             item=new ItemStack(Material.BARRIER);
             itemmeta=item.getItemMeta();
             itemmeta.setDisplayName("YOU ARE NOT THE HOST");
         }
         
-
         item.setItemMeta(itemmeta);
         inventory.setItem(49, item);
         
-        ItemStack back=new ItemStack(Material.DIRT);
-        itemmeta=back.getItemMeta();
+        item=new ItemStack(Material.DIRT);
+        itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("BACK");
-        back.setItemMeta(itemmeta);
-        inventory.setItem(36, back);
+        item.setItemMeta(itemmeta);
+        inventory.setItem(36, item);
         
         item=new ItemStack(Material.COMPASS);
         itemmeta=item.getItemMeta();

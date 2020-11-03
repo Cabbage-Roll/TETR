@@ -26,8 +26,8 @@ public class SettingsMenu implements InventoryHolder {
         }
         
         //clickable items
-        ItemMeta itemmeta;
         ItemStack item;
+        ItemMeta itemmeta;
 
         Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
         

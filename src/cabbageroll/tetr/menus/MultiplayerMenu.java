@@ -25,25 +25,26 @@ public class MultiplayerMenu implements InventoryHolder{
         }
         
         //clickable items
+        ItemStack item;
         ItemMeta itemmeta;
         
-        ItemStack createroom=new ItemStack(Material.DIRT);
-        itemmeta=createroom.getItemMeta();
+        item=new ItemStack(Material.DIRT);
+        itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("CREATE ROOM");
-        createroom.setItemMeta(itemmeta);
-        inventory.setItem(9, createroom);
+        item.setItemMeta(itemmeta);
+        inventory.setItem(9, item);
         
-        ItemStack roomlist=new ItemStack(Material.DIRT);
-        itemmeta=roomlist.getItemMeta();
+        item=new ItemStack(Material.DIRT);
+        itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("ROOM LISTING");
-        roomlist.setItemMeta(itemmeta);
-        inventory.setItem(10, roomlist);
+        item.setItemMeta(itemmeta);
+        inventory.setItem(10, item);
         
-        ItemStack back=new ItemStack(Material.DIRT);
-        itemmeta=back.getItemMeta();
+        item=new ItemStack(Material.DIRT);
+        itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("BACK");
-        back.setItemMeta(itemmeta);
-        inventory.setItem(36, back);
+        item.setItemMeta(itemmeta);
+        inventory.setItem(36, item);
         
         player.openInventory(inventory);
     }

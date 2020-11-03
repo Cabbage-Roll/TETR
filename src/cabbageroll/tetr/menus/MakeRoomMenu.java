@@ -14,7 +14,7 @@ public class MakeRoomMenu implements InventoryHolder{
     private Inventory inventory=null;
     public MakeRoomMenu(Player player){
         Main.lastui.put(player, "makeroom");
-        Inventory inventory=Bukkit.createInventory(this, 54, "MakeRoomMenu");
+        Inventory inventory=Bukkit.createInventory(this, 54, "Create new room");
         ItemStack border=new ItemStack(Material.THIN_GLASS);
         //fill the border with glass
         for(int i=0;i<9;i++){
@@ -26,18 +26,19 @@ public class MakeRoomMenu implements InventoryHolder{
         
         //clickable items
         ItemMeta itemmeta;
+        ItemStack item;
         
-        ItemStack back=new ItemStack(Material.DIRT);
-        itemmeta=back.getItemMeta();
+        item=new ItemStack(Material.DIRT);
+        itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("BACK");
-        back.setItemMeta(itemmeta);
-        inventory.setItem(36, back);
+        item.setItemMeta(itemmeta);
+        inventory.setItem(36, item);
         
-        ItemStack newroom=new ItemStack(Material.COAL);
-        itemmeta=newroom.getItemMeta();
-        itemmeta.setDisplayName("new room with random name");
-        newroom.setItemMeta(itemmeta);
-        inventory.setItem(9, newroom);
+        item=new ItemStack(Material.COAL_BLOCK);
+        itemmeta=item.getItemMeta();
+        itemmeta.setDisplayName("NEW ROOM");
+        item.setItemMeta(itemmeta);
+        inventory.setItem(9, item);
         
         player.openInventory(inventory);
     }

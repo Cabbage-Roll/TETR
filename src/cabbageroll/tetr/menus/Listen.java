@@ -7,6 +7,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -58,20 +59,22 @@ public class Listen implements Listener {
                 new MultiplayerMenu(player);
             }else if(event.getSlot()==49){
                 ItemMeta itemmeta;
-                if(Main.roommap.get(Main.inwhichroom.get(player)).running){
-                    Main.roommap.get(Main.inwhichroom.get(player)).stopRoom();
-                    ItemStack start=new ItemStack(Material.DIAMOND_SWORD);
-                    itemmeta=start.getItemMeta();
-                    itemmeta.setDisplayName("START");
-                    start.setItemMeta(itemmeta);
-                    event.getInventory().setItem(49, start);
-                }else{
-                    Main.roommap.get(Main.inwhichroom.get(player)).startRoom();
-                    ItemStack item=new ItemStack(Material.ANVIL);
-                    itemmeta=item.getItemMeta();
-                    itemmeta.setDisplayName("ABORT");
-                    item.setItemMeta(itemmeta);
-                    event.getInventory().setItem(49, item);
+                if(Main.roommap.get(Main.inwhichroom.get(player)).host.equals(player)){
+                    if(Main.roommap.get(Main.inwhichroom.get(player)).running){
+                        Main.roommap.get(Main.inwhichroom.get(player)).stopRoom();
+                        ItemStack start=new ItemStack(Material.DIAMOND_SWORD);
+                        itemmeta=start.getItemMeta();
+                        itemmeta.setDisplayName("START");
+                        start.setItemMeta(itemmeta);
+                        event.getInventory().setItem(49, start);
+                    }else{
+                        Main.roommap.get(Main.inwhichroom.get(player)).startRoom();
+                        ItemStack item=new ItemStack(Material.ANVIL);
+                        itemmeta=item.getItemMeta();
+                        itemmeta.setDisplayName("ABORT");
+                        item.setItemMeta(itemmeta);
+                        event.getInventory().setItem(49, item);
+                    }
                 }
             }else if(event.getSlot()==53){
                 new SettingsMenu(player);
@@ -207,4 +210,47 @@ public class Listen implements Listener {
             Main.lastui.put(player, "home");
         }
     }
+    
+    @EventHandler
+    public void onItemHeld(PlayerItemHeldEvent event){
+        Player player=event.getPlayer();
+        if(Main.inwhichroom.containsKey(player)){
+            Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
+            if(table!=null){
+                if(table.task!=null){
+                    int itemId=event.getNewSlot();
+                    switch(itemId){
+                    case 0:
+                        table.userInput("left");
+                        break;
+                    case 1:
+                        table.userInput("right");
+                        break;
+                    case 2:
+                        table.userInput("instant");
+                        break;
+                    case 3:
+                        table.userInput("space");
+                        break;
+                    case 4:
+                        table.userInput("y");
+                        break;
+                    case 5:
+                        table.userInput("x");
+                        break;
+                    case 6:
+                        table.userInput("up");
+                        break;
+                    case 7:
+                        table.userInput("c");
+                        break;
+                    case 8:
+                        return;
+                    }
+                    player.getInventory().setHeldItemSlot(8);
+                }
+            }
+        }
+    }
+    
 }

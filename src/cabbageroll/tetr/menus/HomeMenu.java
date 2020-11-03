@@ -25,19 +25,20 @@ public class HomeMenu implements InventoryHolder{
         }
         
         //clickable items
-        ItemMeta itemmeta=null;
+        ItemStack item;
+        ItemMeta itemmeta;
         
-        ItemStack multiplayer=new ItemStack(Material.DIRT);
-        itemmeta=multiplayer.getItemMeta();
+        item=new ItemStack(Material.DIRT);
+        itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("MULTIPLAYER");
-        multiplayer.setItemMeta(itemmeta);
-        inventory.setItem(9, multiplayer);
+        item.setItemMeta(itemmeta);
+        inventory.setItem(9, item);
         
-        ItemStack skineditor=new ItemStack(Material.DIRT);
-        itemmeta=skineditor.getItemMeta();
+        item=new ItemStack(Material.DIRT);
+        itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("SKIN EDITOR");
-        skineditor.setItemMeta(itemmeta);
-        inventory.setItem(10, skineditor);
+        item.setItemMeta(itemmeta);
+        inventory.setItem(10, item);
         
         player.openInventory(inventory);
     }

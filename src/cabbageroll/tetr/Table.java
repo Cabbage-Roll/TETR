@@ -8,19 +8,19 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import cabbageroll.tetr.constants.Blocklist;
+import cabbageroll.tetr.constants.Garbagetable;
 import cabbageroll.tetr.constants.Kicktable;
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
+import net.minecraft.server.v1_12_R1.PacketPlayOutUpdateHealth;
 
-public class Table implements Listener{
+public class Table {
     
     //ZLOSIJT,air,ghost,border
     public static ItemStack[] blocks=new ItemStack[]{
@@ -32,7 +32,7 @@ public class Table implements Listener{
             new ItemStack(Material.CONCRETE, 1, (short) 11),
             new ItemStack(Material.CONCRETE, 1, (short) 10),
             new ItemStack(Material.AIR),
-            new ItemStack(Material.IRON_BLOCK),
+            new ItemStack(Material.CONCRETE, 1, (short) 8),
             new ItemStack(Material.STAINED_GLASS, 1, (short) 14),
             new ItemStack(Material.STAINED_GLASS, 1, (short) 1),
             new ItemStack(Material.STAINED_GLASS, 1, (short) 4),
@@ -44,16 +44,16 @@ public class Table implements Listener{
     
     public static boolean transparent=false;
     
-    World world;
+    private World world;
     Player player;
-    int looptick;
-    BukkitTask task;
-    BPlayerBoard board;
+    private int looptick;
+    public BukkitTask task;
+    private BPlayerBoard board;
     ArrayList<Player> whotosendblocksto;
     
-    static final int CCW=0;
-    static final int CW=1;
-    static final int R180=2;
+    private static final int CCW=0;
+    private static final int CW=1;
+    private static final int R180=2;
     
     public int gx=100;
     public int gy=50;
@@ -66,62 +66,112 @@ public class Table implements Listener{
     public int m3y=0;
     
     //printing variables
-    int coni;
-    int conj;
-    int conk;
+    private int coni;
+    private int conj;
+    private int conk;
     
     //bag variables
-    Random gen;
-    int bag_counter=0;
-    int[] bag1=new int[7];
-    int[] bag2=new int[7];
-    int next_blocks=5;
-    int block_hold=-1;
-    int block_current=-1;
+    private Random gen;
+    private int bag_counter=0;
+    private int[] bag1=new int[7];
+    private int[] bag2=new int[7];
+    private int next_blocks=5;
+    private int block_hold=-1;
+    private int block_current=-1;
     
-    int lines=0;
-    int score=0;//unused for now
-    int counter=0;//gravity variable
-    int combo=-1;
-    int b2b=-1;
+    private int lines=0;
+    private int score=0;//unused for now
+    private int counter=0;//gravity variable
+    private int combo=-1;
+    private int b2b=-1;
     
-    int totallines=0;
-    int totalblocks=0;
+    private int totallines=0;
+    private int totalblocks=0;
     
     //board variables
-    final int STAGESIZEX=10;
-    final int STAGESIZEY=40;
-    int[][] stage=new int[STAGESIZEY][STAGESIZEX];
-    int[][] block=new int[4][4];
+    private final int STAGESIZEX=10;
+    private final int STAGESIZEY=40;
+    private int[][] stage=new int[STAGESIZEY][STAGESIZEX];
+    private int[][] block=new int[4][4];
     
     //piece variables
-    int x;
-    int y;
-    int block_size;
-    int rotation;
-    int ghostx;
-    int ghosty;
+    private int x;
+    private int y;
+    private int block_size;
+    private int rotation;
+    private int ghostx;
+    private int ghosty;
     
-    boolean spun=false;//tspin
-    boolean mini=false;
+    private boolean spun=false;//tspin
+    private boolean mini=false;
     boolean gameover=false;
-    boolean held=false;
-    boolean power=false;//spike
+    private boolean held=false;
+    private boolean power=false;//spike
+    
+    //garbage
+    private ArrayList<Integer> garbo=new ArrayList<Integer>();
+    private Random garbagegen;
+    private int well;
+    private int cap=4;
     
     Table(Player p){
         player=p;
         world=p.getWorld();
     }
     
-    //new
-    @SuppressWarnings("deprecation")
-    void printSingleBlock(int x, int y, int z, int color){
-        
-        if(color==69){
-            return;
+    private void sendGarbage(int n){
+        Main.roommap.get(Main.inwhichroom.get(player)).forwardGarbage(n);
+    }
+    
+    public void receiveGarbage(int n){
+        garbo.add(n);
+        for(int x:garbo){
+            player.sendMessage("test: "+x);
         }
-        
-        
+    }
+    
+    private void putGarbage(){
+        for(int h=0;h<cap;h++){
+            if(!garbo.isEmpty()){
+                for(int i=0;i<STAGESIZEY-1;i++){
+                    for(int j=0;j<STAGESIZEX;j++){
+                        stage[i][j]=stage[i+1][j];
+                        colPrint(j, i, stage[i][j]);
+                    }
+                }
+                for(int j=0;j<STAGESIZEX;j++){
+                    if(j==well){
+                        stage[STAGESIZEY-1][j]=7;
+                        colPrint(j, STAGESIZEY-1, 7);
+                    }else{
+                        stage[STAGESIZEY-1][j]=8;
+                        colPrint(j, STAGESIZEY-1, 8);
+                    }
+                }
+                
+                garbo.set(0, garbo.get(0)-1);
+                if(garbo.get(0)==0){
+                    garbo.remove(0);
+                    well=garbagegen.nextInt(10);
+                }
+            }
+        }
+    }
+    
+    //works
+    private int getBlockSize(int block){
+        if(block==4){
+            return 4;
+        }else if(block==2){
+            return 2;
+        }else{
+            return 3;
+        }
+    }
+    
+    //works
+    @SuppressWarnings("deprecation")
+    private void printSingleBlock(int x, int y, int z, int color){
         if(color==7 && transparent){
             Block b=world.getBlockAt(x, y, z);
             for(Player player: whotosendblocksto){
@@ -136,7 +186,7 @@ public class Table implements Listener{
     }
     
     //new
-    void initScoreboard(){
+    private void initScoreboard(){
         board=Netherboard.instance().createBoard(player, "Stats");
         
         board.clear();
@@ -146,12 +196,11 @@ public class Table implements Listener{
         board.set("Pieces: "+totalblocks, 3);
         board.set("Score: "+score, 2);
         board.set("", 1);
-        board.set(""+b2b, 0);
         
     }
     
     //new
-    void sendTheScoreboard(){
+    private void sendTheScoreboard(){
         if(b2b>0){
             board.set("§6§lB2B x"+b2b, 1);
         }else{
@@ -169,17 +218,37 @@ public class Table implements Listener{
         board.set("Score: "+score, 2);
     }
     
-    //works
-    void printStaticBlock(int x, int y, int block){
+    //improve
+    private void printStaticBlock(int x, int y, int block){
         for(int i=0;i<4;i++){
             for(int j=0;j<4;j++){
-                colPrint(j+x, i+y, Blocklist.block_list[block][i][j]);
+                colPrint(j+x, i+y, 7);
+            }
+        }
+        
+        for(int i=0;i<(getBlockSize(block)==4?3:getBlockSize(block));i++){
+            for(int j=0;j<getBlockSize(block);j++){
+                switch(block){
+                case 2:
+                    colPrint(j+x+1, i+y+1, Blocklist.block_list[block][i][j]);
+                    break;
+                case 0:
+                case 1:
+                case 3:
+                case 5:
+                case 6:
+                    colPrint(j+x+0.5f, i+y+1, Blocklist.block_list[block][i][j]);
+                    break;
+                case 4:
+                    colPrint(j+x, i+y+0.5f, Blocklist.block_list[block][i][j]);
+                    break;
+                }
             }
         }
     }
     
     //works
-    void sendTheTitle(){
+    private void sendTheTitle(){
         String s1="";
         String s2="";
         String s3="";
@@ -224,7 +293,7 @@ public class Table implements Listener{
     }
 
     //works
-    void removeGhost(){
+    private void removeGhost(){
       //fill with air
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
@@ -236,7 +305,7 @@ public class Table implements Listener{
     }
     
     //works
-    void drawGhost(){
+    private void drawGhost(){
         ghosty=y;
         while(!isCollide(x, ghosty+1)){
             ghosty++;
@@ -256,7 +325,7 @@ public class Table implements Listener{
     }
     
     //works
-    void shiftBag1(){
+    private void shiftBag1(){
         if(bag_counter>6){
             generateBag2();
         }
@@ -271,7 +340,7 @@ public class Table implements Listener{
     }
     
     //works
-    void generateBag2(){
+    private void generateBag2(){
         bag_counter=0;
         for(int i=0;i<7;i++){
             bag2[i]=(int)(gen.nextInt(7));
@@ -284,13 +353,15 @@ public class Table implements Listener{
     }
 
     //works
-    void spawnBlock(){
+    private void spawnBlock(){
         x=3;
         y=20;
         rotation=0;
         
-        if(block_current==2 || block_current==4){
+        if(block_current==4){
             block_size=4;
+        }else if(block_current==2){
+            block_size=2;
         }else{
             block_size=3;
         }
@@ -299,11 +370,14 @@ public class Table implements Listener{
             for(int j=0;j<block_size;j++){
                 block[i][j] = Blocklist.block_list[block_current][i][j];
             }
-        }    
+        }
+        
+        spun=false;
+        mini=false;
     }
     
     //works
-    void makeNextBlock(){
+    private void makeNextBlock(){
         block_current=bag1[0];
         shiftBag1();
 
@@ -332,7 +406,7 @@ public class Table implements Listener{
     }
     
     //works
-    boolean isCollide(int x, int y){
+    private boolean isCollide(int x, int y){
         int temp;
         
         for(int i=0;i<block_size;i++){
@@ -352,16 +426,15 @@ public class Table implements Listener{
         return false;
     }
     
-    //IMPROVE
-    void colPrint(int x, int y, int color){
-        //1,1,0
+    //works
+    private void colPrint(float x, float y, int color){
         for(int i=0;i<=coni;i++){
             for(int j=0;j<=conj;j++){
                 for(int k=0;k<=conk;k++){
                     printSingleBlock(
-                    gx+x*m1x+y*m1y+(i==coni?0:i),
-                    gy+x*m2x+y*m2y+(j==conj?0:j),
-                    gz+x*m3x+y*m3y+(k==conk?0:k),
+                    gx+(int)(x*m1x)+(int)(y*m1y)+(i==coni?0:i),
+                    gy+(int)(x*m2x)+(int)(y*m2y)+(j==conj?0:j),
+                    gz+(int)(x*m3x)+(int)(y*m3y)+(k==conk?0:k),
                     color
                     );
                 }
@@ -370,8 +443,14 @@ public class Table implements Listener{
     }
     
     //improve
-    void initGame(long seed){
+    public void initGame(long seed,long seed2){
+
+        player.setWalkSpeed(0.2f);
+        garbo.clear();
         gen=new Random(seed);
+        garbagegen=new Random(seed2);
+        well=garbagegen.nextInt(10);
+        
         
         if(task!=null){
             task.cancel();
@@ -422,7 +501,7 @@ public class Table implements Listener{
     }
     
     //works
-    void tSpin(){
+    private void tSpin(){
         int truth=0;
         boolean wall=false;
         if((y<0 || STAGESIZEY<=y) || (x<0 || STAGESIZEX<=x)){
@@ -486,7 +565,8 @@ public class Table implements Listener{
     }
     
     //improve now
-    void updateScore(){
+    private void updateScore(){
+        
         if((spun && lines>0) || lines==4){
             b2b++;
         }else if(lines>0){
@@ -496,6 +576,7 @@ public class Table implements Listener{
         if(lines>0){
             combo++;
         }else{
+            putGarbage();
             combo=-1;
             power=false;
         }
@@ -564,17 +645,41 @@ public class Table implements Listener{
         
         if(totallines*10==totalblocks*4){
             score+=3500;
+            sendGarbage(10);
         }
 
         sendTheTitle();
         sendTheScoreboard();
+        
+        ///sendgarbage
+        if(lines>0){
+            int temp=0;
+            if(spun==false){
+                temp=lines-1;
+            }else if(mini==true){
+                if(lines==1){
+                    temp=4;
+                }else{
+                    temp=6;
+                }
+            }else{
+                if(lines==1){
+                    temp=5;
+                }else if(lines==2){
+                    temp=7;
+                }else{
+                    temp=8;
+                }
+            }
+            sendGarbage(Garbagetable.garbage_table[temp][combo]);
+        }
         
         spun=false;
         mini=false;
         held=false;
         
     }
-        /*
+        /*scoring:
         SINGLE:100
         DOUBLE:300
         TRIPLE:500
@@ -595,7 +700,7 @@ public class Table implements Listener{
         */
     
     //improve
-    void dropBlock(){
+    private void dropBlock(){
         int lines=0;
         while(!isCollide(x, y+lines+1)){
             lines++;
@@ -606,7 +711,7 @@ public class Table implements Listener{
     }
     
     //works
-    void moveBlock(int x, int y){
+    private void moveBlock(int x, int y){
         //fill with air
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
@@ -633,7 +738,7 @@ public class Table implements Listener{
     }
     
     //works
-    void userInput(String input){
+    public void userInput(String input){
         switch(input){
         case "y":
             rotateBlock(CCW);
@@ -692,7 +797,7 @@ public class Table implements Listener{
     }
 
     //improve now
-    void holdBlock(){
+    private void holdBlock(){
         int temp;
 
         if(!held){
@@ -749,8 +854,8 @@ public class Table implements Listener{
     }
     
     //IMPROVE
-    void rotateBlock(int d){
-        int piece_type=block_size-3;
+    private void rotateBlock(int d){
+        int piece_type=block_size==4?1:0;
         int special=-1;
         int tries=0;
         int maxtries=5;
@@ -910,7 +1015,7 @@ public class Table implements Listener{
     }
     
     //improve now
-    void checkPlaced(){
+    private void checkPlaced(){
         boolean lineclean;
         lines=0;
         int hr=0;
@@ -961,7 +1066,7 @@ public class Table implements Listener{
     }
 
     //improve now
-    void placeBlock(){
+    private void placeBlock(){
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(block[i][j]!=7){
@@ -973,7 +1078,7 @@ public class Table implements Listener{
     }
     
     //works
-   	void playGame(){
+   	private void playGame(){
    	    task=new BukkitRunnable(){
    	        @Override
    	        public void run() {
@@ -990,50 +1095,19 @@ public class Table implements Listener{
    	            counter+=totallines/4;
    	            
    	            if(gameover){
+   	                player.setWalkSpeed(0.2f);
    	                task.cancel();
    	                task=null;
    	            }
    	            
    	        board.set("TIME "+looptick/20, 0);
    	        looptick++;
+
+            PacketPlayOutUpdateHealth test;
+            test=new PacketPlayOutUpdateHealth((float)player.getHealth(), 2, player.getSaturation());
+            ((CraftPlayer) player).getHandle().playerConnection.sendPacket(test);
    	        }
    	    }.runTaskTimer(Main.plugin, 0, 0);
     }
    	
-   	@EventHandler
-    public void onItemHeld(PlayerItemHeldEvent event){
-        Player p=event.getPlayer();
-        if(task!=null && p==player){
-            int itemId = event.getNewSlot();
-            switch(itemId){
-            case 0:
-                userInput("left");
-                break;
-            case 1:
-                userInput("right");
-                break;
-            case 2:
-                userInput("instant");
-                break;
-            case 3:
-                userInput("space");
-                break;
-            case 4:
-                userInput("y");
-                break;
-            case 5:
-                userInput("x");
-                break;
-            case 6:
-                userInput("up");
-                break;
-            case 7:
-                userInput("c");
-                break;
-            case 8:
-                return;
-            }
-            p.getInventory().setHeldItemSlot(8);
-        }
-    }
 }

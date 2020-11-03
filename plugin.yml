@@ -6,3 +6,4 @@ commands:
     tetr:
         description: Open the window
         usage: /<command>
+depend: [NoteBlockAPI, Netherboard]

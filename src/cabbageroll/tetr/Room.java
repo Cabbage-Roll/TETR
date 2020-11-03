@@ -3,8 +3,8 @@ package cabbageroll.tetr;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
@@ -63,12 +63,15 @@ public class Room {
             }
         }
         
-        long seed=System.currentTimeMillis();
+        Random x=new Random();
+        long seed=x.nextInt();
+        long seed2=x.nextInt();
+        System.out.println(seed+","+seed2);
         
         for(Player player: playerlist){
             Table table=playerboards.get(player);
             table.whotosendblocksto=new ArrayList<Player>(playerlist);
-            table.initGame(seed);
+            table.initGame(seed,seed2);
             
             if(Main.numberofsongs>0){
                 table.player.sendMessage("Playing: "+rsp.getSong().getPath());
@@ -82,16 +85,17 @@ public class Room {
         Table table=new Table(player);
         playerboards.put(player,table);
         playerlist.add(player);
+        
         if(Main.numberofsongs>0){
             rsp.addPlayer(player);
         }
+        
         Main.inwhichroom.put(player, id);
-        Bukkit.getServer().getPluginManager().registerEvents(table, Main.plugin);
     }
     
     public void removePlayer(Player player){
         if(Main.numberofsongs>0){
-        rsp.removePlayer(player);
+            rsp.removePlayer(player);
         }
         
         playerboards.get(player).gameover=true;
@@ -105,6 +109,11 @@ public class Room {
                 host=playerlist.get(0);
             }
         }
+    }
+    
+    public void forwardGarbage(int n){
+        int rand=(int)(Math.random()*playerlist.size());
+        playerboards.get(playerlist.get(rand)).receiveGarbage(n);
     }
     
 }

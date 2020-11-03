@@ -26,22 +26,22 @@ public class JoinRoomMenu implements InventoryHolder{
         }
         
         //clickable items
+        ItemStack item;
         ItemMeta itemmeta;
         
-        ItemStack back=new ItemStack(Material.DIRT);
-        itemmeta=back.getItemMeta();
+        item=new ItemStack(Material.DIRT);
+        itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("BACK");
-        back.setItemMeta(itemmeta);
-        inventory.setItem(36, back);
+        item.setItemMeta(itemmeta);
+        inventory.setItem(36, item);
         
-        ItemStack listroom;
         int i=0;
         for(Room room: Main.roommap.values()){
-            listroom=new ItemStack(Material.COAL);
-            itemmeta=listroom.getItemMeta();
+            item=new ItemStack(Material.COAL_BLOCK);
+            itemmeta=item.getItemMeta();
             itemmeta.setDisplayName(room.id);
-            listroom.setItemMeta(itemmeta);
-            inventory.setItem(9+i, listroom);
+            item.setItemMeta(itemmeta);
+            inventory.setItem(9+i, item);
             i++;
         }
         
