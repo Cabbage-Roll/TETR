@@ -46,7 +46,7 @@ public class Listen implements Listener {
             }
         }else if(event.getInventory().getHolder() instanceof JoinRoomMenu){
             event.setCancelled(true);
-            if(event.getCurrentItem().getType()==Material.COAL && event.getSlot()<27){
+            if(event.getCurrentItem().getType()==Material.COAL_BLOCK && event.getSlot()<27){
                 Main.roommap.get(event.getCurrentItem().getItemMeta().getDisplayName()).addPlayer(player);
                 new RoomMenu(player);
             }else if(event.getSlot()==36){

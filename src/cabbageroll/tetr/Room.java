@@ -30,6 +30,8 @@ public class Room {
     static Playlist slist;
     public RadioSongPlayer rsp;
     public boolean running;
+    public boolean multiplayer;
+    public int playersalive;
     
     public Room(Player p){
         if(Main.numberofsongs>0){
@@ -39,6 +41,7 @@ public class Room {
         host=p;
         addPlayer(p);
         Main.roommap.put(id, this);
+        multiplayer=false;
     }
     
     public void stopRoom(){
@@ -78,6 +81,7 @@ public class Room {
             }
         }
         
+        playersalive=playerlist.size();
         running=true;
     }
     
@@ -85,6 +89,7 @@ public class Room {
         Table table=new Table(player);
         playerboards.put(player,table);
         playerlist.add(player);
+        multiplayer=true;
         
         if(Main.numberofsongs>0){
             rsp.addPlayer(player);
@@ -109,11 +114,26 @@ public class Room {
                 host=playerlist.get(0);
             }
         }
+        if(playerlist.size()==1){
+            multiplayer=false;
+        }
     }
     
-    public void forwardGarbage(int n){
-        int rand=(int)(Math.random()*playerlist.size());
-        playerboards.get(playerlist.get(rand)).receiveGarbage(n);
+    public void forwardGarbage(int n, Player player){
+        if(multiplayer){
+            if(n>0){
+                int rand=(int)(Math.random()*playerlist.size());
+                if(playerboards.get(playerlist.get(rand)).player!=player){
+                    if(!playerboards.get(playerlist.get(rand)).gameover){
+                        playerboards.get(playerlist.get(rand)).receiveGarbage(n);
+                    }else{
+                        forwardGarbage(n, player);
+                    }
+                }else{
+                    forwardGarbage(n, player);
+                }
+            }
+        }
     }
     
 }

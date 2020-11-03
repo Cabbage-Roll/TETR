@@ -113,6 +113,7 @@ public class Table {
     private Random garbagegen;
     private int well;
     private int cap=4;
+    private int totalgarbage;
     
     Table(Player p){
         player=p;
@@ -120,19 +121,17 @@ public class Table {
     }
     
     private void sendGarbage(int n){
-        Main.roommap.get(Main.inwhichroom.get(player)).forwardGarbage(n);
+        Main.roommap.get(Main.inwhichroom.get(player)).forwardGarbage(n, player);
     }
     
     public void receiveGarbage(int n){
         garbo.add(n);
-        for(int x:garbo){
-            player.sendMessage("test: "+x);
-        }
     }
     
     private void putGarbage(){
         for(int h=0;h<cap;h++){
             if(!garbo.isEmpty()){
+                totalgarbage++;
                 for(int i=0;i<STAGESIZEY-1;i++){
                     for(int j=0;j<STAGESIZEX;j++){
                         stage[i][j]=stage[i+1][j];
@@ -150,7 +149,7 @@ public class Table {
                 }
                 
                 garbo.set(0, garbo.get(0)-1);
-                if(garbo.get(0)==0){
+                if(garbo.get(0)<=0){
                     garbo.remove(0);
                     well=garbagegen.nextInt(10);
                 }
@@ -279,7 +278,7 @@ public class Table {
             s1=" ";
         }
         
-        if(totallines*10==totalblocks*4){
+        if((totallines-totalgarbage)*10+totalgarbage==totalblocks*4){
             s4="§6§lALL CLEAR§r";
         }
         
@@ -450,6 +449,7 @@ public class Table {
         gen=new Random(seed);
         garbagegen=new Random(seed2);
         well=garbagegen.nextInt(10);
+        totalgarbage=0;
         
         
         if(task!=null){
@@ -636,14 +636,14 @@ public class Table {
         
         if(combo>=0){
             if(power){
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1f, (float)Math.pow(2,(combo*2-12)/(double)12));
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
             }else{
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-12)/(double)12));
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
             }
             score+=combo*50;
         }
         
-        if(totallines*10==totalblocks*4){
+        if((totallines-totalgarbage)*10+totalgarbage==totalblocks*4){
             score+=3500;
             sendGarbage(10);
         }
@@ -1098,6 +1098,10 @@ public class Table {
    	                player.setWalkSpeed(0.2f);
    	                task.cancel();
    	                task=null;
+   	                Main.roommap.get(Main.inwhichroom.get(player)).playersalive--;
+   	                if(Main.roommap.get(Main.inwhichroom.get(player)).playersalive<=1){
+   	                    Main.roommap.get(Main.inwhichroom.get(player)).stopRoom();
+   	                }
    	            }
    	            
    	        board.set("TIME "+looptick/20, 0);
