@@ -4,43 +4,39 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_12_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+
 import cabbageroll.tetr.constants.Blocklist;
 import cabbageroll.tetr.constants.Garbagetable;
 import cabbageroll.tetr.constants.Kicktable;
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
-import net.minecraft.server.v1_12_R1.PacketPlayOutUpdateHealth;
+import xseries.XMaterial;
 
 public class Table {
-    
-    //ZLOSIJT,air,ghost,border
     public static ItemStack[] blocks=new ItemStack[]{
-            new ItemStack(Material.CONCRETE, 1, (short) 14),
-            new ItemStack(Material.CONCRETE, 1, (short) 1),
-            new ItemStack(Material.CONCRETE, 1, (short) 4),
-            new ItemStack(Material.CONCRETE, 1, (short) 5),
-            new ItemStack(Material.CONCRETE, 1, (short) 3),
-            new ItemStack(Material.CONCRETE, 1, (short) 11),
-            new ItemStack(Material.CONCRETE, 1, (short) 10),
-            new ItemStack(Material.AIR),
-            new ItemStack(Material.CONCRETE, 1, (short) 8),
-            new ItemStack(Material.STAINED_GLASS, 1, (short) 14),
-            new ItemStack(Material.STAINED_GLASS, 1, (short) 1),
-            new ItemStack(Material.STAINED_GLASS, 1, (short) 4),
-            new ItemStack(Material.STAINED_GLASS, 1, (short) 5),
-            new ItemStack(Material.STAINED_GLASS, 1, (short) 3),
-            new ItemStack(Material.STAINED_GLASS, 1, (short) 11),
-            new ItemStack(Material.STAINED_GLASS, 1, (short) 10),
-        };
+        XMaterial.RED_WOOL.parseItem(),
+        XMaterial.ORANGE_WOOL.parseItem(),
+        XMaterial.YELLOW_WOOL.parseItem(),
+        XMaterial.LIME_WOOL.parseItem(),
+        XMaterial.LIGHT_BLUE_WOOL.parseItem(),
+        XMaterial.BLUE_WOOL.parseItem(),
+        XMaterial.PURPLE_WOOL.parseItem(),
+        XMaterial.AIR.parseItem(),
+        XMaterial.LIGHT_GRAY_WOOL.parseItem(),
+        XMaterial.RED_STAINED_GLASS.parseItem(),
+        XMaterial.ORANGE_STAINED_GLASS.parseItem(),
+        XMaterial.YELLOW_STAINED_GLASS.parseItem(),
+        XMaterial.LIME_STAINED_GLASS.parseItem(),
+        XMaterial.LIGHT_BLUE_STAINED_GLASS.parseItem(),
+        XMaterial.BLUE_STAINED_GLASS.parseItem(),
+        XMaterial.PURPLE_STAINED_GLASS.parseItem(),
+    };
     
     public static boolean transparent=false;
     
@@ -56,7 +52,7 @@ public class Table {
     private static final int R180=2;
     
     public int gx=100;
-    public int gy=50;
+    public int gy=150;
     public int gz=0;
     public int m1x=1;
     public int m1y=0;
@@ -287,7 +283,7 @@ public class Table {
         s1=s3+" "+s1+"       "+s4;
         s2=s2+"                                ";
         
-            player.sendTitle(s1, s2, 0, 20, 10);
+            Main.functions.sendTitle(player, s1, s2, 0, 20, 10);
         }
     }
 
@@ -392,7 +388,7 @@ public class Table {
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(stage[i+y][j+x]!=7 && block[i][j]!=7){
-                    player.playSound(player.getLocation(), Sound.BLOCK_PISTON_CONTRACT, 1f, 1f);
+                    player.playSound(player.getLocation(), SoundUtil.ORB_PICKUP, 1f, 1f);
                     gameover=true;
                     return;
                 }
@@ -582,7 +578,7 @@ public class Table {
         }
         
         if(spun){
-            player.playSound(player.getLocation(), Sound.ENTITY_LIGHTNING_THUNDER, 1f, 0.75f);
+            player.playSound(player.getLocation(), SoundUtil.THUNDER, 1f, 0.75f);
             if(mini){
                 switch(lines){
                 case 0:
@@ -636,9 +632,9 @@ public class Table {
         
         if(combo>=0){
             if(power){
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
+                player.playSound(player.getLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
             }else{
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
+                player.playSound(player.getLocation(), SoundUtil.NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
             }
             score+=combo*50;
         }
@@ -834,7 +830,7 @@ public class Table {
                 for(int i=0;i<block_size;i++){
                     for(int j=0;j<block_size;j++){
                         if(stage[i+y][j+x]!=7 && block[i][j]!=7){
-                            player.playSound(player.getLocation(), Sound.BLOCK_PISTON_CONTRACT, 1f, 1f);
+                            player.playSound(player.getLocation(), SoundUtil.ORB_PICKUP, 1f, 1f);
                             gameover=true;
                             return;
                         }
@@ -848,7 +844,7 @@ public class Table {
             
         }else{
             //already held
-            player.playSound(player.getLocation(), Sound.ENTITY_VILLAGER_NO, 1f, 1f);
+            player.playSound(player.getLocation(), SoundUtil.VILLAGER_NO, 1f, 1f);
         }
         held=true;
     }
@@ -1107,9 +1103,9 @@ public class Table {
    	        board.set("TIME "+looptick/20, 0);
    	        looptick++;
 
-            PacketPlayOutUpdateHealth test;
+            /*PacketPlayOutUpdateHealth test;
             test=new PacketPlayOutUpdateHealth((float)player.getHealth(), 2, player.getSaturation());
-            ((CraftPlayer) player).getHandle().playerConnection.sendPacket(test);
+            ((CraftPlayer) player).getHandle().playerConnection.sendPacket(test);*/
    	        }
    	    }.runTaskTimer(Main.plugin, 0, 0);
     }

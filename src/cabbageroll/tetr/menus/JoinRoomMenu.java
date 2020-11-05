@@ -10,13 +10,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import cabbageroll.tetr.Main;
 import cabbageroll.tetr.Room;
+import xseries.XMaterial;
 
 public class JoinRoomMenu implements InventoryHolder{
     private Inventory inventory=null;
     public JoinRoomMenu(Player player){
         Main.lastui.put(player, "joinroom");
         Inventory inventory=Bukkit.createInventory(this, 54, "Join room");
-        ItemStack border=new ItemStack(Material.THIN_GLASS);
+        ItemStack border=XMaterial.GLASS_PANE.parseItem();
         //fill the border with glass
         for(int i=0;i<9;i++){
             inventory.setItem(i, border);

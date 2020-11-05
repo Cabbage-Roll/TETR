@@ -11,13 +11,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import cabbageroll.tetr.Main;
+import xseries.XMaterial;
 
 public class RoomMenu implements InventoryHolder{
     private Inventory inventory=null;
     public RoomMenu(Player player){
         Main.lastui.put(player, "room");
         Inventory inventory=Bukkit.createInventory(this, 54, "Room - "+Main.inwhichroom.get(player));
-        ItemStack border=new ItemStack(Material.THIN_GLASS);
+        ItemStack border=XMaterial.GLASS_PANE.parseItem();
         //fill the border with glass
         for(int i=0;i<9;i++){
             inventory.setItem(i, border);
@@ -30,7 +31,7 @@ public class RoomMenu implements InventoryHolder{
         ItemStack item;
         ItemMeta itemmeta;
         
-        item=new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+        item=XMaterial.PLAYER_HEAD.parseItem();
         int i=0;
         for(Player p: Main.roommap.get(Main.inwhichroom.get(player)).playerlist){
             itemmeta=item.getItemMeta();

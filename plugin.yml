@@ -1,7 +1,7 @@
 name: TETR
 main: cabbageroll.tetr.Main
 version: 1.0
-api-version: 1.12.2
+api-version: 1.13
 commands:
     tetr:
         description: Open the window

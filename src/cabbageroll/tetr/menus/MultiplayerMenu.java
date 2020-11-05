@@ -9,13 +9,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import cabbageroll.tetr.Main;
+import xseries.XMaterial;
 
 public class MultiplayerMenu implements InventoryHolder{
     private Inventory inventory=null;
     public MultiplayerMenu(Player player){
         Main.lastui.put(player, "multiplayer");
         Inventory inventory=Bukkit.createInventory(this, 54, "Multiplayer");
-        ItemStack border=new ItemStack(Material.THIN_GLASS);
+        ItemStack border=XMaterial.GLASS_PANE.parseItem();
         //fill the border with glass
         for(int i=0;i<9;i++){
             inventory.setItem(i, border);

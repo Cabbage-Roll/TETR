@@ -15,6 +15,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import cabbageroll.tetr.Main;
 import cabbageroll.tetr.Room;
 import cabbageroll.tetr.Table;
+import xseries.XMaterial;
 
 public class Listen implements Listener {
     @EventHandler
@@ -80,14 +81,14 @@ public class Listen implements Listener {
                 new SettingsMenu(player);
             }
         }else if(event.getInventory().getHolder() instanceof SkinMenu){
-            if(event.getCurrentItem().getType()==Material.THIN_GLASS){
+            if(event.getCurrentItem()==null){
+                if(event.getSlot()==11 && event.getCursor().getType()==Material.AIR){
+                    Table.transparent=!Table.transparent;
+                    player.sendMessage("Transparency turned "+(Table.transparent?"on":"off"));
+                    return;
+                }
+            }else if(XMaterial.matchXMaterial(event.getCurrentItem().getType())==XMaterial.GLASS_PANE){
                 event.setCancelled(true);
-                return;
-            }
-            
-            if(event.getCurrentItem().getType()==Material.AIR && event.getSlot()==11 && event.getCursor().getType()==Material.AIR){
-                Table.transparent=!Table.transparent;
-                player.sendMessage("Transparency turned "+(Table.transparent?"on":"off"));
                 return;
             }
         }else if(event.getInventory().getHolder() instanceof SettingsMenu){
