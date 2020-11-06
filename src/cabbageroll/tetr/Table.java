@@ -14,6 +14,7 @@ import org.bukkit.scheduler.BukkitTask;
 import cabbageroll.tetr.constants.Blocklist;
 import cabbageroll.tetr.constants.Garbagetable;
 import cabbageroll.tetr.constants.Kicktable;
+import cabbageroll.tetr.functions.SendBlockChangeCustom;
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
 import xseries.XMaterial;
@@ -165,18 +166,17 @@ public class Table {
     }
     
     //works
-    @SuppressWarnings("deprecation")
     private void printSingleBlock(int x, int y, int z, int color){
         if(color==7 && transparent){
             Block b=world.getBlockAt(x, y, z);
             for(Player player: whotosendblocksto){
-                player.sendBlockChange(new Location(world, x, y, z), b.getType(), b.getData());
+                SendBlockChangeCustom.sendBlockChangeCustom(player, new Location(world, x, y, z), b);
             }
             return;
         }
         
         for(Player player: whotosendblocksto){
-            player.sendBlockChange(new Location(world, x, y, z), blocks[color].getType(), blocks[color].getData().getData());
+            SendBlockChangeCustom.sendBlockChangeCustom(player, new Location(world, x, y, z), color);
         }
     }
     
