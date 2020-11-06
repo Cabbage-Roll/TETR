@@ -62,7 +62,7 @@ public class Table {
     public int m3x=0;
     public int m3y=0;
     
-    //printing variables
+    //intermediate variables
     private int coni;
     private int conj;
     private int conk;
@@ -77,7 +77,7 @@ public class Table {
     private int block_current=-1;
     
     private int lines=0;
-    private int score=0;//unused for now
+    private int score=0;
     private int counter=0;//gravity variable
     private int combo=-1;
     private int b2b=-1;
@@ -88,6 +88,8 @@ public class Table {
     //board variables
     private final int STAGESIZEX=10;
     private final int STAGESIZEY=40;
+    @SuppressWarnings("unused")
+    private final int VISIBLEROWS=23;
     private int[][] stage=new int[STAGESIZEY][STAGESIZEX];
     private int[][] block=new int[4][4];
     
@@ -283,7 +285,8 @@ public class Table {
         s1=s3+" "+s1+"       "+s4;
         s2=s2+"                                ";
         
-            Main.functions.sendTitle(player, s1, s2, 0, 20, 10);
+            //Main.functions.sendTitle(player, s1, s2, 0, 20, 10);
+            player.sendTitle(s1, s2, 0, 20, 10);
         }
     }
 
@@ -1059,6 +1062,7 @@ public class Table {
         totallines+=lines;
         totalblocks+=1;
         updateScore();
+        makeNextBlock();
     }
 
     //improve now
@@ -1071,6 +1075,7 @@ public class Table {
                 }
             }
         }
+        checkPlaced();
     }
     
     //works
@@ -1083,8 +1088,6 @@ public class Table {
    	                    moveBlock(x, y+1);
    	                    }else{
    	                        placeBlock();
-   	                        checkPlaced();
-   	                        makeNextBlock();
    	                    }
    	                    counter=0;
    	            }
@@ -1094,10 +1097,12 @@ public class Table {
    	                player.setWalkSpeed(0.2f);
    	                task.cancel();
    	                task=null;
-   	                Main.roommap.get(Main.inwhichroom.get(player)).playersalive--;
-   	                if(Main.roommap.get(Main.inwhichroom.get(player)).playersalive<=1){
-   	                    Main.roommap.get(Main.inwhichroom.get(player)).stopRoom();
-   	                }
+       	                Main.roommap.get(Main.inwhichroom.get(player)).playersalive--;
+       	                player.sendMessage("pa:"+Main.roommap.get(Main.inwhichroom.get(player)).playersalive);
+       	                if(Main.roommap.get(Main.inwhichroom.get(player)).playersalive<=1){
+       	                    Main.roommap.get(Main.inwhichroom.get(player)).stopRoom();
+       	                }
+   	                
    	            }
    	            
    	        board.set("TIME "+looptick/20, 0);

@@ -27,7 +27,7 @@ public class Main extends JavaPlugin implements Listener{
     public static JavaPlugin plugin;
     public static ConsoleCommandSender console;
     
-    public static ArrayList<Room> roomlist=new ArrayList<Room>();
+    public static ArrayList<String> roomlist=new ArrayList<String>();
     public static HashMap<String,Room> roommap=new HashMap<String,Room>();
     public static HashMap<Player,String> lastui=new HashMap<Player,String>();
     public static HashMap<Player,String> inwhichroom=new HashMap<Player,String>();
@@ -100,6 +100,9 @@ public class Main extends JavaPlugin implements Listener{
 
             Bukkit.getPluginManager().disablePlugin(this);
         }
+        
+        for(Player player: Bukkit.getOnlinePlayers())
+            lastui.put(player, "home");
     }
     
     private boolean setupActionbar() {

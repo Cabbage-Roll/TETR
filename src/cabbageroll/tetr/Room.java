@@ -41,6 +41,7 @@ public class Room {
         host=p;
         addPlayer(p);
         Main.roommap.put(id, this);
+        Main.roomlist.add(id);
         multiplayer=false;
     }
     
@@ -102,7 +103,6 @@ public class Room {
         if(Main.numberofsongs>0){
             rsp.removePlayer(player);
         }
-        
         playerboards.get(player).gameover=true;
         playerlist.remove(player);
         playerboards.remove(player);
@@ -110,6 +110,7 @@ public class Room {
         if(player==host){
             if(playerlist.size()==0){
                 Main.roommap.remove(id);
+                Main.roomlist.remove(id);
             }else{
                 host=playerlist.get(0);
             }

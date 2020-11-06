@@ -1,6 +1,5 @@
 package cabbageroll.tetr.menus;
 
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -47,7 +46,7 @@ public class Listen implements Listener {
             }
         }else if(event.getInventory().getHolder() instanceof JoinRoomMenu){
             event.setCancelled(true);
-            if(event.getCurrentItem().getType()==Material.COAL_BLOCK && event.getSlot()<27){
+            if(event.getCurrentItem().getType()==XMaterial.COAL_BLOCK.parseMaterial() && event.getSlot()<27){
                 Main.roommap.get(event.getCurrentItem().getItemMeta().getDisplayName()).addPlayer(player);
                 new RoomMenu(player);
             }else if(event.getSlot()==36){
@@ -63,14 +62,14 @@ public class Listen implements Listener {
                 if(Main.roommap.get(Main.inwhichroom.get(player)).host.equals(player)){
                     if(Main.roommap.get(Main.inwhichroom.get(player)).running){
                         Main.roommap.get(Main.inwhichroom.get(player)).stopRoom();
-                        ItemStack start=new ItemStack(Material.DIAMOND_SWORD);
+                        ItemStack start=new ItemStack(XMaterial.DIAMOND_SWORD.parseMaterial());
                         itemmeta=start.getItemMeta();
                         itemmeta.setDisplayName("START");
                         start.setItemMeta(itemmeta);
                         event.getInventory().setItem(49, start);
                     }else{
                         Main.roommap.get(Main.inwhichroom.get(player)).startRoom();
-                        ItemStack item=new ItemStack(Material.ANVIL);
+                        ItemStack item=new ItemStack(XMaterial.ANVIL.parseMaterial());
                         itemmeta=item.getItemMeta();
                         itemmeta.setDisplayName("ABORT");
                         item.setItemMeta(itemmeta);
@@ -82,14 +81,15 @@ public class Listen implements Listener {
             }
         }else if(event.getInventory().getHolder() instanceof SkinMenu){
             if(event.getCurrentItem()==null){
-                if(event.getSlot()==11 && event.getCursor().getType()==Material.AIR){
+                event.setCancelled(true);
+            }else if(event.getCurrentItem().getType()==XMaterial.GLASS_PANE.parseMaterial()){
+                event.setCancelled(true);
+            }else if(event.getCurrentItem().getType()==XMaterial.AIR.parseMaterial()){
+                if(event.getSlot()==11 && event.getCursor().getType()==XMaterial.AIR.parseMaterial()){
                     Table.transparent=!Table.transparent;
                     player.sendMessage("Transparency turned "+(Table.transparent?"on":"off"));
                     return;
                 }
-            }else if(XMaterial.matchXMaterial(event.getCurrentItem().getType())==XMaterial.GLASS_PANE){
-                event.setCancelled(true);
-                return;
             }
         }else if(event.getInventory().getHolder() instanceof SettingsMenu){
             event.setCancelled(true);
@@ -100,57 +100,57 @@ public class Listen implements Listener {
             }else if(event.getClick()==ClickType.RIGHT){
                 by=-1;
             }
-            
-            ItemMeta itemmeta;
+             
             ItemStack item=event.getInventory().getItem(event.getSlot());
-            itemmeta=item.getItemMeta();
-            
-            Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
-            
-            switch(event.getSlot()){
-            case 36:
-                new RoomMenu(player);
-                return;
-            case 11:
-                table.gx=player.getLocation().getBlockX();
-                table.gy=player.getLocation().getBlockY();
-                table.gz=player.getLocation().getBlockZ();
-                break;
-            case 12:
-                table.gx+=by;
-                break;
-            case 13:
-                table.gy+=by;
-                break;
-            case 14:
-                table.gz+=by;
-                break;
-            case 37:
-                table.m1x+=by;
-                break;
-            case 38:
-                table.m2x+=by;
-                break;
-            case 39:
-                table.m3x+=by;
-                break;
-            case 41:
-                table.m1y+=by;
-                break;
-            case 42:
-                table.m2y+=by;
-                break;
-            case 43:
-                table.m3y+=by;
-                break;
-            default:
-                return;
+            if(item!=null){
+                ItemMeta itemmeta=item.getItemMeta();
+                
+                Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
+                
+                switch(event.getSlot()){
+                case 36:
+                    new RoomMenu(player);
+                    return;
+                case 11:
+                    table.gx=player.getLocation().getBlockX();
+                    table.gy=player.getLocation().getBlockY();
+                    table.gz=player.getLocation().getBlockZ();
+                    break;
+                case 12:
+                    table.gx+=by;
+                    break;
+                case 13:
+                    table.gy+=by;
+                    break;
+                case 14:
+                    table.gz+=by;
+                    break;
+                case 37:
+                    table.m1x+=by;
+                    break;
+                case 38:
+                    table.m2x+=by;
+                    break;
+                case 39:
+                    table.m3x+=by;
+                    break;
+                case 41:
+                    table.m1y+=by;
+                    break;
+                case 42:
+                    table.m2y+=by;
+                    break;
+                case 43:
+                    table.m3y+=by;
+                    break;
+                default:
+                    return;
+                }
+                
+                item.setItemMeta(itemmeta);
+                event.getInventory().setItem(event.getSlot(), item);
+                new SettingsMenu(player);
             }
-            
-            item.setItemMeta(itemmeta);
-            event.getInventory().setItem(event.getSlot(), item);
-            new SettingsMenu(player);
-            
         }
     }
     
@@ -165,7 +165,7 @@ public class Listen implements Listener {
                 if(inv.getItem(28+i)!=null){
                     Table.blocks[i]=inv.getItem(28+i);
                 }else{
-                    Table.blocks[i]=new ItemStack(Material.AIR);
+                    Table.blocks[i]=new ItemStack(XMaterial.AIR.parseMaterial());
                 }
             }
             
@@ -174,7 +174,7 @@ public class Listen implements Listener {
                 if(inv.getItem(37+i)!=null){
                     Table.blocks[i+9]=inv.getItem(37+i);
                 }else{
-                    Table.blocks[i+9]=new ItemStack(Material.AIR);
+                    Table.blocks[i+9]=new ItemStack(XMaterial.AIR.parseMaterial());
                 }
             }
             
@@ -182,7 +182,7 @@ public class Listen implements Listener {
             if(inv.getItem(11)!=null){
                 Table.blocks[7]=inv.getItem(11);
             }else{
-                Table.blocks[7]=new ItemStack(Material.AIR);
+                Table.blocks[7]=new ItemStack(XMaterial.AIR.parseMaterial());
             }
             
             e.getPlayer().sendMessage("Skin saved");
