@@ -34,6 +34,9 @@ public class OpenMenu implements CommandExecutor{
         case "settings":
             new SettingsMenu(p);
             break;
+        case "simsettings":
+            new SimpleSettingsMenu(p);
+            break;
         }
         return true;
     }

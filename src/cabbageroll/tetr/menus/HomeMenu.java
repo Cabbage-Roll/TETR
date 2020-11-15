@@ -12,7 +12,11 @@ import cabbageroll.tetr.Main;
 import xseries.XMaterial;
 
 public class HomeMenu implements InventoryHolder{
-    private Inventory inventory=null;
+    private Inventory inventory = null;
+
+    protected final static int MULTIPLAYER_LOCATION = 9;
+    protected final static int SKINEDITOR_LOCATION = 10;
+    
     public HomeMenu(Player player){
         Main.lastui.put(player, "home");
         Inventory inventory=Bukkit.createInventory(this, 54, "Home");
@@ -29,17 +33,18 @@ public class HomeMenu implements InventoryHolder{
         ItemStack item;
         ItemMeta itemmeta;
         
+        
         item=new ItemStack(Material.DIRT);
         itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("MULTIPLAYER");
         item.setItemMeta(itemmeta);
-        inventory.setItem(9, item);
+        inventory.setItem(MULTIPLAYER_LOCATION, item);
         
         item=new ItemStack(Material.DIRT);
         itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("SKIN EDITOR");
         item.setItemMeta(itemmeta);
-        inventory.setItem(10, item);
+        inventory.setItem(SKINEDITOR_LOCATION, item);
         
         player.openInventory(inventory);
     }

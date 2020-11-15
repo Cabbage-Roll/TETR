@@ -12,8 +12,14 @@ import cabbageroll.tetr.Main;
 import cabbageroll.tetr.Room;
 import xseries.XMaterial;
 
-public class JoinRoomMenu implements InventoryHolder{
+public class JoinRoomMenu implements InventoryHolder {
     private Inventory inventory=null;
+    
+    protected final static int BACK_LOCATION = 36;
+    protected final static int ROOM_LOCATION_MIN = 9;
+    protected final static int ROOM_LOCATION_MAX = 27;
+    
+    
     public JoinRoomMenu(Player player){
         Main.lastui.put(player, "joinroom");
         Inventory inventory=Bukkit.createInventory(this, 54, "Join room");
@@ -34,7 +40,7 @@ public class JoinRoomMenu implements InventoryHolder{
         itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("BACK");
         item.setItemMeta(itemmeta);
-        inventory.setItem(36, item);
+        inventory.setItem(BACK_LOCATION, item);
         
         int i=0;
         for(Room room: Main.roommap.values()){
@@ -42,15 +48,18 @@ public class JoinRoomMenu implements InventoryHolder{
             itemmeta=item.getItemMeta();
             itemmeta.setDisplayName(room.id);
             item.setItemMeta(itemmeta);
-            inventory.setItem(9+i, item);
+            inventory.setItem(ROOM_LOCATION_MIN+i, item);
             i++;
+            if(i>ROOM_LOCATION_MAX-ROOM_LOCATION_MIN){
+                break;
+            }
         }
         
         player.openInventory(inventory);
     }
     
     @Override
-    public Inventory getInventory(){
+    public Inventory getInventory() {
         return inventory;
     }
 }

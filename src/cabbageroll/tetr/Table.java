@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 
 import cabbageroll.tetr.constants.Blocklist;
 import cabbageroll.tetr.constants.Garbagetable;
@@ -28,7 +29,7 @@ public class Table {
         XMaterial.LIGHT_BLUE_WOOL.parseItem(),
         XMaterial.BLUE_WOOL.parseItem(),
         XMaterial.PURPLE_WOOL.parseItem(),
-        XMaterial.AIR.parseItem(),
+        XMaterial.BEDROCK.parseItem(),
         XMaterial.LIGHT_GRAY_WOOL.parseItem(),
         XMaterial.RED_STAINED_GLASS.parseItem(),
         XMaterial.ORANGE_STAINED_GLASS.parseItem(),
@@ -53,7 +54,7 @@ public class Table {
     private static final int R180=2;
     
     public int gx=100;
-    public int gy=150;
+    public int gy=50;
     public int gz=0;
     public int m1x=1;
     public int m1y=0;
@@ -61,6 +62,7 @@ public class Table {
     public int m2y=-1;
     public int m3x=0;
     public int m3y=0;
+    
     
     //intermediate variables
     private int coni;
@@ -114,17 +116,74 @@ public class Table {
     private int cap=4;
     private int totalgarbage;
     
+    //handling
+    private final int DAS=4;
+    private final int ARR=0;
+    private final int SDF=40;
+    private boolean dasing;
+    private int dura;
+    private double oldx;
+    private double oldy;
+    private double oldz;
+    
     Table(Player p){
         player=p;
         world=p.getWorld();
     }
     
-    private void sendGarbage(int n){
+    public void rotateTable(String input) {
+        int temp;
+        switch(input) {
+        case "X":
+            temp=-m3x;
+            m3x=m2x;
+            m2x=temp;
+            temp=-m3y;
+            m3y=m2y;
+            m2y=temp;
+            break;
+        case "Y":
+            temp=-m3x;
+            m3x=m1x;
+            m1x=temp;
+            temp=-m3y;
+            m3y=m1y;
+            m1y=temp;
+            break;
+        case "Z":
+            temp=-m2x;
+            m2x=m1x;
+            m1x=temp;
+            temp=-m2y;
+            m2y=m1y;
+            m1y=temp;
+            break;
+        }
+        
+    }
+    
+    private void sendGarbage(int n) {
         Main.roommap.get(Main.inwhichroom.get(player)).forwardGarbage(n, player);
     }
     
-    public void receiveGarbage(int n){
+    public void receiveGarbage(int n) {
         garbo.add(n);
+        printLava();
+    }
+    
+    private void printLava() {
+        int total=0;
+        for(int num: garbo){
+            total+=num;
+        }
+        
+        for(int i=0;i<STAGESIZEY;i++) {
+            colPrint(-2, STAGESIZEY-1-i, 7);
+        }
+        
+        for(int i=0;i<total;i++) {
+            colPrint(-2, STAGESIZEY-1-i%20, (i/20)%7);
+        }
     }
     
     private void putGarbage(){
@@ -154,6 +213,8 @@ public class Table {
                 }
             }
         }
+
+        printLava();
     }
     
     //works
@@ -234,6 +295,7 @@ public class Table {
                 case 3:
                 case 5:
                 case 6:
+                    ///somethin g wrong
                     colPrint(j+x+0.5f, i+y+1, Blocklist.block_list[block][i][j]);
                     break;
                 case 4:
@@ -391,7 +453,7 @@ public class Table {
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
                 if(stage[i+y][j+x]!=7 && block[i][j]!=7){
-                    player.playSound(player.getLocation(), SoundUtil.ORB_PICKUP, 1f, 1f);
+                    player.playSound(player.getEyeLocation(), SoundUtil.ORB_PICKUP, 1f, 1f);
                     gameover=true;
                     return;
                 }
@@ -497,6 +559,12 @@ public class Table {
         playGame();
         initScoreboard();
         player.getInventory().setHeldItemSlot(8);
+        printLava();
+        
+        oldx=player.getLocation().getX();
+        oldy=player.getLocation().getY();
+        oldz=player.getLocation().getZ();
+        
     }
     
     //works
@@ -581,7 +649,7 @@ public class Table {
         }
         
         if(spun){
-            player.playSound(player.getLocation(), SoundUtil.THUNDER, 1f, 0.75f);
+            player.playSound(player.getEyeLocation(), SoundUtil.THUNDER, 1f, 0.75f);
             if(mini){
                 switch(lines){
                 case 0:
@@ -635,9 +703,9 @@ public class Table {
         
         if(combo>=0){
             if(power){
-                player.playSound(player.getLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
+                player.playSound(player.getEyeLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
             }else{
-                player.playSound(player.getLocation(), SoundUtil.NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
+                player.playSound(player.getEyeLocation(), SoundUtil.NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
             }
             score+=combo*50;
         }
@@ -833,7 +901,7 @@ public class Table {
                 for(int i=0;i<block_size;i++){
                     for(int j=0;j<block_size;j++){
                         if(stage[i+y][j+x]!=7 && block[i][j]!=7){
-                            player.playSound(player.getLocation(), SoundUtil.ORB_PICKUP, 1f, 1f);
+                            player.playSound(player.getEyeLocation(), SoundUtil.ORB_PICKUP, 1f, 1f);
                             gameover=true;
                             return;
                         }
@@ -847,7 +915,7 @@ public class Table {
             
         }else{
             //already held
-            player.playSound(player.getLocation(), SoundUtil.VILLAGER_NO, 1f, 1f);
+            player.playSound(player.getEyeLocation(), SoundUtil.VILLAGER_NO, 1f, 1f);
         }
         held=true;
     }
@@ -1078,7 +1146,13 @@ public class Table {
         checkPlaced();
     }
     
-    //works
+
+    double maxvelocity=0;
+    long startTime;
+    boolean moving=false;
+    String direction;
+    boolean singlemove;
+    
    	private void playGame(){
    	    task=new BukkitRunnable(){
    	        @Override
@@ -1097,22 +1171,88 @@ public class Table {
    	                player.setWalkSpeed(0.2f);
    	                task.cancel();
    	                task=null;
+   	                if(Main.roomlist.contains(Main.inwhichroom.get(player))){
        	                Main.roommap.get(Main.inwhichroom.get(player)).playersalive--;
-       	                player.sendMessage("pa:"+Main.roommap.get(Main.inwhichroom.get(player)).playersalive);
        	                if(Main.roommap.get(Main.inwhichroom.get(player)).playersalive<=1){
        	                    Main.roommap.get(Main.inwhichroom.get(player)).stopRoom();
        	                }
-   	                
+   	                }
    	            }
    	            
-   	        board.set("TIME "+looptick/20, 0);
-   	        looptick++;
-
-            /*PacketPlayOutUpdateHealth test;
-            test=new PacketPlayOutUpdateHealth((float)player.getHealth(), 2, player.getSaturation());
-            ((CraftPlayer) player).getHandle().playerConnection.sendPacket(test);*/
+       	        board.set("TIME "+looptick, 0);
+       	        looptick++;
+    
+                /*PacketPlayOutUpdateHealth test;
+                test=new PacketPlayOutUpdateHealth((float)player.getHealth(), 2, player.getSaturation());
+                ((CraftPlayer) player).getHandle().playerConnection.sendPacket(test);*/
+       	        
+       	        //movement code
+       	        Vector vel = new Vector(player.getLocation().getX()-oldx, 
+                       	                player.getLocation().getY()-oldy, 
+                       	                player.getLocation().getZ()-oldz);
+    
+       	        if(Math.abs(vel.getX())>0 && !singlemove) {
+       	            if(vel.getX()<0) {
+       	                direction="left";
+       	            }else {
+       	                direction="right";
+       	            }
+       	            userInput(direction);
+       	            singlemove=true;
+       	            player.sendMessage("single move");
+       	        }
+       	        
+       	        if(maxvelocity<Math.abs(vel.getX()) && !moving && Math.abs(vel.getX())>0.05f*player.getWalkSpeed()*5) {
+       	            startTime = System.nanoTime();
+       	            moving=true;
+       	            if(vel.getX()<0) {
+       	                direction="left";
+       	            }else {
+       	                direction="right";
+       	            }
+       	            dura=looptick;
+       	        }
+    
+       	        if(maxvelocity>Math.abs(vel.getX()) && moving && Math.abs(vel.getX())<0.2f*player.getWalkSpeed()*5) {
+       	            singlemove=false;
+       	            moving=false;
+       	            dasing=false;
+       	        }
+       	        
+       	        board.set(""+vel.getX(), -10);
+       	        
+       	        maxvelocity=Math.abs(vel.getX());
+       	        
+    
+       	        oldx=player.getLocation().getX();
+       	        oldy=player.getLocation().getY();
+       	        oldz=player.getLocation().getZ();
+       	        
+       	        if(ARR>0) {
+           	        if(dasing && (looptick-dura)%ARR==0) {
+           	            userInput(direction);
+           	        }
+       	        }else {
+       	            if(dasing) {
+       	                userInput(direction);
+       	                userInput(direction);
+       	                userInput(direction);
+       	                userInput(direction);
+       	                userInput(direction);
+       	                userInput(direction);
+       	                userInput(direction);
+       	                userInput(direction);
+       	                userInput(direction);
+       	                userInput(direction);
+       	            }
+       	        }
+       	        
+       	        if(looptick-dura>=DAS && moving) {
+       	            dasing=true;
+       	        }
+   	        
+   	        
    	        }
    	    }.runTaskTimer(Main.plugin, 0, 0);
     }
-   	
 }

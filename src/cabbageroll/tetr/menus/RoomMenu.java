@@ -15,6 +15,10 @@ import xseries.XMaterial;
 
 public class RoomMenu implements InventoryHolder{
     private Inventory inventory=null;
+    
+    protected final static int BACK_LOCATION = 36;
+    protected final static int SETTINGS_LOCATION = 53;
+    
     public RoomMenu(Player player){
         Main.lastui.put(player, "room");
         Inventory inventory=Bukkit.createInventory(this, 54, "Room - "+Main.inwhichroom.get(player));
@@ -74,13 +78,13 @@ public class RoomMenu implements InventoryHolder{
         itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("BACK");
         item.setItemMeta(itemmeta);
-        inventory.setItem(36, item);
+        inventory.setItem(BACK_LOCATION, item);
         
         item=new ItemStack(Material.COMPASS);
         itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("Settings!");
         item.setItemMeta(itemmeta);
-        inventory.setItem(53, item);
+        inventory.setItem(SETTINGS_LOCATION, item);
         
         player.openInventory(inventory);
     }

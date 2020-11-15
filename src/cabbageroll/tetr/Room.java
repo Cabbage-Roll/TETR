@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
 import com.xxmicloxx.NoteBlockAPI.model.RepeatMode;
+import com.xxmicloxx.NoteBlockAPI.model.playmode.MonoStereoMode;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
 
 public class Room {
@@ -32,6 +33,7 @@ public class Room {
     public boolean running;
     public boolean multiplayer;
     public int playersalive;
+    public boolean backfire=false;
     
     public Room(Player p){
         if(Main.numberofsongs>0){
@@ -104,6 +106,10 @@ public class Room {
             rsp.removePlayer(player);
         }
         playerboards.get(player).gameover=true;
+        playersalive--;
+        if(playersalive<=1){
+            stopRoom();
+        }
         playerlist.remove(player);
         playerboards.remove(player);
         Main.inwhichroom.remove(player);
@@ -120,19 +126,17 @@ public class Room {
         }
     }
     
-    public void forwardGarbage(int n, Player player){
-        if(multiplayer){
-            if(n>0){
-                int rand=(int)(Math.random()*playerlist.size());
-                if(playerboards.get(playerlist.get(rand)).player!=player){
-                    if(!playerboards.get(playerlist.get(rand)).gameover){
-                        playerboards.get(playerlist.get(rand)).receiveGarbage(n);
-                    }else{
-                        forwardGarbage(n, player);
-                    }
-                }else{
+    public void forwardGarbage(int n, Player player) {
+        if(n>0){
+            int rand = (int)(Math.random()*playerlist.size());
+            if(playerboards.get(playerlist.get(rand)).player!=player || (playerboards.get(playerlist.get(rand)).player==player && backfire)) {
+                if(!playerboards.get(playerlist.get(rand)).gameover) {
+                    playerboards.get(playerlist.get(rand)).receiveGarbage(n);
+                }else {
                     forwardGarbage(n, player);
                 }
+            }else if(multiplayer) {
+                forwardGarbage(n, player);
             }
         }
     }

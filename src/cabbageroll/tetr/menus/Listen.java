@@ -1,5 +1,6 @@
 package cabbageroll.tetr.menus;
 
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,44 +21,45 @@ public class Listen implements Listener {
     @EventHandler
     void onInventoryClick(InventoryClickEvent event){
         Player player=(Player)event.getWhoClicked();
+        int slot=event.getSlot();
         if(event.getInventory().getHolder() instanceof HomeMenu){
             event.setCancelled(true);
-            if(event.getSlot()==9){
+            if(slot==HomeMenu.MULTIPLAYER_LOCATION){
                 new MultiplayerMenu(player);
-            }else if(event.getSlot()==10){
+            }else if(slot==HomeMenu.SKINEDITOR_LOCATION){
                 new SkinMenu(player);
             }
         }else if(event.getInventory().getHolder() instanceof MultiplayerMenu){
             event.setCancelled(true);
-            if(event.getSlot()==9){
+            if(slot==MultiplayerMenu.CREATEROOM_LOCATION){
                 new MakeRoomMenu(player);
-            }else if(event.getSlot()==10){
+            }else if(slot==MultiplayerMenu.LISTROOMS_LOCATION){
                 new JoinRoomMenu(player);
-            }else if(event.getSlot()==36){
+            }else if(slot==MultiplayerMenu.BACK_LOCATION){
                 new HomeMenu(player);
             }
         }else if(event.getInventory().getHolder() instanceof MakeRoomMenu){
             event.setCancelled(true);
-            if(event.getSlot()==9){
+            if(slot==MakeRoomMenu.NEWROOM_LOCATION){
                 new Room(player);
                 new RoomMenu(player);
-            }else if(event.getSlot()==36){
+            }else if(slot==MakeRoomMenu.BACK_LOCATION){
                 new MultiplayerMenu(player);
             }
         }else if(event.getInventory().getHolder() instanceof JoinRoomMenu){
             event.setCancelled(true);
-            if(event.getCurrentItem().getType()==XMaterial.COAL_BLOCK.parseMaterial() && event.getSlot()<27){
+            if(JoinRoomMenu.ROOM_LOCATION_MIN<=slot && slot<=JoinRoomMenu.ROOM_LOCATION_MAX){
                 Main.roommap.get(event.getCurrentItem().getItemMeta().getDisplayName()).addPlayer(player);
                 new RoomMenu(player);
-            }else if(event.getSlot()==36){
+            }else if(slot==JoinRoomMenu.BACK_LOCATION){
                 new MultiplayerMenu(player);
             }
         }else if(event.getInventory().getHolder() instanceof RoomMenu){
             event.setCancelled(true);
-            if(event.getSlot()==36){
+            if(slot==RoomMenu.BACK_LOCATION){
                 Main.roommap.get(Main.inwhichroom.get(player)).removePlayer(player);
                 new MultiplayerMenu(player);
-            }else if(event.getSlot()==49){
+            }else if(slot==49){
                 ItemMeta itemmeta;
                 if(Main.roommap.get(Main.inwhichroom.get(player)).host.equals(player)){
                     if(Main.roommap.get(Main.inwhichroom.get(player)).running){
@@ -76,8 +78,8 @@ public class Listen implements Listener {
                         event.getInventory().setItem(49, item);
                     }
                 }
-            }else if(event.getSlot()==53){
-                new SettingsMenu(player);
+            }else if(slot==RoomMenu.SETTINGS_LOCATION){
+                new SimpleSettingsMenu(player);
             }
         }else if(event.getInventory().getHolder() instanceof SkinMenu){
             if(event.getCurrentItem()==null){
@@ -85,13 +87,13 @@ public class Listen implements Listener {
             }else if(event.getCurrentItem().getType()==XMaterial.GLASS_PANE.parseMaterial()){
                 event.setCancelled(true);
             }else if(event.getCurrentItem().getType()==XMaterial.AIR.parseMaterial()){
-                if(event.getSlot()==11 && event.getCursor().getType()==XMaterial.AIR.parseMaterial()){
+                if(slot==11 && event.getCursor().getType()==XMaterial.AIR.parseMaterial()){
                     Table.transparent=!Table.transparent;
                     player.sendMessage("Transparency turned "+(Table.transparent?"on":"off"));
                     return;
                 }
             }
-        }else if(event.getInventory().getHolder() instanceof SettingsMenu){
+        }else if(event.getInventory().getHolder() instanceof SettingsMenu) {
             event.setCancelled(true);
             
             int by=0;
@@ -108,8 +110,11 @@ public class Listen implements Listener {
                 Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
                 
                 switch(event.getSlot()){
-                case 36:
+                case SettingsMenu.BACK_LOCATION:
                     new RoomMenu(player);
+                    return;
+                case SettingsMenu.TORCH_LOCATION:
+                    new SimpleSettingsMenu(player);
                     return;
                 case 11:
                     table.gx=player.getLocation().getBlockX();
@@ -143,6 +148,9 @@ public class Listen implements Listener {
                 case 43:
                     table.m3y+=by;
                     break;
+                case 53:
+                    Main.roommap.get(Main.inwhichroom.get(player)).backfire=!Main.roommap.get(Main.inwhichroom.get(player)).backfire;
+                    break;
                 default:
                     return;
                 }
@@ -151,6 +159,48 @@ public class Listen implements Listener {
                 event.getInventory().setItem(event.getSlot(), item);
                 new SettingsMenu(player);
             }
+        }else if(event.getInventory().getHolder() instanceof SimpleSettingsMenu) {
+            event.setCancelled(true);
+            
+            int by=0;
+            if(event.getClick()==ClickType.LEFT){
+                by=+1;
+            }else if(event.getClick()==ClickType.RIGHT){
+                by=-1;
+            }
+            
+            Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
+            
+            switch(event.getSlot()) {
+            case SimpleSettingsMenu.BACK_LOCATION:
+                new RoomMenu(player);
+                return;
+            case SimpleSettingsMenu.TORCH_LOCATION:
+                new SettingsMenu(player);
+                return;
+            case 21:
+                table.gx+=by;
+                break;
+            case 22:
+                table.gy+=by;
+                break;
+            case 23:
+                table.gz+=by;
+                break;
+            case 30:
+                table.rotateTable("X");
+                break;
+            case 31:
+                table.rotateTable("Y");
+                break;
+            case 32:
+                table.rotateTable("Z");
+                break;
+            default:
+                return;
+            }
+            
+            new SimpleSettingsMenu(player);
         }
     }
     
@@ -253,5 +303,4 @@ public class Listen implements Listener {
             }
         }
     }
-    
 }

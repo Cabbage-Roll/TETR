@@ -13,6 +13,11 @@ import xseries.XMaterial;
 
 public class MultiplayerMenu implements InventoryHolder{
     private Inventory inventory=null;
+    
+    protected final static int BACK_LOCATION = 36;
+    protected final static int CREATEROOM_LOCATION = 9;
+    protected final static int LISTROOMS_LOCATION = 10;
+    
     public MultiplayerMenu(Player player){
         Main.lastui.put(player, "multiplayer");
         Inventory inventory=Bukkit.createInventory(this, 54, "Multiplayer");
@@ -33,19 +38,19 @@ public class MultiplayerMenu implements InventoryHolder{
         itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("CREATE ROOM");
         item.setItemMeta(itemmeta);
-        inventory.setItem(9, item);
+        inventory.setItem(CREATEROOM_LOCATION, item);
         
         item=new ItemStack(Material.DIRT);
         itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("ROOM LISTING");
         item.setItemMeta(itemmeta);
-        inventory.setItem(10, item);
+        inventory.setItem(LISTROOMS_LOCATION, item);
         
         item=new ItemStack(Material.DIRT);
         itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("BACK");
         item.setItemMeta(itemmeta);
-        inventory.setItem(36, item);
+        inventory.setItem(BACK_LOCATION, item);
         
         player.openInventory(inventory);
     }

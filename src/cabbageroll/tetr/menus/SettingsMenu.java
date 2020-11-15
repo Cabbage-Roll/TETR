@@ -1,6 +1,9 @@
 package cabbageroll.tetr.menus;
 
+import java.util.ArrayList;
+
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -14,6 +17,10 @@ import xseries.XMaterial;
 
 public class SettingsMenu implements InventoryHolder {
     private Inventory inventory=null;
+    
+    protected final static int BACK_LOCATION = 0;
+    protected final static int TORCH_LOCATION = 8;
+    
     public SettingsMenu(Player player){
         Main.lastui.put(player, "settings");
         Inventory inventory=Bukkit.createInventory(this, 54, "Settings");
@@ -32,11 +39,20 @@ public class SettingsMenu implements InventoryHolder {
 
         Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
         
-        item=new ItemStack(Material.DIRT);
+        item=new ItemStack(XMaterial.BEDROCK.parseItem());
         itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("BACK");
+        itemmeta.setDisplayName(ChatColor.WHITE + "Back");
         item.setItemMeta(itemmeta);
-        inventory.setItem(36, item);
+        inventory.setItem(BACK_LOCATION, item);
+        
+        item=new ItemStack(XMaterial.REDSTONE_TORCH.parseItem());
+        itemmeta=item.getItemMeta();
+        itemmeta.setDisplayName(ChatColor.DARK_RED + "This is advanced settings menu");
+        ArrayList<String> lore = new ArrayList<String>();
+        lore.add(ChatColor.YELLOW + "" + ChatColor.BOLD + "Click to go to standard menu");
+        itemmeta.setLore(lore);
+        item.setItemMeta(itemmeta);
+        inventory.setItem(TORCH_LOCATION, item);
         
         item=new ItemStack(Material.DIRT);
         itemmeta=item.getItemMeta();
@@ -99,6 +115,11 @@ public class SettingsMenu implements InventoryHolder {
         inventory.setItem(43, item);
         
         item=new ItemStack(Material.DIRT);
+        itemmeta=item.getItemMeta();
+        itemmeta.setDisplayName("BACKFIRE: "+Main.roommap.get(Main.inwhichroom.get(player)).backfire);
+        item.setItemMeta(itemmeta);
+        inventory.setItem(53, item);
+        
         player.openInventory(inventory);
     }
     

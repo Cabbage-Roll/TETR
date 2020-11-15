@@ -13,6 +13,10 @@ import xseries.XMaterial;
 
 public class MakeRoomMenu implements InventoryHolder{
     private Inventory inventory=null;
+    
+    protected final static int BACK_LOCATION = 36;
+    protected final static int NEWROOM_LOCATION = 9;
+    
     public MakeRoomMenu(Player player){
         Main.lastui.put(player, "makeroom");
         Inventory inventory=Bukkit.createInventory(this, 54, "Create new room");
@@ -33,13 +37,13 @@ public class MakeRoomMenu implements InventoryHolder{
         itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("BACK");
         item.setItemMeta(itemmeta);
-        inventory.setItem(36, item);
+        inventory.setItem(BACK_LOCATION, item);
         
         item=new ItemStack(Material.COAL_BLOCK);
         itemmeta=item.getItemMeta();
         itemmeta.setDisplayName("NEW ROOM");
         item.setItemMeta(itemmeta);
-        inventory.setItem(9, item);
+        inventory.setItem(NEWROOM_LOCATION, item);
         
         player.openInventory(inventory);
     }
