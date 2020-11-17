@@ -1,6 +1,6 @@
 package cabbageroll.tetr.menus;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import cabbageroll.tetr.Main;
-import cabbageroll.tetr.Table;
 import xseries.XMaterial;
 
 public class SimpleSettingsMenu implements InventoryHolder {
@@ -20,7 +19,7 @@ public class SimpleSettingsMenu implements InventoryHolder {
     protected final static int BACK_LOCATION = 0;
     protected final static int TORCH_LOCATION = 8;
     
-    public SimpleSettingsMenu(Player player){
+    public SimpleSettingsMenu(Player player) {
         Main.lastui.put(player, "simsettings");
         Inventory inventory=Bukkit.createInventory(this, 54, "Settings");
         ItemStack border=XMaterial.GLASS_PANE.parseItem();
@@ -33,65 +32,33 @@ public class SimpleSettingsMenu implements InventoryHolder {
         }
         
         //clickable items
-        ItemStack item;
-        ItemMeta itemmeta;
         
-        item=new ItemStack(XMaterial.BEDROCK.parseItem());
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName(ChatColor.WHITE + "Back");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(BACK_LOCATION, item);
+        inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));
+        inventory.setItem(TORCH_LOCATION, createItem(XMaterial.TORCH, ChatColor.YELLOW + "This is standard settings menu", ChatColor.DARK_RED + "" + ChatColor.BOLD + "Click to go to advanced menu"));
         
-        item=new ItemStack(XMaterial.TORCH.parseItem());
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName(ChatColor.YELLOW + "This is standard settings menu");
-        ArrayList<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.DARK_RED + "" + ChatColor.BOLD + "Click to go to advanced menu");
-        itemmeta.setLore(lore);
-        item.setItemMeta(itemmeta);
-        inventory.setItem(TORCH_LOCATION, item);
+        inventory.setItem(21, createItem(XMaterial.RED_WOOL, ChatColor.WHITE + "Move X"));
+        inventory.setItem(22, createItem(XMaterial.GREEN_WOOL, ChatColor.WHITE + "Move Y"));
+        inventory.setItem(23, createItem(XMaterial.BLUE_WOOL, ChatColor.WHITE + "Move Z"));
         
-        item=new ItemStack(XMaterial.RED_WOOL.parseItem());
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName(ChatColor.WHITE + "Move X");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(21, item);
-        
-        item=new ItemStack(XMaterial.GREEN_WOOL.parseItem());
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName(ChatColor.WHITE + "Move Y");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(22, item);
-        
-        item=new ItemStack(XMaterial.BLUE_WOOL.parseItem());
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName(ChatColor.WHITE + "Move Z");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(23, item);
-        
-        item=new ItemStack(XMaterial.RED_CARPET.parseItem());
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName(ChatColor.WHITE + "Rotate X");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(30, item);
-        
-        item=new ItemStack(XMaterial.GREEN_CARPET.parseItem());
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName(ChatColor.WHITE + "Rotate Y");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(31, item);
-        
-        item=new ItemStack(XMaterial.BLUE_CARPET.parseItem());
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName(ChatColor.WHITE + "Rotate Z");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(32, item);
+        inventory.setItem(30, createItem(XMaterial.RED_CARPET, ChatColor.WHITE + "Rotate X"));
+        inventory.setItem(31, createItem(XMaterial.GREEN_CARPET, ChatColor.WHITE + "Rotate Y"));
+        inventory.setItem(32, createItem(XMaterial.BLUE_CARPET, ChatColor.WHITE + "Rotate Z"));
         
         player.openInventory(inventory);
     }
     
+    static ItemStack createItem(final XMaterial material, final String name, final String... lore) {
+        ItemStack item = material.parseItem();
+        ItemMeta meta;
+        meta = item.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setLore(Arrays.asList(lore));
+        item.setItemMeta(meta);
+        return item;
+    }
+    
     @Override
-    public Inventory getInventory(){
+    public Inventory getInventory() {
         return inventory;
     }
 }

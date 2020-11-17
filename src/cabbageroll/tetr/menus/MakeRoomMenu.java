@@ -1,7 +1,8 @@
 package cabbageroll.tetr.menus;
 
+import java.util.Arrays;
+
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -9,12 +10,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import cabbageroll.tetr.Main;
+import net.md_5.bungee.api.ChatColor;
 import xseries.XMaterial;
 
 public class MakeRoomMenu implements InventoryHolder{
     private Inventory inventory=null;
     
-    protected final static int BACK_LOCATION = 36;
+    protected final static int BACK_LOCATION = 0;
     protected final static int NEWROOM_LOCATION = 9;
     
     public MakeRoomMenu(Player player){
@@ -30,22 +32,21 @@ public class MakeRoomMenu implements InventoryHolder{
         }
         
         //clickable items
-        ItemMeta itemmeta;
-        ItemStack item;
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("BACK");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(BACK_LOCATION, item);
-        
-        item=new ItemStack(Material.COAL_BLOCK);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("NEW ROOM");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(NEWROOM_LOCATION, item);
+
+        inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));
+        inventory.setItem(NEWROOM_LOCATION, createItem(XMaterial.COAL_BLOCK, ChatColor.WHITE + "New room"));
         
         player.openInventory(inventory);
+    }
+    
+    static ItemStack createItem(final XMaterial material, final String name, final String... lore) {
+        ItemStack item = material.parseItem();
+        ItemMeta meta;
+        meta = item.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setLore(Arrays.asList(lore));
+        item.setItemMeta(meta);
+        return item;
     }
     
     @Override

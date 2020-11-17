@@ -3,7 +3,6 @@ package cabbageroll.tetr.menus;
 import java.util.Arrays;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -11,12 +10,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import cabbageroll.tetr.Main;
+import net.md_5.bungee.api.ChatColor;
 import xseries.XMaterial;
 
-public class RoomMenu implements InventoryHolder{
-    private Inventory inventory=null;
+public class RoomMenu implements InventoryHolder {
+    private Inventory inventory = null;
     
-    protected final static int BACK_LOCATION = 36;
+    protected final static int BACK_LOCATION = 0;
+    protected final static int GAME_LOCATION = 49;
     protected final static int SETTINGS_LOCATION = 53;
     
     public RoomMenu(Player player){
@@ -53,40 +54,28 @@ public class RoomMenu implements InventoryHolder{
         
         if(Main.roommap.get(Main.inwhichroom.get(player)).host.equals(player)){
             if(Main.roommap.get(Main.inwhichroom.get(player)).running){
-                item=new ItemStack(Material.ANVIL);
-                itemmeta=item.getItemMeta();
-                itemmeta.setDisplayName("ABORT");
-                item.setItemMeta(itemmeta);
-                inventory.setItem(49, item);
+                inventory.setItem(GAME_LOCATION, createItem(XMaterial.ANVIL, "ABORT"));
             }else{
-                item=new ItemStack(Material.DIAMOND_SWORD);
-                itemmeta=item.getItemMeta();
-                itemmeta.setDisplayName("START");
-                item.setItemMeta(itemmeta);
-                inventory.setItem(49, item);
+                inventory.setItem(GAME_LOCATION, createItem(XMaterial.DIAMOND_SWORD, "START"));
             }
         }else{
-            item=new ItemStack(Material.BARRIER);
-            itemmeta=item.getItemMeta();
-            itemmeta.setDisplayName("YOU ARE NOT THE HOST");
+            inventory.setItem(GAME_LOCATION, createItem(XMaterial.BARRIER, "YOU ARE NOT THE HOST"));
         }
         
-        item.setItemMeta(itemmeta);
-        inventory.setItem(49, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("BACK");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(BACK_LOCATION, item);
-        
-        item=new ItemStack(Material.COMPASS);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("Settings!");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(SETTINGS_LOCATION, item);
+        inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));
+        inventory.setItem(SETTINGS_LOCATION, createItem(XMaterial.COMPASS, ChatColor.WHITE + "Table settings"));
         
         player.openInventory(inventory);
+    }
+    
+    static ItemStack createItem(final XMaterial material, final String name, final String... lore) {
+        ItemStack item = material.parseItem();
+        ItemMeta meta;
+        meta = item.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setLore(Arrays.asList(lore));
+        item.setItemMeta(meta);
+        return item;
     }
     
     @Override

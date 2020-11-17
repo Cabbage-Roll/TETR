@@ -1,10 +1,10 @@
 package cabbageroll.tetr.menus;
 
-import java.util.ArrayList;
+
+import java.util.Arrays;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -33,94 +33,36 @@ public class SettingsMenu implements InventoryHolder {
             inventory.setItem(i, border);
         }
         
-        //clickable items
-        ItemStack item;
-        ItemMeta itemmeta;
 
         Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
         
-        item=new ItemStack(XMaterial.BEDROCK.parseItem());
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName(ChatColor.WHITE + "Back");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(BACK_LOCATION, item);
+        inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));
+        inventory.setItem(TORCH_LOCATION, createItem(XMaterial.REDSTONE_TORCH, ChatColor.DARK_RED + "This is advanced settings menu", ChatColor.YELLOW + "" + ChatColor.BOLD + "Click to go to standard menu"));
         
-        item=new ItemStack(XMaterial.REDSTONE_TORCH.parseItem());
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName(ChatColor.DARK_RED + "This is advanced settings menu");
-        ArrayList<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.YELLOW + "" + ChatColor.BOLD + "Click to go to standard menu");
-        itemmeta.setLore(lore);
-        item.setItemMeta(itemmeta);
-        inventory.setItem(TORCH_LOCATION, item);
+        inventory.setItem(11, createItem(XMaterial.DIRT, "your pos"));
+        inventory.setItem(12, createItem(XMaterial.DIRT, "GX: "+table.gx));
+        inventory.setItem(13, createItem(XMaterial.DIRT, "GY: "+table.gy));
+        inventory.setItem(14, createItem(XMaterial.DIRT, "GZ: "+table.gz));
+        inventory.setItem(37, createItem(XMaterial.DIRT, "M1X: "+table.m1x));
+        inventory.setItem(38, createItem(XMaterial.DIRT, "M2X: "+table.m2x));
+        inventory.setItem(39, createItem(XMaterial.DIRT, "M3X: "+table.m3x));
+        inventory.setItem(41, createItem(XMaterial.DIRT, "M1Y: "+table.m1y));
+        inventory.setItem(42, createItem(XMaterial.DIRT, "M2Y: "+table.m2y));
+        inventory.setItem(43, createItem(XMaterial.DIRT, "M3Y: "+table.m3y));
+        inventory.setItem(53, createItem(XMaterial.DIRT, "BACKFIRE: "+Main.roommap.get(Main.inwhichroom.get(player)).backfire));
         
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("your pos");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(11, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("GX: "+table.gx);
-        item.setItemMeta(itemmeta);
-        inventory.setItem(12, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("GY: "+table.gy);
-        item.setItemMeta(itemmeta);
-        inventory.setItem(13, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("GZ: "+table.gz);
-        item.setItemMeta(itemmeta);
-        inventory.setItem(14, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("M1X: "+table.m1x);
-        item.setItemMeta(itemmeta);
-        inventory.setItem(37, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("M2X: "+table.m2x);
-        item.setItemMeta(itemmeta);
-        inventory.setItem(38, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("M3X: "+table.m3x);
-        item.setItemMeta(itemmeta);
-        inventory.setItem(39, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("M1Y: "+table.m1y);
-        item.setItemMeta(itemmeta);
-        inventory.setItem(41, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("M2Y: "+table.m2y);
-        item.setItemMeta(itemmeta);
-        inventory.setItem(42, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("M3Y: "+table.m3y);
-        item.setItemMeta(itemmeta);
-        inventory.setItem(43, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("BACKFIRE: "+Main.roommap.get(Main.inwhichroom.get(player)).backfire);
-        item.setItemMeta(itemmeta);
-        inventory.setItem(53, item);
         
         player.openInventory(inventory);
+    }
+    
+    static ItemStack createItem(final XMaterial material, final String name, final String... lore) {
+        ItemStack item = material.parseItem();
+        ItemMeta meta;
+        meta = item.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setLore(Arrays.asList(lore));
+        item.setItemMeta(meta);
+        return item;
     }
     
     @Override

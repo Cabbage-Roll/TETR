@@ -1,7 +1,8 @@
 package cabbageroll.tetr.menus;
 
+import java.util.Arrays;
+
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -9,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import cabbageroll.tetr.Main;
+import net.md_5.bungee.api.ChatColor;
 import xseries.XMaterial;
 
 public class HomeMenu implements InventoryHolder{
@@ -29,24 +31,20 @@ public class HomeMenu implements InventoryHolder{
             inventory.setItem(i, border);
         }
         
-        //clickable items
-        ItemStack item;
-        ItemMeta itemmeta;
-        
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("MULTIPLAYER");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(MULTIPLAYER_LOCATION, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("SKIN EDITOR");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(SKINEDITOR_LOCATION, item);
+        inventory.setItem(MULTIPLAYER_LOCATION, createItem(XMaterial.PLAYER_HEAD, ChatColor.WHITE + "Multiplayer"));
+        inventory.setItem(SKINEDITOR_LOCATION, createItem(XMaterial.SHEARS, ChatColor.WHITE + "Skin editor"));
         
         player.openInventory(inventory);
+    }
+    
+    static ItemStack createItem(final XMaterial material, final String name, final String... lore) {
+        ItemStack item = material.parseItem();
+        ItemMeta meta;
+        meta = item.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setLore(Arrays.asList(lore));
+        item.setItemMeta(meta);
+        return item;
     }
     
     @Override

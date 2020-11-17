@@ -1,7 +1,8 @@
 package cabbageroll.tetr.menus;
 
+import java.util.Arrays;
+
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -9,12 +10,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import cabbageroll.tetr.Main;
+import net.md_5.bungee.api.ChatColor;
 import xseries.XMaterial;
 
 public class MultiplayerMenu implements InventoryHolder{
     private Inventory inventory=null;
     
-    protected final static int BACK_LOCATION = 36;
+    protected final static int BACK_LOCATION = 0;
     protected final static int CREATEROOM_LOCATION = 9;
     protected final static int LISTROOMS_LOCATION = 10;
     
@@ -31,28 +33,22 @@ public class MultiplayerMenu implements InventoryHolder{
         }
         
         //clickable items
-        ItemStack item;
-        ItemMeta itemmeta;
         
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("CREATE ROOM");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(CREATEROOM_LOCATION, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("ROOM LISTING");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(LISTROOMS_LOCATION, item);
-        
-        item=new ItemStack(Material.DIRT);
-        itemmeta=item.getItemMeta();
-        itemmeta.setDisplayName("BACK");
-        item.setItemMeta(itemmeta);
-        inventory.setItem(BACK_LOCATION, item);
+        inventory.setItem(CREATEROOM_LOCATION, createItem(XMaterial.DIRT, "CREATE ROOM"));
+        inventory.setItem(LISTROOMS_LOCATION, createItem(XMaterial.DIRT, "ROOM LISTING"));
+        inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));
         
         player.openInventory(inventory);
+    }
+    
+    static ItemStack createItem(final XMaterial material, final String name, final String... lore) {
+        ItemStack item = material.parseItem();
+        ItemMeta meta;
+        meta = item.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setLore(Arrays.asList(lore));
+        item.setItemMeta(meta);
+        return item;
     }
     
     @Override

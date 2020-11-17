@@ -21,7 +21,22 @@ import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
 
 import cabbageroll.tetr.menus.Listen;
-import funcs.*;
+import funcs.Functions;
+import funcs.Functions_1_10_R1;
+import funcs.Functions_1_11_R1;
+import funcs.Functions_1_12_R1;
+import funcs.Functions_1_13_R1;
+import funcs.Functions_1_13_R2;
+import funcs.Functions_1_14_R1;
+import funcs.Functions_1_15_R1;
+import funcs.Functions_1_16_R1;
+import funcs.Functions_1_16_R2;
+import funcs.Functions_1_16_R3;
+import funcs.Functions_1_8_R1;
+import funcs.Functions_1_8_R2;
+import funcs.Functions_1_8_R3;
+import funcs.Functions_1_9_R1;
+import funcs.Functions_1_9_R2;
 
 public class Main extends JavaPlugin implements Listener{
     public static JavaPlugin plugin;
@@ -49,6 +64,7 @@ public class Main extends JavaPlugin implements Listener{
     String xd;
     static Song[] sarr;
     public static String version;
+    
     
     @Override
     public void onEnable(){
@@ -103,6 +119,10 @@ public class Main extends JavaPlugin implements Listener{
         
         for(Player player: Bukkit.getOnlinePlayers())
             lastui.put(player, "home");
+        
+        
+        ///joke code
+        
     }
     
     private boolean setupActionbar() {
