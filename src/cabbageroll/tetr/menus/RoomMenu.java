@@ -18,6 +18,7 @@ public class RoomMenu implements InventoryHolder {
     
     protected final static int BACK_LOCATION = 0;
     protected final static int GAME_LOCATION = 49;
+    protected final static int SONG_LOCATION = 52;
     protected final static int SETTINGS_LOCATION = 53;
     
     public RoomMenu(Player player){
@@ -63,6 +64,7 @@ public class RoomMenu implements InventoryHolder {
         }
         
         inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));
+        inventory.setItem(SONG_LOCATION, createItem(XMaterial.NOTE_BLOCK, ChatColor.WHITE + "Song"));
         inventory.setItem(SETTINGS_LOCATION, createItem(XMaterial.COMPASS, ChatColor.WHITE + "Table settings"));
         
         player.openInventory(inventory);

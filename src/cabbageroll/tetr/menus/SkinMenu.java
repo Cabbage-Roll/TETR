@@ -11,7 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import cabbageroll.tetr.Main;
-import cabbageroll.tetr.Table;
+import cabbageroll.tetr.constants.Blocks;
 import xseries.XMaterial;
 
 public class SkinMenu implements InventoryHolder {
@@ -19,8 +19,6 @@ public class SkinMenu implements InventoryHolder {
 
     protected final static int BACK_LOCATION = 0;
     protected final static int TORCH_LOCATION = 8;
-    
-    public static int test = 0;
     
     public SkinMenu(Player player){
         
@@ -32,19 +30,32 @@ public class SkinMenu implements InventoryHolder {
             inventory.setItem(i, border);
         }
         
+        ItemStack blocks[] = Main.skinmap.get(player);
         //changeable blocks
         for(int i=0;i<7;i++){
-            inventory.setItem(28+i, Table.blocks[i]);
+            if(Main.skineditorver.get(player)==0) {
+                inventory.setItem(28+i, Blocks.blocks[i]);
+            }else if(Main.skineditorver.get(player)==1) {
+                inventory.setItem(28+i, blocks[i]);
+            }
         }
 
         for(int i=0;i<7;i++){
-            inventory.setItem(37+i, Table.blocks[i+9]);
+            if(Main.skineditorver.get(player)==0) {
+                inventory.setItem(37+i, Blocks.blocks[i+9]);
+            }else if(Main.skineditorver.get(player)==1) {
+                inventory.setItem(37+i, blocks[i+9]);
+            }
         }
         
-        inventory.setItem(11, Table.blocks[7]);
+        if(Main.skineditorver.get(player)==0) {
+            inventory.setItem(11, Blocks.blocks[7]);
+        }else if(Main.skineditorver.get(player)==1) {
+            inventory.setItem(11, blocks[7]);
+        }
         
         inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));
-        inventory.setItem(TORCH_LOCATION, createItem(XMaterial.TORCH, ChatColor.WHITE + "" + (test==0?ChatColor.BOLD:"") + "Placeholder", ChatColor.WHITE + "" + (test==1?ChatColor.BOLD:"") + "forty two"));
+        inventory.setItem(TORCH_LOCATION, createItem(XMaterial.TORCH, ChatColor.WHITE + "" + (Main.skineditorver.get(player)==0?ChatColor.BOLD:"") + "Default", ChatColor.WHITE + "" + (Main.skineditorver.get(player)==1?ChatColor.BOLD:"") + "Custom"));
         
         player.openInventory(inventory);
     }

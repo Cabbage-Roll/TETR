@@ -1,12 +1,17 @@
 package cabbageroll.tetr.menus;
 
 
+import java.io.File;
+
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -14,6 +19,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import cabbageroll.tetr.Main;
 import cabbageroll.tetr.Room;
 import cabbageroll.tetr.Table;
+import net.md_5.bungee.api.ChatColor;
 import xseries.XMaterial;
 
 public class Listen implements Listener {
@@ -48,7 +54,7 @@ public class Listen implements Listener {
         }else if(event.getInventory().getHolder() instanceof JoinRoomMenu){
             event.setCancelled(true);
             if(JoinRoomMenu.ROOM_LOCATION_MIN<=slot && slot<=JoinRoomMenu.ROOM_LOCATION_MIN+JoinRoomMenu.pagesize){
-                Main.roommap.get(event.getCurrentItem().getItemMeta().getDisplayName()).addPlayer(player);
+                Main.roommap.get(ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName())).addPlayer(player);
                 new RoomMenu(player);
             }else if(slot==JoinRoomMenu.BACK_LOCATION){
                 new MultiplayerMenu(player);
@@ -79,8 +85,18 @@ public class Listen implements Listener {
                 }
             }else if(slot==RoomMenu.SETTINGS_LOCATION){
                 new SimpleSettingsMenu(player);
+            }else if(slot==RoomMenu.SONG_LOCATION){
+                new SongMenu(player);
             }
         }else if(event.getInventory().getHolder() instanceof SkinMenu){
+            if(Main.skineditorver.get(player)==0) {
+                event.setCancelled(true);
+                File customYml = new File(Main.plugin.getDataFolder() + "/userdata/" + player.getUniqueId() + ".yml");
+                FileConfiguration customConfig = YamlConfiguration.loadConfiguration(customYml);
+                customConfig.set("useSkinSlot", 0);
+
+                Main.saveCustomYml(customConfig, customYml);
+            }
             if(event.getCurrentItem()==null){
                 event.setCancelled(true);
             }else if(event.getCurrentItem().getType()==XMaterial.GLASS_PANE.parseMaterial()){
@@ -96,61 +112,67 @@ public class Listen implements Listener {
             }
             
             if(event.getSlot()==SkinMenu.TORCH_LOCATION) {
-                SkinMenu.test++;
-                SkinMenu.test%=2;
+                Main.skineditorver.put(player, Main.skineditorver.get(player)+1);
+                Main.skineditorver.put(player, Main.skineditorver.get(player)%2);
                 new SkinMenu(player);
             }
             
             if(event.getSlot()==SkinMenu.BACK_LOCATION) {
-                Inventory inv=event.getInventory();
-                //save blocks
-                for(int i=0;i<7;i++){
-                    if(inv.getItem(28+i)!=null){
-                        Table.blocks[i]=inv.getItem(28+i);
-                    }else{
-                        Table.blocks[i]=new ItemStack(XMaterial.AIR.parseMaterial());
+                ItemStack[] blocks = Main.skinmap.get(player);
+                if(Main.skineditorver.get(player)==1) {
+                    Inventory inv=event.getInventory();
+                    //save blocks
+                    for(int i=0;i<7;i++){
+                        if(inv.getItem(28+i)!=null){
+                            blocks[i]=inv.getItem(28+i);
+                        }else{
+                            blocks[i]=new ItemStack(XMaterial.AIR.parseMaterial());
+                        }
                     }
-                }
-                
-                //save ghost
-                for(int i=0;i<7;i++){
-                    if(inv.getItem(37+i)!=null){
-                        Table.blocks[i+9]=inv.getItem(37+i);
-                    }else{
-                        Table.blocks[i+9]=new ItemStack(XMaterial.AIR.parseMaterial());
+                    
+                    //save ghost
+                    for(int i=0;i<7;i++){
+                        if(inv.getItem(37+i)!=null){
+                            blocks[i+9]=inv.getItem(37+i);
+                        }else{
+                            blocks[i+9]=new ItemStack(XMaterial.AIR.parseMaterial());
+                        }
                     }
+                    
+                    //other
+                    if(inv.getItem(11)!=null){
+                        blocks[7]=inv.getItem(11);
+                    }else{
+                        blocks[7]=new ItemStack(XMaterial.AIR.parseMaterial());
+                    }
+                    
+                    player.sendMessage("Skin saved");
+                    
+                    File customYml = new File(Main.plugin.getDataFolder() + "/userdata/" + player.getUniqueId() + ".yml");
+                    FileConfiguration customConfig = YamlConfiguration.loadConfiguration(customYml);
+                    
+                    //saving to file
+                    customConfig.set("blockZ", blocks[0]);
+                    customConfig.set("blockL", blocks[1]);
+                    customConfig.set("blockO", blocks[2]);
+                    customConfig.set("blockS", blocks[3]);
+                    customConfig.set("blockI", blocks[4]);
+                    customConfig.set("blockJ", blocks[5]);
+                    customConfig.set("blockT", blocks[6]);
+                    customConfig.set("background", blocks[7]);
+                    customConfig.set("garbage", blocks[8]);
+                    customConfig.set("ghostZ", blocks[9]);
+                    customConfig.set("ghostL", blocks[10]);
+                    customConfig.set("ghostO", blocks[11]);
+                    customConfig.set("ghostS", blocks[12]);
+                    customConfig.set("ghostI", blocks[13]);
+                    customConfig.set("ghostJ", blocks[14]);
+                    customConfig.set("ghostT", blocks[15]);
+                    customConfig.set("useSkinSlot", 1);
+                    
+                    Main.saveCustomYml(customConfig, customYml);
+                    
                 }
-                
-                //other
-                if(inv.getItem(11)!=null){
-                    Table.blocks[7]=inv.getItem(11);
-                }else{
-                    Table.blocks[7]=new ItemStack(XMaterial.AIR.parseMaterial());
-                }
-                
-                player.sendMessage("Skin saved");
-                
-                //saving to file
-                Main.customConfig.set("blockZ", Table.blocks[0].serialize());
-                Main.customConfig.set("blockL", Table.blocks[1].serialize());
-                Main.customConfig.set("blockO", Table.blocks[2].serialize());
-                Main.customConfig.set("blockS", Table.blocks[3].serialize());
-                Main.customConfig.set("blockI", Table.blocks[4].serialize());
-                Main.customConfig.set("blockJ", Table.blocks[5].serialize());
-                Main.customConfig.set("blockT", Table.blocks[6].serialize());
-                
-                Main.customConfig.set("ghostZ", Table.blocks[9].serialize());
-                Main.customConfig.set("ghostL", Table.blocks[10].serialize());
-                Main.customConfig.set("ghostO", Table.blocks[11].serialize());
-                Main.customConfig.set("ghostS", Table.blocks[12].serialize());
-                Main.customConfig.set("ghostI", Table.blocks[13].serialize());
-                Main.customConfig.set("ghostJ", Table.blocks[14].serialize());
-                Main.customConfig.set("ghostT", Table.blocks[15].serialize());
-                
-                Main.customConfig.set("background", Table.blocks[7].serialize());
-                
-                Main.saveCustomYml(Main.customConfig, Main.customYml);
-                
                 new HomeMenu(player);
                 
                 return;
@@ -263,6 +285,18 @@ public class Listen implements Listener {
             }
             
             new SimpleSettingsMenu(player);
+        }else if(event.getInventory().getHolder() instanceof SongMenu) {
+            event.setCancelled(true);
+            Room room = Main.roommap.get(Main.inwhichroom.get(player));
+            if(event.getSlot()==SongMenu.BACK_LOCATION) {
+                new RoomMenu(player);
+            }else if(event.getSlot()==9) {
+                room.israndom = true;
+            }else if(event.getSlot()-10<Room.slist.getCount()) {
+                room.israndom = false;
+                room.index = event.getSlot() - 10;
+                player.sendMessage("boom");
+            }
         }
     }
     
@@ -306,6 +340,14 @@ public class Listen implements Listener {
                     player.getInventory().setHeldItemSlot(8);
                 }
             }
+        }
+    }
+    
+    @EventHandler
+    public void onPlayerToggleSneakEvent(PlayerToggleSneakEvent event) {
+        Player player = event.getPlayer();
+        if(player.isSneaking()) {
+            Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player).startZone();
         }
     }
 }

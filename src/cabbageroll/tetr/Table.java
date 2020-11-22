@@ -7,10 +7,8 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.Vector;
 
 import cabbageroll.tetr.constants.Blocklist;
 import cabbageroll.tetr.constants.Garbagetable;
@@ -18,32 +16,14 @@ import cabbageroll.tetr.constants.Kicktable;
 import cabbageroll.tetr.functions.SendBlockChangeCustom;
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
-import xseries.XMaterial;
+import net.md_5.bungee.api.ChatColor;
 
 public class Table {
-    public static ItemStack[] blocks=new ItemStack[]{
-        XMaterial.RED_WOOL.parseItem(),
-        XMaterial.ORANGE_WOOL.parseItem(),
-        XMaterial.YELLOW_WOOL.parseItem(),
-        XMaterial.LIME_WOOL.parseItem(),
-        XMaterial.LIGHT_BLUE_WOOL.parseItem(),
-        XMaterial.BLUE_WOOL.parseItem(),
-        XMaterial.PURPLE_WOOL.parseItem(),
-        XMaterial.BEDROCK.parseItem(),
-        XMaterial.LIGHT_GRAY_WOOL.parseItem(),
-        XMaterial.RED_STAINED_GLASS.parseItem(),
-        XMaterial.ORANGE_STAINED_GLASS.parseItem(),
-        XMaterial.YELLOW_STAINED_GLASS.parseItem(),
-        XMaterial.LIME_STAINED_GLASS.parseItem(),
-        XMaterial.LIGHT_BLUE_STAINED_GLASS.parseItem(),
-        XMaterial.BLUE_STAINED_GLASS.parseItem(),
-        XMaterial.PURPLE_STAINED_GLASS.parseItem(),
-    };
     
     public static boolean transparent=false;
     
     private World world;
-    Player player;
+    public Player player;
     private int looptick;
     public BukkitTask task;
     private BPlayerBoard board;
@@ -90,8 +70,7 @@ public class Table {
     //board variables
     private final int STAGESIZEX=10;
     private final int STAGESIZEY=40;
-    @SuppressWarnings("unused")
-    private final int VISIBLEROWS=23;
+    private final int VISIBLEROWS=40;
     private int[][] stage=new int[STAGESIZEY][STAGESIZEX];
     private int[][] block=new int[4][4];
     
@@ -126,9 +105,73 @@ public class Table {
     private double oldy;
     private double oldz;
     
+    //zone
+    private int zonelines;
+    private boolean zone;
+    
     Table(Player p){
         player=p;
         world=p.getWorld();
+    }
+    
+    private void stopZone() {
+        boolean lineclean;
+        lines = 0;
+        
+        for(int i=0;i<STAGESIZEY;i++){
+            lineclean=true;
+            for(int j=0;j<STAGESIZEX;j++){
+                if(stage[i][j]!=16){
+                    lineclean=false;
+                    break;
+                }
+            }
+
+            if(lineclean){
+                for(int j=0;j<STAGESIZEX;j++) {
+                    stage[0][j]=7;
+                    colPrint(j, 0, 7);
+                }
+                
+                lines++;
+                for(int k=i;k>0;k--) {
+                    for(int j=0;j<STAGESIZEX;j++) {
+                        stage[k][j] = stage[k-1][j];
+                        colPrint(j, k, stage[k][j]);
+                    }
+                }
+            }
+        }
+
+        player.sendTitle("", ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "" + lines + " LINE" + (lines==1?"":"S"), 20, 40, 20);
+        updateScore();
+
+        sendGarbage(lines*2);
+        zone = false;
+        zonelines = 0;
+    }
+    
+    public void startZone() {
+        if(!zone) {
+            zone = true;
+            
+        }
+    }
+    
+    private void topOutCheck() {
+        for(int i=0;i<block_size;i++){
+            for(int j=0;j<block_size;j++){
+                if(stage[i+y][j+x]!=7 && block[i][j]!=7){
+                    if(!zone) {
+                        player.playSound(player.getEyeLocation(), SoundUtil.ORB_PICKUP, 1f, 1f);
+                        gameover=true;
+                    }else {
+                        stopZone();
+                    }
+                    return;
+                }
+            }
+        }
     }
     
     public void rotateTable(String input) {
@@ -308,47 +351,49 @@ public class Table {
     
     //works
     private void sendTheTitle(){
-        String s1="";
-        String s2="";
-        String s3="";
-        String s4="         ";
-        if(combo>=1){
-            s2=String.valueOf(combo)+" COMBO";
-        }
-        
-        if(spun){
-            if(mini){
-                s3="§5t-spin§r";
-            }else{
-                s3="§5T-SPIN§r";
+        if(!zone) {
+            String s1="";
+            String s2="";
+            String s3="";
+            String s4="         ";
+            if(combo>=1){
+                s2=String.valueOf(combo)+" COMBO";
             }
-        }
-        
-        if(lines==1){
-            s1="SINGLE";
-        }else if(lines==2){
-            s1="DOUBLE";
-        }else if(lines==3){
-            s1="TRIPLE";
-        }else if(lines==4){
-            s1="QUAD";
-        }
-        
-        if(lines==0 && spun){
-            s1=" ";
-        }
-        
-        if((totallines-totalgarbage)*10+totalgarbage==totalblocks*4){
-            s4="§6§lALL CLEAR§r";
-        }
-        
-        //dont kill old title if its empty
-        if(s1!="" || s2!=""){
-        s1=s3+" "+s1+"       "+s4;
-        s2=s2+"                                ";
-        
-            //Main.functions.sendTitle(player, s1, s2, 0, 20, 10);
-            player.sendTitle(s1, s2, 0, 20, 10);
+            
+            if(spun){
+                if(mini){
+                    s3="§5t-spin§r";
+                }else{
+                    s3="§5T-SPIN§r";
+                }
+            }
+            
+            if(lines==1){
+                s1="SINGLE";
+            }else if(lines==2){
+                s1="DOUBLE";
+            }else if(lines==3){
+                s1="TRIPLE";
+            }else if(lines==4){
+                s1="QUAD";
+            }
+            
+            if(lines==0 && spun){
+                s1=" ";
+            }
+            
+            if((totallines-totalgarbage)*10+totalgarbage==totalblocks*4){
+                s4="§6§lALL CLEAR§r";
+            }
+            
+            //dont kill old title if its empty
+            if(s1!="" || s2!=""){
+            s1=s3+" "+s1+"       "+s4;
+            s2=s2+"                                ";
+            
+                //Main.functions.sendTitle(player, s1, s2, 0, 20, 10);
+                player.sendTitle(s1, s2, 0, 20, 10);
+            }
         }
     }
 
@@ -450,19 +495,16 @@ public class Table {
         drawGhost();
         
         //check if its possible then print it (at same time)
+        
+        
+        topOutCheck();
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){
-                if(stage[i+y][j+x]!=7 && block[i][j]!=7){
-                    player.playSound(player.getEyeLocation(), SoundUtil.ORB_PICKUP, 1f, 1f);
-                    gameover=true;
-                    return;
-                }
                 if(block[i][j]!=7){
                     colPrint(j+x, i+y, block[i][j]);
                 }
             }
         }
-        
     }
     
     //works
@@ -488,15 +530,17 @@ public class Table {
     
     //works
     private void colPrint(float x, float y, int color){
-        for(int i=0;i<=coni;i++){
-            for(int j=0;j<=conj;j++){
-                for(int k=0;k<=conk;k++){
-                    printSingleBlock(
-                    gx+(int)(x*m1x)+(int)(y*m1y)+(i==coni?0:i),
-                    gy+(int)(x*m2x)+(int)(y*m2y)+(j==conj?0:j),
-                    gz+(int)(x*m3x)+(int)(y*m3y)+(k==conk?0:k),
-                    color
-                    );
+        if(y>=STAGESIZEY-VISIBLEROWS) {
+            for(int i=0;i<=coni;i++) {
+                for(int j=0;j<=conj;j++) {
+                    for(int k=0;k<=conk;k++) {
+                        printSingleBlock(
+                        gx+(int)(x*m1x)+(int)(y*m1y)+(i==coni?0:i),
+                        gy+(int)(x*m2x)+(int)(y*m2y)+(j==conj?0:j),
+                        gz+(int)(x*m3x)+(int)(y*m3y)+(k==conk?0:k),
+                        color
+                        );
+                    }
                 }
             }
         }
@@ -564,7 +608,8 @@ public class Table {
         oldx=player.getLocation().getX();
         oldy=player.getLocation().getY();
         oldz=player.getLocation().getZ();
-        
+        zone=false;
+        zonelines = 0;
     }
     
     //works
@@ -633,112 +678,115 @@ public class Table {
     
     //improve now
     private void updateScore(){
-        
-        if((spun && lines>0) || lines==4){
-            b2b++;
-        }else if(lines>0){
-            b2b=-1;
-        }
-        
-        if(lines>0){
-            combo++;
-        }else{
-            putGarbage();
-            combo=-1;
-            power=false;
-        }
-        
-        if(spun){
-            player.playSound(player.getEyeLocation(), SoundUtil.THUNDER, 1f, 0.75f);
-            if(mini){
-                switch(lines){
-                case 0:
-                    score+=100;
-                    break;
-                case 1:
-                    score+=200*(b2b>0?1.5:1);
-                    break;
-                case 2:
-                    score+=400*(b2b>0?1.5:1);
-                    break;
+        if(!zone) {
+            
+            if((spun && lines>0) || lines==4){
+                b2b++;
+            }else if(lines>0){
+                b2b=-1;
+            }
+            
+            if(lines>0){
+                combo++;
+            }else{
+                putGarbage();
+                combo=-1;
+                power=false;
+            }
+            
+            if(spun){
+                player.playSound(player.getEyeLocation(), SoundUtil.THUNDER, 1f, 0.75f);
+                if(mini){
+                    switch(lines){
+                    case 0:
+                        score+=100;
+                        break;
+                    case 1:
+                        score+=200*(b2b>0?1.5:1);
+                        break;
+                    case 2:
+                        score+=400*(b2b>0?1.5:1);
+                        break;
+                    }
+                }else{
+                    switch(lines){
+                    case 0:
+                        score+=400;
+                        break;
+                    case 1:
+                        score+=800*(b2b>0?1.5:1);
+                        break;
+                    case 2:
+                        score+=1200*(b2b>0?1.5:1);
+                        break;
+                    case 3:
+                        score+=1600*(b2b>0?1.5:1);
+                        break;
+                    }
                 }
+                
             }else{
                 switch(lines){
-                case 0:
-                    score+=400;
-                    break;
                 case 1:
-                    score+=800*(b2b>0?1.5:1);
+                    score+=100;
                     break;
                 case 2:
-                    score+=1200*(b2b>0?1.5:1);
+                    score+=300;
                     break;
                 case 3:
-                    score+=1600*(b2b>0?1.5:1);
+                    score+=500;
+                    break;
+                case 4:
+                    score+=800*(b2b>0?1.5:1);
                     break;
                 }
             }
             
-        }else{
-            switch(lines){
-            case 1:
-                score+=100;
-                break;
-            case 2:
-                score+=300;
-                break;
-            case 3:
-                score+=500;
-                break;
-            case 4:
-                score+=800*(b2b>0?1.5:1);
-                break;
+            //condition for triggering power...
+            if(combo>3){
+                power=true;
             }
-        }
-        
-        //condition for triggering power...
-        if(combo>3){
-            power=true;
-        }
-        
-        if(combo>=0){
-            if(power){
-                player.playSound(player.getEyeLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
-            }else{
-                player.playSound(player.getEyeLocation(), SoundUtil.NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
-            }
-            score+=combo*50;
-        }
-        
-        if((totallines-totalgarbage)*10+totalgarbage==totalblocks*4){
-            score+=3500;
-            sendGarbage(10);
-        }
-
-        sendTheTitle();
-        sendTheScoreboard();
-        
-        ///sendgarbage
-        if(lines>0){
-            int temp=0;
-            if(spun==false){
-                temp=lines-1;
-            }else if(mini==true){
-                if(lines==1){
-                    temp=4;
+            
+            if(combo>=0){
+                if(power){
+                    player.playSound(player.getEyeLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
                 }else{
-                    temp=6;
+                    player.playSound(player.getEyeLocation(), SoundUtil.NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
                 }
-            }else{
-                if(lines==1){
-                    temp=5;
-                }else if(lines==2){
-                    temp=7;
-                }else{
-                    temp=8;
-                }
+                score+=combo*50;
             }
-            sendGarbage(Garbagetable.garbage_table[temp][combo]);
+            
+            if((totallines-totalgarbage)*10+totalgarbage==totalblocks*4){
+                score+=3500;
+                sendGarbage(10);
+            }
+    
+            sendTheTitle();
+            sendTheScoreboard();
+            
+            ///sendgarbage
+            if(lines>0){
+                int temp=0;
+                if(spun==false){
+                    temp=lines-1;
+                }else if(mini==true){
+                    if(lines==1){
+                        temp=4;
+                    }else{
+                        temp=6;
+                    }
+                }else{
+                    if(lines==1){
+                        temp=5;
+                    }else if(lines==2){
+                        temp=7;
+                    }else{
+                        temp=8;
+                    }
+                }
+                
+                sendGarbage(Garbagetable.garbage_table[temp][combo]);
+            }
         }
         
         spun=false;
@@ -898,13 +946,9 @@ public class Table {
                 //check if its possible then print it
                 drawGhost();
                 
+                topOutCheck();
                 for(int i=0;i<block_size;i++){
                     for(int j=0;j<block_size;j++){
-                        if(stage[i+y][j+x]!=7 && block[i][j]!=7){
-                            player.playSound(player.getEyeLocation(), SoundUtil.ORB_PICKUP, 1f, 1f);
-                            gameover=true;
-                            return;
-                        }
                         if(block[i][j]!=7){
                             colPrint(j+x, i+y, block[i][j]);
                         }
@@ -1098,31 +1142,42 @@ public class Table {
             }
         }
         
-        ///suspicious condition
-        for(int i=y;i<STAGESIZEY && i<(y+block_size);i++){
+        for(int i=y;i<STAGESIZEY;i++){
             lineclean=true;
             for(int j=0;j<STAGESIZEX;j++){
-                if(stage[i][j]==7){
+                if(stage[i][j]==7 || stage[i][j]==16){
                     lineclean=false;
                     break;
                 }
             }
             if(lineclean){
-                
-                //old problem fix
-                for(int j=0;j<STAGESIZEX;j++){
-                    stage[0][j]=7;
-                    colPrint(j, 0, 7);
-                }
-                //end
-                
                 lines++;
-                for(int k=i;k>hr-lines;k--){
+                
                     for(int j=0;j<STAGESIZEX;j++){
-                        stage[k][j]=stage[k-1][j];
-                        colPrint(j, k, stage[k][j]);
+                        stage[0][j] = 7;
+                        colPrint(j, 0, 7);
+                    }
+                    for(int k=i;k>hr-lines;k--){
+                        for(int j=0;j<STAGESIZEX;j++){
+                            stage[k][j] = stage[k-1][j];
+                            colPrint(j, k, stage[k][j]);
+                        }
+                    }
+                    
+                if(zone){
+                    zonelines++;
+                    for(int k=0;k<STAGESIZEY-zonelines;k++){
+                        for(int j=0;j<STAGESIZEX;j++){
+                            stage[k][j] = stage[k+1][j];
+                            colPrint(j, k, stage[k][j]);
+                        }
+                    }
+                    for(int j=0;j<STAGESIZEX;j++){
+                        stage[STAGESIZEY-zonelines][j] = 16;
+                        colPrint(j, STAGESIZEY-zonelines, 16);
                     }
                 }
+                i--;
             }
         }
         
@@ -1130,6 +1185,9 @@ public class Table {
         totallines+=lines;
         totalblocks+=1;
         updateScore();
+        if(zone && lines>0) {
+            player.playSound(player.getEyeLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(zonelines*2-16)/(double)16));
+        }
         makeNextBlock();
     }
 
@@ -1187,6 +1245,7 @@ public class Table {
                 ((CraftPlayer) player).getHandle().playerConnection.sendPacket(test);*/
        	        
        	        //movement code
+       	        /*
        	        Vector vel = new Vector(player.getLocation().getX()-oldx, 
                        	                player.getLocation().getY()-oldy, 
                        	                player.getLocation().getZ()-oldz);
@@ -1250,7 +1309,7 @@ public class Table {
        	        if(looptick-dura>=DAS && moving) {
        	            dasing=true;
        	        }
-   	        
+   	        */
    	        
    	        }
    	    }.runTaskTimer(Main.plugin, 0, 0);

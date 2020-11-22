@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
@@ -37,6 +38,7 @@ import funcs.Functions_1_8_R2;
 import funcs.Functions_1_8_R3;
 import funcs.Functions_1_9_R1;
 import funcs.Functions_1_9_R2;
+import xseries.XMaterial;
 
 public class Main extends JavaPlugin implements Listener{
     public static JavaPlugin plugin;
@@ -46,9 +48,9 @@ public class Main extends JavaPlugin implements Listener{
     public static HashMap<String,Room> roommap=new HashMap<String,Room>();
     public static HashMap<Player,String> lastui=new HashMap<Player,String>();
     public static HashMap<Player,String> inwhichroom=new HashMap<Player,String>();
+    public static HashMap<Player,Integer> skineditorver=new HashMap<Player,Integer>();
+    public static HashMap<Player,ItemStack[]> skinmap = new HashMap<Player,ItemStack[]>();
     
-    public static File customYml;
-    public static FileConfiguration customConfig;
     public static void saveCustomYml(FileConfiguration ymlConfig, File ymlFile){
         try{
             ymlConfig.save(ymlFile);
@@ -70,9 +72,6 @@ public class Main extends JavaPlugin implements Listener{
     public void onEnable(){
         plugin=this;
         console=getServer().getConsoleSender();
-        
-        customYml = new File(this.getDataFolder()+"/config.yml");
-        customConfig = YamlConfiguration.loadConfiguration(customYml);
         System.out.println("Plugin started");
         this.getCommand("tetr").setExecutor(new OpenMenu());
         
@@ -117,8 +116,14 @@ public class Main extends JavaPlugin implements Listener{
             Bukkit.getPluginManager().disablePlugin(this);
         }
         
-        for(Player player: Bukkit.getOnlinePlayers())
+        for(Player player: Bukkit.getOnlinePlayers()) {
             lastui.put(player, "home");
+
+            if(!Main.skineditorver.containsKey(player)) {
+                Main.skineditorver.put(player, 0);
+            }
+            initSkin(player);
+        }
         
         
         ///joke code
@@ -180,6 +185,7 @@ public class Main extends JavaPlugin implements Listener{
     public void onPlayerJoin(PlayerJoinEvent event){
         Player player=event.getPlayer();
         lastui.put(player, "home");
+        initSkin(player);
     }
     
     @EventHandler
@@ -193,4 +199,27 @@ public class Main extends JavaPlugin implements Listener{
         }
     }
     
+    public void initSkin(Player player) {
+        File customYml = new File(Main.plugin.getDataFolder() + "/userdata/" + player.getUniqueId() + ".yml");
+        FileConfiguration customConfig = YamlConfiguration.loadConfiguration(customYml);
+        ItemStack[] blocks = new ItemStack[16];
+        blocks[0] = customConfig.getItemStack("blockZ");
+        blocks[1] = customConfig.getItemStack("blockL");
+        blocks[2] = customConfig.getItemStack("blockO");
+        blocks[3] = customConfig.getItemStack("blockS");
+        blocks[4] = customConfig.getItemStack("blockI");
+        blocks[5] = customConfig.getItemStack("blockJ");
+        blocks[6] = customConfig.getItemStack("blockT");
+        blocks[7] = customConfig.getItemStack("background");
+        blocks[8] = /*customConfig.getItemStack("garbage");*/XMaterial.GRAY_WOOL.parseItem();
+        blocks[9] = customConfig.getItemStack("ghostZ");
+        blocks[10] = customConfig.getItemStack("ghostL");
+        blocks[11] = customConfig.getItemStack("ghostO");
+        blocks[12] = customConfig.getItemStack("ghostS");
+        blocks[13] = customConfig.getItemStack("ghostI");
+        blocks[14] = customConfig.getItemStack("ghostJ");
+        blocks[15] = customConfig.getItemStack("ghostT");
+        skinmap.put(player, blocks);
+        Main.skineditorver.put(player, customConfig.getInt("useSkinSlot"));
+    }
 }

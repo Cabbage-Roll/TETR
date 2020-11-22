@@ -10,19 +10,20 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import com.xxmicloxx.NoteBlockAPI.model.Playlist;
+
 import cabbageroll.tetr.Main;
-import cabbageroll.tetr.Table;
+import cabbageroll.tetr.Room;
 import xseries.XMaterial;
 
-public class SimpleSettingsMenu implements InventoryHolder {
-    private Inventory inventory=null;
+public class SongMenu implements InventoryHolder {
+private Inventory inventory = null;
     
     protected final static int BACK_LOCATION = 0;
-    protected final static int TORCH_LOCATION = 8;
     
-    public SimpleSettingsMenu(Player player) {
-        Main.lastui.put(player, "simsettings");
-        Inventory inventory=Bukkit.createInventory(this, 54, "Settings");
+    public SongMenu(Player player) {
+        Main.lastui.put(player, "song");
+        Inventory inventory=Bukkit.createInventory(this, 54, "Choose song");
         ItemStack border=XMaterial.GLASS_PANE.parseItem();
         //fill the border with glass
         for(int i=0;i<9;i++){
@@ -34,19 +35,15 @@ public class SimpleSettingsMenu implements InventoryHolder {
         
         //clickable items
         
-
-        Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
+        Room room=Main.roommap.get(Main.inwhichroom.get(player));
+        Playlist playlist = Room.slist;
         
         inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));
-        inventory.setItem(TORCH_LOCATION, createItem(XMaterial.TORCH, ChatColor.YELLOW + "This is standard settings menu", ChatColor.DARK_RED + "" + ChatColor.BOLD + "Click to go to advanced menu"));
+        inventory.setItem(9, createItem(XMaterial.NOTE_BLOCK, ChatColor.YELLOW + "Random"));
+        for(int i=0;i<playlist.getCount();i++) {
+            inventory.setItem(10+i, createItem(XMaterial.NOTE_BLOCK, ChatColor.WHITE + playlist.get(i).getPath().getName().replaceAll(".nbs$", "")));
+        }
         
-        inventory.setItem(21, createItem(XMaterial.RED_WOOL, ChatColor.WHITE + "Move X", "X: " + table.gx));
-        inventory.setItem(22, createItem(XMaterial.GREEN_WOOL, ChatColor.WHITE + "Move Y", "Y: " + table.gy));
-        inventory.setItem(23, createItem(XMaterial.BLUE_WOOL, ChatColor.WHITE + "Move Z", "Z: " + table.gz));
-        
-        inventory.setItem(30, createItem(XMaterial.RED_CARPET, ChatColor.WHITE + "Rotate X"));
-        inventory.setItem(31, createItem(XMaterial.GREEN_CARPET, ChatColor.WHITE + "Rotate Y"));
-        inventory.setItem(32, createItem(XMaterial.BLUE_CARPET, ChatColor.WHITE + "Rotate Z"));
         
         player.openInventory(inventory);
     }

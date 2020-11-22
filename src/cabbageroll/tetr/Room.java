@@ -27,12 +27,14 @@ public class Room {
     public Map<Player,Table> playerboards=new HashMap<Player,Table>();
     public String id;
     public Player host;
-    static Playlist slist;
+    public static Playlist slist;
     public RadioSongPlayer rsp;
     public boolean running;
     public boolean multiplayer;
     public int playersalive;
     public boolean backfire=false;
+    public boolean israndom = true;
+    public int index;
     
     public Room(Player p){
         if(Main.numberofsongs>0){
@@ -60,8 +62,12 @@ public class Room {
     
     public void startRoom(){
         if(Main.numberofsongs>0){
-            int random=(int)(Math.random()*Main.numberofsongs);
-            rsp.playSong(random);
+            if(israndom) {
+                int random=(int)(Math.random()*Main.numberofsongs);
+                rsp.playSong(random);
+            }else {
+                rsp.playSong(index);
+            }
             rsp.setRepeatMode(RepeatMode.ONE);
             if(rsp.isPlaying()==false){
                 rsp.setPlaying(true);
@@ -71,7 +77,6 @@ public class Room {
         Random x=new Random();
         long seed=x.nextInt();
         long seed2=x.nextInt();
-        System.out.println(seed+","+seed2);
         
         for(Player player: playerlist){
             Table table=playerboards.get(player);
@@ -79,7 +84,7 @@ public class Room {
             table.initGame(seed,seed2);
             
             if(Main.numberofsongs>0){
-                table.player.sendMessage("Playing: "+rsp.getSong().getPath());
+                table.player.sendMessage("Playing: "+rsp.getSong().getPath().getName().replaceAll(".nbs$", ""));
             }
         }
         
