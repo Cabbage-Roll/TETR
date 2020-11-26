@@ -39,49 +39,55 @@ public class Listen implements Listener {
             if(slot==MultiplayerMenu.CREATEROOM_LOCATION){
                 new MakeRoomMenu(player);
             }else if(slot==MultiplayerMenu.LISTROOMS_LOCATION){
-                new JoinRoomMenu(player);
+                new ChooseJoinMethodMenu(player);
             }else if(slot==MultiplayerMenu.BACK_LOCATION){
                 new HomeMenu(player);
             }
         }else if(event.getInventory().getHolder() instanceof MakeRoomMenu){
             event.setCancelled(true);
-            if(slot==MakeRoomMenu.NEWROOM_LOCATION){
-                new Room(player);
+            switch(slot) {
+            case MakeRoomMenu.NEWROOM_LOCATION:
+                new Room(player, false);
                 new RoomMenu(player);
-            }else if(slot==MakeRoomMenu.BACK_LOCATION){
+                break;
+            case MakeRoomMenu.NEWPRIVATEROOM_LOCATION:
+                new Room(player, true);
+                new RoomMenu(player);
+                break;
+            case MakeRoomMenu.BACK_LOCATION:
                 new MultiplayerMenu(player);
+                break;
             }
         }else if(event.getInventory().getHolder() instanceof JoinRoomMenu){
             event.setCancelled(true);
-            if(JoinRoomMenu.ROOM_LOCATION_MIN<=slot && slot<=JoinRoomMenu.ROOM_LOCATION_MIN+JoinRoomMenu.pagesize){
+            if(JoinRoomMenu.ROOM_LOCATION_MIN<=slot && slot<JoinRoomMenu.ROOM_LOCATION_MIN+JoinRoomMenu.pagesize){
                 Main.roommap.get(ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName())).addPlayer(player);
                 new RoomMenu(player);
-            }else if(slot==JoinRoomMenu.BACK_LOCATION){
+            }else switch(slot) {
+            case JoinRoomMenu.BACK_LOCATION:
                 new MultiplayerMenu(player);
+                break;
+            case JoinRoomMenu.MINUSPAGE_LOCATION:
+                new JoinRoomMenu(player, Main.joinroompage.get(player)-1);
+                break;
+            case JoinRoomMenu.PLUSPAGE_LOCATION:
+                new JoinRoomMenu(player, Main.joinroompage.get(player)+1);
+                break;
+                
             }
         }else if(event.getInventory().getHolder() instanceof RoomMenu){
             event.setCancelled(true);
             if(slot==RoomMenu.BACK_LOCATION){
-                Main.roommap.get(Main.inwhichroom.get(player)).removePlayer(player);
+                Main.inwhichroom.get(player).removePlayer(player);
                 new MultiplayerMenu(player);
             }else if(slot==49){
-                ItemMeta itemmeta;
-                if(Main.roommap.get(Main.inwhichroom.get(player)).host.equals(player)){
-                    if(Main.roommap.get(Main.inwhichroom.get(player)).running){
-                        Main.roommap.get(Main.inwhichroom.get(player)).stopRoom();
-                        ItemStack start=new ItemStack(XMaterial.DIAMOND_SWORD.parseMaterial());
-                        itemmeta=start.getItemMeta();
-                        itemmeta.setDisplayName("START");
-                        start.setItemMeta(itemmeta);
-                        event.getInventory().setItem(49, start);
+                if(Main.inwhichroom.get(player).host.equals(player)){
+                    if(Main.inwhichroom.get(player).running){
+                        Main.inwhichroom.get(player).stopRoom();
                     }else{
-                        Main.roommap.get(Main.inwhichroom.get(player)).startRoom();
-                        ItemStack item=new ItemStack(XMaterial.ANVIL.parseMaterial());
-                        itemmeta=item.getItemMeta();
-                        itemmeta.setDisplayName("ABORT");
-                        item.setItemMeta(itemmeta);
-                        event.getInventory().setItem(49, item);
+                        Main.inwhichroom.get(player).startRoom();
                     }
+                    new RoomMenu(player);
                 }
             }else if(slot==RoomMenu.SETTINGS_LOCATION){
                 new SimpleSettingsMenu(player);
@@ -191,7 +197,7 @@ public class Listen implements Listener {
             if(item!=null){
                 ItemMeta itemmeta=item.getItemMeta();
                 
-                Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
+                Table table=Main.inwhichroom.get(player).playerboards.get(player);
                 
                 switch(event.getSlot()){
                 case SettingsMenu.BACK_LOCATION:
@@ -233,7 +239,7 @@ public class Listen implements Listener {
                     table.m3y+=by;
                     break;
                 case 53:
-                    Main.roommap.get(Main.inwhichroom.get(player)).backfire=!Main.roommap.get(Main.inwhichroom.get(player)).backfire;
+                    Main.inwhichroom.get(player).backfire=!Main.inwhichroom.get(player).backfire;
                     break;
                 default:
                     return;
@@ -253,7 +259,7 @@ public class Listen implements Listener {
                 by=-1;
             }
             
-            Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
+            Table table=Main.inwhichroom.get(player).playerboards.get(player);
             
             switch(event.getSlot()) {
             case SimpleSettingsMenu.BACK_LOCATION:
@@ -287,15 +293,33 @@ public class Listen implements Listener {
             new SimpleSettingsMenu(player);
         }else if(event.getInventory().getHolder() instanceof SongMenu) {
             event.setCancelled(true);
-            Room room = Main.roommap.get(Main.inwhichroom.get(player));
+            Room room = Main.inwhichroom.get(player);
             if(event.getSlot()==SongMenu.BACK_LOCATION) {
                 new RoomMenu(player);
             }else if(event.getSlot()==9) {
-                room.israndom = true;
+                room.index = -1;
             }else if(event.getSlot()-10<Room.slist.getCount()) {
-                room.israndom = false;
                 room.index = event.getSlot() - 10;
-                player.sendMessage("boom");
+            }
+        }else if(event.getInventory().getHolder() instanceof ChooseJoinMethodMenu){
+            event.setCancelled(true);
+            switch(slot) {
+            case ChooseJoinMethodMenu.BACK_LOCATION:
+                new MultiplayerMenu(player);
+                break;
+            case ChooseJoinMethodMenu.ROOMLIST_LOCATION:
+                new JoinRoomMenu(player, 0);
+                break;
+            case ChooseJoinMethodMenu.ID_LOCATION:
+                new JoinByIdMenu(player);
+                break;
+            }
+        }else if(event.getInventory().getHolder() instanceof JoinByIdMenu){
+            event.setCancelled(true);
+            switch(slot) {
+            case ChooseJoinMethodMenu.BACK_LOCATION:
+                new MultiplayerMenu(player);
+                break;
             }
         }
     }
@@ -305,9 +329,9 @@ public class Listen implements Listener {
     public void onItemHeld(PlayerItemHeldEvent event){
         Player player=event.getPlayer();
         if(Main.inwhichroom.containsKey(player)){
-            Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
+            Table table=Main.inwhichroom.get(player).playerboards.get(player);
             if(table!=null){
-                if(table.task!=null){
+                if(!table.getGameOver()){
                     int itemId=event.getNewSlot();
                     switch(itemId){
                     case 0:
@@ -346,8 +370,13 @@ public class Listen implements Listener {
     @EventHandler
     public void onPlayerToggleSneakEvent(PlayerToggleSneakEvent event) {
         Player player = event.getPlayer();
+        Table table=Main.inwhichroom.get(player).playerboards.get(player);
         if(player.isSneaking()) {
-            Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player).startZone();
+            if(table!=null){
+                if(!table.getGameOver()){
+                    Main.inwhichroom.get(player).playerboards.get(player).startZone();
+                }
+            }
         }
     }
 }

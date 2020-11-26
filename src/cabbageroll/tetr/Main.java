@@ -2,8 +2,8 @@ package cabbageroll.tetr;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
@@ -41,17 +41,20 @@ import funcs.Functions_1_9_R2;
 import xseries.XMaterial;
 
 public class Main extends JavaPlugin implements Listener{
+    
     public static JavaPlugin plugin;
     public static ConsoleCommandSender console;
     
-    public static ArrayList<String> roomlist=new ArrayList<String>();
-    public static HashMap<String,Room> roommap=new HashMap<String,Room>();
-    public static HashMap<Player,String> lastui=new HashMap<Player,String>();
-    public static HashMap<Player,String> inwhichroom=new HashMap<Player,String>();
-    public static HashMap<Player,Integer> skineditorver=new HashMap<Player,Integer>();
+    public static LinkedHashMap<String,Room> roommap = new LinkedHashMap<String,Room>();
+    public static HashMap<Player,Room> inwhichroom = new HashMap<Player,Room>();
+
+    public static HashMap<Player,String> lastui = new HashMap<Player,String>();
+    public static HashMap<Player,Integer> joinroompage = new HashMap<Player,Integer>();
+    
+    public static HashMap<Player,Integer> skineditorver = new HashMap<Player,Integer>();
     public static HashMap<Player,ItemStack[]> skinmap = new HashMap<Player,ItemStack[]>();
     
-    public static void saveCustomYml(FileConfiguration ymlConfig, File ymlFile){
+    public static void saveCustomYml(FileConfiguration ymlConfig, File ymlFile) {
         try{
             ymlConfig.save(ymlFile);
         }catch(IOException e){
@@ -64,7 +67,7 @@ public class Main extends JavaPlugin implements Listener{
     public static int numberofsongs;
     String[] pathnames;
     String xd;
-    static Song[] sarr;
+    static Song[] songarray;
     public static String version;
     
     
@@ -85,20 +88,20 @@ public class Main extends JavaPlugin implements Listener{
         numberofsongs=f.listFiles().length;
         if(numberofsongs>0){
             
-            console.sendMessage("§2TETR: "+numberofsongs+" song(s) loaded");
+            getLogger().info("TETR: "+numberofsongs+" song(s) loaded");
             
             pathnames=new String[numberofsongs];
-            sarr=new Song[numberofsongs];
+            songarray=new Song[numberofsongs];
             pathnames = f.list();
             for(int i=0;i<numberofsongs;i++){
                 xd=this.getDataFolder()+"/songs/"+pathnames[i];
-                sarr[i]=NBSDecoder.parse(new File(xd));
+                songarray[i]=NBSDecoder.parse(new File(xd));
             }
             
-            Room.slist=new Playlist(sarr);
+            Room.slist=new Playlist(songarray);
             //tRASH end
         }else{
-            console.sendMessage("§4TETR: No songs detected. Please add some songs!");
+            getLogger().info("TETR: No songs detected. Please add some songs!");
         }
         
         if (setupActionbar()) {
@@ -122,11 +125,10 @@ public class Main extends JavaPlugin implements Listener{
             if(!Main.skineditorver.containsKey(player)) {
                 Main.skineditorver.put(player, 0);
             }
+            
             initSkin(player);
         }
         
-        
-        ///joke code
         
     }
     
@@ -195,7 +197,7 @@ public class Main extends JavaPlugin implements Listener{
             lastui.remove(player);
         }
         if(inwhichroom.containsKey(player)){
-            Main.roommap.get(Main.inwhichroom.get(player)).removePlayer(player);
+            Main.inwhichroom.get(player).removePlayer(player);
         }
     }
     

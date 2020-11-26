@@ -11,34 +11,34 @@ public class OpenMenu implements CommandExecutor{
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
-        Player p=(Player)sender;
-        switch(Main.lastui.get(p)){
+        Player player=(Player)sender;
+        switch(Main.lastui.get(player)){
         case "home":
-            new HomeMenu(p);
+            new HomeMenu(player);
             break;
         case "multiplayer":
-            new MultiplayerMenu(p);
+            new MultiplayerMenu(player);
             break;
         case "makeroom":
-            new MakeRoomMenu(p);
+            new MakeRoomMenu(player);
             break;
         case "joinroom":
-            new JoinRoomMenu(p);
+            new JoinRoomMenu(player, Main.joinroompage.get(player));
             break;
         case "room":
-            new RoomMenu(p);
+            new RoomMenu(player);
             break;
         case "skin":
-            new SkinMenu(p);
+            new SkinMenu(player);
             break;
         case "settings":
-            new SettingsMenu(p);
+            new SettingsMenu(player);
             break;
         case "simsettings":
-            new SimpleSettingsMenu(p);
+            new SimpleSettingsMenu(player);
             break;
         case "song":
-            new SongMenu(p);
+            new SongMenu(player);
             break;
         }
         return true;

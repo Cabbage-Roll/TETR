@@ -13,7 +13,7 @@ import cabbageroll.tetr.Main;
 import net.md_5.bungee.api.ChatColor;
 import xseries.XMaterial;
 
-public class HomeMenu implements InventoryHolder{
+public class HomeMenu implements InventoryHolder {
     private Inventory inventory = null;
 
     protected final static int MULTIPLAYER_LOCATION = 9;

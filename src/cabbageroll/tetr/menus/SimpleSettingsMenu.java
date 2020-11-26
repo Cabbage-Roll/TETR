@@ -35,7 +35,7 @@ public class SimpleSettingsMenu implements InventoryHolder {
         //clickable items
         
 
-        Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
+        Table table=Main.inwhichroom.get(player).playerboards.get(player);
         
         inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));
         inventory.setItem(TORCH_LOCATION, createItem(XMaterial.TORCH, ChatColor.YELLOW + "This is standard settings menu", ChatColor.DARK_RED + "" + ChatColor.BOLD + "Click to go to advanced menu"));

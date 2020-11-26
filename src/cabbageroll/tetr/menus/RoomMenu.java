@@ -23,7 +23,7 @@ public class RoomMenu implements InventoryHolder {
     
     public RoomMenu(Player player){
         Main.lastui.put(player, "room");
-        Inventory inventory=Bukkit.createInventory(this, 54, "Room - "+Main.inwhichroom.get(player));
+        Inventory inventory=Bukkit.createInventory(this, 54, "Room - "+Main.inwhichroom.get(player).id);
         ItemStack border=XMaterial.GLASS_PANE.parseItem();
         //fill the border with glass
         for(int i=0;i<9;i++){
@@ -39,11 +39,11 @@ public class RoomMenu implements InventoryHolder {
         
         item=XMaterial.PLAYER_HEAD.parseItem();
         int i=0;
-        for(Player p: Main.roommap.get(Main.inwhichroom.get(player)).playerlist){
+        for(Player p: Main.inwhichroom.get(player).playerlist){
             itemmeta=item.getItemMeta();
-            itemmeta.setDisplayName(p.getName());
-            if(Main.roommap.get(Main.inwhichroom.get(player)).host.equals(p)){
-                itemmeta.setLore(Arrays.asList("HOST"));
+            itemmeta.setDisplayName(ChatColor.WHITE + p.getName());
+            if(Main.inwhichroom.get(player).host.equals(p)){
+                itemmeta.setLore(Arrays.asList(ChatColor.DARK_RED + "HOST"));
             }else{
                 itemmeta.setLore(null);
             }
@@ -53,14 +53,14 @@ public class RoomMenu implements InventoryHolder {
             i++;
         }
         
-        if(Main.roommap.get(Main.inwhichroom.get(player)).host.equals(player)){
-            if(Main.roommap.get(Main.inwhichroom.get(player)).running){
-                inventory.setItem(GAME_LOCATION, createItem(XMaterial.ANVIL, "ABORT"));
+        if(Main.inwhichroom.get(player).host.equals(player)){
+            if(Main.inwhichroom.get(player).running){
+                inventory.setItem(GAME_LOCATION, createItem(XMaterial.ANVIL, ChatColor.WHITE + "ABORT"));
             }else{
-                inventory.setItem(GAME_LOCATION, createItem(XMaterial.DIAMOND_SWORD, "START"));
+                inventory.setItem(GAME_LOCATION, createItem(XMaterial.DIAMOND_SWORD, ChatColor.WHITE + "START"));
             }
         }else{
-            inventory.setItem(GAME_LOCATION, createItem(XMaterial.BARRIER, "YOU ARE NOT THE HOST"));
+            inventory.setItem(GAME_LOCATION, createItem(XMaterial.BARRIER, ChatColor.WHITE + "YOU ARE NOT THE HOST"));
         }
         
         inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));

@@ -35,7 +35,6 @@ private Inventory inventory = null;
         
         //clickable items
         
-        Room room=Main.roommap.get(Main.inwhichroom.get(player));
         Playlist playlist = Room.slist;
         
         inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));

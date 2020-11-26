@@ -34,9 +34,10 @@ public class MultiplayerMenu implements InventoryHolder{
         
         //clickable items
         
-        inventory.setItem(CREATEROOM_LOCATION, createItem(XMaterial.DIRT, "CREATE ROOM"));
-        inventory.setItem(LISTROOMS_LOCATION, createItem(XMaterial.DIRT, "ROOM LISTING"));
         inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));
+        inventory.setItem(CREATEROOM_LOCATION, createItem(XMaterial.COAL_ORE, ChatColor.WHITE + "Create new room"));
+        inventory.setItem(LISTROOMS_LOCATION, createItem(XMaterial.COAL_BLOCK, ChatColor.WHITE + "Join a room"));
+        
         
         player.openInventory(inventory);
     }

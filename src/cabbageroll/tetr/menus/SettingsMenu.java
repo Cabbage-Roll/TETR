@@ -34,7 +34,7 @@ public class SettingsMenu implements InventoryHolder {
         }
         
 
-        Table table=Main.roommap.get(Main.inwhichroom.get(player)).playerboards.get(player);
+        Table table=Main.inwhichroom.get(player).playerboards.get(player);
         
         inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));
         inventory.setItem(TORCH_LOCATION, createItem(XMaterial.REDSTONE_TORCH, ChatColor.DARK_RED + "This is advanced settings menu", ChatColor.YELLOW + "" + ChatColor.BOLD + "Click to go to standard menu"));
@@ -49,7 +49,7 @@ public class SettingsMenu implements InventoryHolder {
         inventory.setItem(41, createItem(XMaterial.DIRT, "M1Y: "+table.m1y));
         inventory.setItem(42, createItem(XMaterial.DIRT, "M2Y: "+table.m2y));
         inventory.setItem(43, createItem(XMaterial.DIRT, "M3Y: "+table.m3y));
-        inventory.setItem(53, createItem(XMaterial.DIRT, "BACKFIRE: "+Main.roommap.get(Main.inwhichroom.get(player)).backfire));
+        inventory.setItem(53, createItem(XMaterial.DIRT, "BACKFIRE: "+Main.inwhichroom.get(player).backfire));
         
         
         player.openInventory(inventory);
