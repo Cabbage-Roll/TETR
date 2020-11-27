@@ -21,6 +21,15 @@
  */
 package xseries;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.Validate;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
@@ -29,10 +38,13 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.material.*;
-
-import javax.annotation.Nullable;
-import java.util.*;
+import org.bukkit.material.Cake;
+import org.bukkit.material.Colorable;
+import org.bukkit.material.Directional;
+import org.bukkit.material.MaterialData;
+import org.bukkit.material.Openable;
+import org.bukkit.material.Wood;
+import org.bukkit.material.Wool;
 
 /**
  * <b>XBlock</b> - MaterialData/BlockData Support<br>

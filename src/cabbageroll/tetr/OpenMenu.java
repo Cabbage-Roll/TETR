@@ -5,7 +5,15 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import cabbageroll.tetr.menus.*;
+import cabbageroll.tetr.menus.HomeMenu;
+import cabbageroll.tetr.menus.JoinRoomMenu;
+import cabbageroll.tetr.menus.MakeRoomMenu;
+import cabbageroll.tetr.menus.MultiplayerMenu;
+import cabbageroll.tetr.menus.RoomMenu;
+import cabbageroll.tetr.menus.SettingsMenu;
+import cabbageroll.tetr.menus.SimpleSettingsMenu;
+import cabbageroll.tetr.menus.SkinMenu;
+import cabbageroll.tetr.menus.SongMenu;
 
 public class OpenMenu implements CommandExecutor{
 

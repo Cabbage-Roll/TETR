@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -28,9 +29,9 @@ public class Table {
     private BukkitTask task;
     private BPlayerBoard board;
     
-    private static final int CCW=0;
-    private static final int CW=1;
-    private static final int R180=2;
+    private static final int CCW = 0;
+    private static final int CW = 1;
+    private static final int R180 = 2;
     
     public int gx = 100;
     public int gy = 50;
@@ -123,40 +124,26 @@ public class Table {
     }
     
     private void stopZone() {
-        boolean lineclean;
-        lines = 0;
-        
-        for(int i=0;i<STAGESIZEY;i++){
-            lineclean=true;
-            for(int j=0;j<STAGESIZEX;j++){
-                if(stage[i][j]!=16){
-                    lineclean=false;
-                    break;
-                }
-            }
-
-            if(lineclean){
-                for(int j=0;j<STAGESIZEX;j++) {
-                    stage[0][j]=7;
-                    colPrint(j, 0, 7);
-                }
-                
-                lines++;
-                for(int k=i;k>0;k--) {
-                    for(int j=0;j<STAGESIZEX;j++) {
-                        stage[k][j] = stage[k-1][j];
-                        colPrint(j, k, stage[k][j]);
-                    }
+        for(int i=0;i<STAGESIZEY;i++) {
+            for(int j=0;j<STAGESIZEX;j++) {
+                if(STAGESIZEY-zonelines-1-i>=0) {
+                    stage[STAGESIZEY-1-i][j] = stage[STAGESIZEY-zonelines-1-i][j];
+                    colPrint(j, STAGESIZEY-1-i, stage[STAGESIZEY-1-i][j]);
                 }
             }
         }
 
-        player.sendTitle("", ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "" + lines + " LINE" + (lines==1?"":"S"), 20, 40, 20);
+        player.sendTitle("", ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "" + zonelines + " LINE" + (lines==1?"":"S"), 20, 40, 20);
         updateScore();
 
-        sendGarbage(lines*2);
+        for(int i=0;i<zonelines/2+1;i++) {
+            player.playSound(player.getEyeLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.5f);
+        }
+        
+        sendGarbage(zonelines*2);
         zone = false;
         zonelines = 0;
+        lines = 0;
     }
     
     public void startZone() {
@@ -276,7 +263,6 @@ public class Table {
         printLava();
     }
     
-    //works
     private int getBlockSize(int block){
         if(block==4){
             return 4;
@@ -287,7 +273,6 @@ public class Table {
         }
     }
     
-    //works
     private void printSingleBlock(int x, int y, int z, int color){
         if(color==7 && transparent){
             Block b=world.getBlockAt(x, y, z);
@@ -494,6 +479,7 @@ public class Table {
         
         spun=false;
         mini=false;
+        counter = 0;
     }
     
     //works
@@ -612,7 +598,6 @@ public class Table {
             }
         }
         
-        looptick=0;
         playGame();
         initScoreboard();
         player.getInventory().setHeldItemSlot(8);
@@ -836,7 +821,7 @@ public class Table {
         }
         moveAndPrintPiece(x, y+lines);
         score+=lines*2;
-        counter=100;
+        placeBlock();
     }
     
     private void moveAndPrintPiece(int x, int y){
@@ -1125,68 +1110,93 @@ public class Table {
     
     //improve now
     private void checkPlaced(){
-        boolean lineclean;
-        lines=0;
-        int hr=0;
+        int highestRow = STAGESIZEY;
+        int linesCleared = 0;
+        ArrayList<Integer> temp = new ArrayList<Integer>();
         
         //find highest row
-        for(int k=0;k<STAGESIZEY;k++){
-            for(int j=0;j<STAGESIZEX;j++){
-                if(stage[k][j]!=7){
-                    hr=k;
-                    k=STAGESIZEY;
+        for(int i=0;i<STAGESIZEY;i++) {
+            for(int j=0;j<STAGESIZEX;j++) {
+                if(stage[i][j]!=7){
+                    highestRow = i;
+                    i = STAGESIZEY;
                     break;
                 }
             }
         }
         
-        for(int i=y;i<STAGESIZEY;i++){
-            lineclean=true;
-            for(int j=0;j<STAGESIZEX;j++){
-                if(stage[i][j]==7 || stage[i][j]==16){
-                    lineclean=false;
+        temp.add(highestRow);
+        
+        for(int i=highestRow, j;i<STAGESIZEY;i++) {
+            for(j=0;j<STAGESIZEX;j++) {
+                if(stage[i][j]==7 || stage[i][j]==16) {
                     break;
                 }
             }
-            if(lineclean){
-                lines++;
+
+            if(j==STAGESIZEX) {
+                linesCleared++;
+                temp.add(i);
+            }
+        }
+        
+        temp.add(STAGESIZEY-zonelines);
+        player.sendMessage(temp.toString());
+        
+        if(zone) {
+            zonelines+=linesCleared;
+            for(int i=1;i<temp.size()-1;i++) {
+                for(int j=temp.get(1);j<temp.get(i+1);j++) {
+                    for(int k=0;k<STAGESIZEX;k++) {
+                        /*if(k==0)
+                            player.sendMessage("i="+i+" j="+j+"stage["+j+"]=stage["+(j+i)+"]");
+                            */
+                        if(j+i<40)
+                        stage[j][k] = stage[j+i][k];
+                        colPrint(k, j, stage[j][k]);
+                    }
+                }
+            }
                 
-                    for(int j=0;j<STAGESIZEX;j++){
-                        stage[0][j] = 7;
-                        colPrint(j, 0, 7);
-                    }
-                    for(int k=i;k>hr-lines;k--){
-                        for(int j=0;j<STAGESIZEX;j++){
-                            stage[k][j] = stage[k-1][j];
-                            colPrint(j, k, stage[k][j]);
+            for(int i=temp.get(temp.size()-1)-linesCleared;i<temp.get(temp.size()-1);i++) {
+                for(int j=0;j<STAGESIZEX;j++){
+                    stage[i][j] = 16;
+                    colPrint(j, i, 16);
+                }
+            }
+        }else {
+            for(int i=1;i<temp.size()-1;i++) {
+                for(int j=temp.get(temp.size()-i-1)+i-1;j>temp.get(temp.size()-i-2)+i-1;j--) {
+                    for(int k=0;k<STAGESIZEX;k++) {
+                        /*if(k==0)
+                            player.sendMessage("i="+i+" j="+j+" stage["+j+"]=stage["+(j-i)+"]");
+                            */
+                        if(j<STAGESIZEY) {
+                            stage[j][k] = stage[j-i][k];
+                            colPrint(k, j, stage[j][k]);
                         }
-                    }
-                    
-                if(zone){
-                    zonelines++;
-                    for(int k=0;k<STAGESIZEY-zonelines;k++){
-                        for(int j=0;j<STAGESIZEX;j++){
-                            stage[k][j] = stage[k+1][j];
-                            colPrint(j, k, stage[k][j]);
-                        }
-                    }
-                    for(int j=0;j<STAGESIZEX;j++){
-                        stage[STAGESIZEY-zonelines][j] = 16;
-                        colPrint(j, STAGESIZEY-zonelines, 16);
                     }
                 }
-                i--;
+            }
+            
+            for(int i=highestRow;i<highestRow+linesCleared;i++) {
+
+                //player.sendMessage("stage["+i+"]=7");
+                for(int j=0;j<STAGESIZEX;j++){
+                    stage[i][j] = 7;
+                    colPrint(j, i, 7);
+                }
             }
         }
         
-        
-        totallines+=lines;
+        totallines+=linesCleared;
         totalblocks+=1;
         updateScore();
-        if(zone && lines>0) {
+        if(zone && linesCleared>0) {
             for(int i=0;i<20*zonelines;i++)
             player.playSound(player.getEyeLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(zonelines*2-16)/(double)16));
         }
+        
         makeNextBlock();
     }
 
@@ -1217,12 +1227,12 @@ public class Table {
    	            if(counter>=100){
    	                if(!isCollide(x, y+1)){
    	                    moveAndPrintPiece(x, y+1);
-   	                    }else{
-   	                        placeBlock();
-   	                    }
-   	                    counter=0;
+   	                    counter = 0;
+   	                }else{
+   	                    placeBlock();
+   	                }
    	            }
-   	            counter+=totallines/4;
+   	            counter+=(totallines+4)/4;
    	            
    	            if(gameover){
    	                player.setWalkSpeed(0.2f);
@@ -1236,7 +1246,7 @@ public class Table {
    	                }
    	            }
    	            
-       	        board.set("TIME "+looptick, 0);
+       	        board.set("TIME "+looptick+" C "+counter, 0);
        	        looptick++;
     
                 /*PacketPlayOutUpdateHealth test;
