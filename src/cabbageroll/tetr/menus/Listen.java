@@ -207,18 +207,16 @@ public class Listen implements Listener {
                     new SimpleSettingsMenu(player);
                     return;
                 case 11:
-                    table.gx=player.getLocation().getBlockX();
-                    table.gy=player.getLocation().getBlockY();
-                    table.gz=player.getLocation().getBlockZ();
+                    table.moveTable(player.getLocation().getBlockX(), player.getLocation().getBlockY(), player.getLocation().getBlockZ());
                     break;
                 case 12:
-                    table.gx+=by;
+                    table.moveTable(table.getGx()+by, table.getGy(), table.getGz());
                     break;
                 case 13:
-                    table.gy+=by;
+                    table.moveTable(table.getGx(), table.getGy()+by, table.getGz());
                     break;
                 case 14:
-                    table.gz+=by;
+                    table.moveTable(table.getGx(), table.getGy()+by, table.getGz());
                     break;
                 case 37:
                     table.m1x+=by;
@@ -269,13 +267,13 @@ public class Listen implements Listener {
                 new SettingsMenu(player);
                 return;
             case 21:
-                table.gx+=by;
+                table.moveTable(table.getGx()+by, table.getGy(), table.getGz());
                 break;
             case 22:
-                table.gy+=by;
+                table.moveTable(table.getGx(), table.getGy()+by, table.getGz());
                 break;
             case 23:
-                table.gz+=by;
+                table.moveTable(table.getGx(), table.getGy(), table.getGz()+by);
                 break;
             case 30:
                 table.rotateTable("X");

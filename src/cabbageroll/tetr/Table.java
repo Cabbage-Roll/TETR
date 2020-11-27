@@ -33,9 +33,9 @@ public class Table {
     private static final int CW = 1;
     private static final int R180 = 2;
     
-    public int gx = 100;
-    public int gy = 50;
-    public int gz = 0;
+    private int gx = 100;
+    private int gy = 50;
+    private int gz = 0;
     public int m1x = 1;
     public int m1y = 0;
     public int m2x = 0;
@@ -69,7 +69,7 @@ public class Table {
     //board variables
     private final int STAGESIZEX = 10;
     private final int STAGESIZEY = 40;
-    private final int VISIBLEROWS = 40;
+    private final int VISIBLEROWS = 24;
     private int[][] stage=new int[STAGESIZEY][STAGESIZEX];
     private int[][] block=new int[4][4];
     
@@ -113,6 +113,64 @@ public class Table {
     Table(Player p){
         player=p;
         world=p.getWorld();
+        float yaw = player.getLocation().getYaw();
+        if(45<yaw && yaw<135) {
+            rotateTable("Y");
+            rotateTable("Y");
+            rotateTable("Y");
+            moveTable(player.getLocation().getBlockX()-STAGESIZEY, player.getLocation().getBlockY()+STAGESIZEY-VISIBLEROWS/2, player.getLocation().getBlockZ()+STAGESIZEX/2);
+        }else if(135<yaw && yaw<225) {
+            moveTable(player.getLocation().getBlockX()-STAGESIZEX/2, player.getLocation().getBlockY()+STAGESIZEY-VISIBLEROWS/2, player.getLocation().getBlockZ()-STAGESIZEY);
+        }else if(225<yaw && yaw<315) {
+            rotateTable("Y");
+            moveTable(player.getLocation().getBlockX()+STAGESIZEY, player.getLocation().getBlockY()+STAGESIZEY-VISIBLEROWS/2, player.getLocation().getBlockZ()-STAGESIZEX/2);
+        }else if((315<yaw && yaw<360) || (0<yaw && yaw<45)) {
+            rotateTable("Y");
+            rotateTable("Y");
+            moveTable(player.getLocation().getBlockX()+STAGESIZEX/2, player.getLocation().getBlockY()+STAGESIZEY-VISIBLEROWS/2, player.getLocation().getBlockZ()+STAGESIZEY);
+        }
+    }
+    
+    public void destroy() {
+        boolean ot = transparent;
+        transparent = true;
+        for(int i=0;i<STAGESIZEY;i++){
+            for(int j=0;j<STAGESIZEX;j++){
+                colPrint(j, i, 7);
+            }
+        }
+        transparent = ot;
+    }
+    
+    public void moveTable(int x, int y, int z) {
+        boolean ot = transparent;
+        transparent = true;
+        for(int i=0;i<STAGESIZEY;i++){
+            for(int j=0;j<STAGESIZEX;j++){
+                colPrint(j, i, 7);
+            }
+        }
+        gx = x;
+        gy = y;
+        gz = z;
+        for(int i=0;i<STAGESIZEY;i++){
+            for(int j=0;j<STAGESIZEX;j++){
+                colPrint(j, i, 16);
+            }
+        }
+        transparent = ot;
+    }
+    
+    public int getGx() {
+        return gx;
+    }
+    
+    public int getGy() {
+        return gy;
+    }
+    
+    public int getGz() {
+        return gz;
     }
     
     public BPlayerBoard getBoard() {
@@ -133,7 +191,7 @@ public class Table {
             }
         }
 
-        player.sendTitle("", ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "" + zonelines + " LINE" + (lines==1?"":"S"), 20, 40, 20);
+        player.sendTitle("", ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "" + zonelines + " LINE" + (zonelines==1?"":"S"), 20, 40, 20);
         updateScore();
 
         for(int i=0;i<zonelines/2+1;i++) {
@@ -170,6 +228,14 @@ public class Table {
     }
     
     public void rotateTable(String input) {
+        boolean ot = transparent;
+        transparent = true;
+        for(int i=0;i<STAGESIZEY;i++){
+            for(int j=0;j<STAGESIZEX;j++){
+                colPrint(j, i, 7);
+            }
+        }
+        
         int temp;
         switch(input) {
         case "X":
@@ -198,6 +264,12 @@ public class Table {
             break;
         }
         
+        for(int i=0;i<STAGESIZEY;i++){
+            for(int j=0;j<STAGESIZEX;j++){
+                colPrint(j, i, 16);
+            }
+        }
+        transparent = ot;
     }
     
     public void setGameOver() {
@@ -223,12 +295,12 @@ public class Table {
             total+=num;
         }
         
-        for(int i=0;i<STAGESIZEY;i++) {
+        for(int i=0;i<STAGESIZEY/2;i++) {
             colPrint(-2, STAGESIZEY-1-i, 7);
         }
         
         for(int i=0;i<total;i++) {
-            colPrint(-2, STAGESIZEY-1-i%20, (i/20)%7);
+            colPrint(-2, STAGESIZEY-1-i%(STAGESIZEY/2), (i/(STAGESIZEY/2))%7);
         }
     }
     
@@ -546,7 +618,6 @@ public class Table {
         }
     }
     
-    //improve
     public void initGame(long seed, long seed2){
 
         player.setWalkSpeed(0.2f);
@@ -569,6 +640,7 @@ public class Table {
                 colPrint(x, y, 7);
             }
         }
+        
         spun=false;
         gameover=false;
         held=false;
@@ -611,7 +683,6 @@ public class Table {
         zonelines = 0;
     }
     
-    //works
     private void tSpin(){
         int truth=0;
         boolean wall=false;
@@ -675,7 +746,6 @@ public class Table {
         }
     }
     
-    //improve now
     private void updateScore(){
         if(!zone) {
             
@@ -813,7 +883,6 @@ public class Table {
         HARDDROP:2
         */
     
-    //improve
     private void dropBlock(){
         int lines=0;
         while(!isCollide(x, y+lines+1)){
@@ -910,7 +979,6 @@ public class Table {
         }
     }
 
-    //improve now
     private void holdBlock(){
         int temp;
 
@@ -1108,7 +1176,6 @@ public class Table {
         }
     }
     
-    //improve now
     private void checkPlaced(){
         int highestRow = STAGESIZEY;
         int linesCleared = 0;
@@ -1141,7 +1208,7 @@ public class Table {
         }
         
         temp.add(STAGESIZEY-zonelines);
-        player.sendMessage(temp.toString());
+        //player.sendMessage(temp.toString());
         
         if(zone) {
             zonelines+=linesCleared;
@@ -1165,6 +1232,7 @@ public class Table {
                 }
             }
         }else {
+            lines = linesCleared;
             for(int i=1;i<temp.size()-1;i++) {
                 for(int j=temp.get(temp.size()-i-1)+i-1;j>temp.get(temp.size()-i-2)+i-1;j--) {
                     for(int k=0;k<STAGESIZEX;k++) {
@@ -1200,7 +1268,6 @@ public class Table {
         makeNextBlock();
     }
 
-    //improve now
     private void placeBlock(){
         for(int i=0;i<block_size;i++){
             for(int j=0;j<block_size;j++){

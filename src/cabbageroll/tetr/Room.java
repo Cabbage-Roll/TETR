@@ -113,22 +113,23 @@ public class Room {
     }
     
     public void addPlayer(Player player) {
+        Main.inwhichroom.put(player, this);
+        playerlist.add(player);
         Table table=new Table(player);
         playerboards.put(player,table);
-        playerlist.add(player);
         multiplayer=true;
         
         if(Main.numberofsongs>0){
             rsp.addPlayer(player);
         }
         
-        Main.inwhichroom.put(player, this);
     }
     
     public void removePlayer(Player player) {
         if(Main.numberofsongs>0){
             rsp.removePlayer(player);
         }
+        playerboards.get(player).destroy();
         playerboards.get(player).setGameOver();
         playersalive--;
         if(playersalive<=1){
@@ -138,6 +139,7 @@ public class Room {
         if(playerboards.get(player).getBoard()!=null) {
             playerboards.get(player).getBoard().delete();
         }
+        
         playerlist.remove(player);
         playerboards.remove(player);
         Main.inwhichroom.remove(player);

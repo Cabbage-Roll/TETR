@@ -40,9 +40,9 @@ public class SettingsMenu implements InventoryHolder {
         inventory.setItem(TORCH_LOCATION, createItem(XMaterial.REDSTONE_TORCH, ChatColor.DARK_RED + "This is advanced settings menu", ChatColor.YELLOW + "" + ChatColor.BOLD + "Click to go to standard menu"));
         
         inventory.setItem(11, createItem(XMaterial.DIRT, "your pos"));
-        inventory.setItem(12, createItem(XMaterial.DIRT, "GX: "+table.gx));
-        inventory.setItem(13, createItem(XMaterial.DIRT, "GY: "+table.gy));
-        inventory.setItem(14, createItem(XMaterial.DIRT, "GZ: "+table.gz));
+        inventory.setItem(12, createItem(XMaterial.DIRT, "GX: "+table.getGx()));
+        inventory.setItem(13, createItem(XMaterial.DIRT, "GY: "+table.getGy()));
+        inventory.setItem(14, createItem(XMaterial.DIRT, "GZ: "+table.getGz()));
         inventory.setItem(37, createItem(XMaterial.DIRT, "M1X: "+table.m1x));
         inventory.setItem(38, createItem(XMaterial.DIRT, "M2X: "+table.m2x));
         inventory.setItem(39, createItem(XMaterial.DIRT, "M3X: "+table.m3x));
