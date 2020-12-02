@@ -7,11 +7,14 @@ import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Vector;
 
 import cabbageroll.tetr.constants.Blocklist;
+import cabbageroll.tetr.constants.Blocks;
 import cabbageroll.tetr.constants.Garbagetable;
 import cabbageroll.tetr.constants.Kicktable;
 import cabbageroll.tetr.functions.SendBlockChangeCustom;
@@ -26,7 +29,6 @@ public class Table {
     private World world;
     private Player player;
     private int looptick;
-    private BukkitTask task;
     private BPlayerBoard board;
     
     private static final int CCW = 0;
@@ -42,6 +44,7 @@ public class Table {
     public int m2y = -1;
     public int m3x = 0;
     public int m3y = 0;
+    public int thickness = 1;
 
     //intermediate variables
     private int coni;
@@ -51,17 +54,26 @@ public class Table {
     //bag variables
     private Random gen;
     private int bag_counter = 0;
-    private int[] bag1=new int[7];
-    private int[] bag2=new int[7];
+    private int[] bag1 = new int[7];
+    private int[] bag2 = new int[7];
     private int next_blocks = 5;
     private int block_hold = -1;
     private int block_current = -1;
     
     private int lines;
     private int score;
-    private int counter = 0;//gravity variable
     private int combo;
     private int b2b;
+    
+    //if counter > gravity^-1  fall
+    //
+    private int counter = 0;//gravity variable
+    private double startingGravity = 20;
+    private int gravityIncreaseDelay = 600;
+    private double gravityIncrease = 1 / 20;
+    private int lockDelay = 20;
+    private int timesMoved = 0;
+    private static final int MAXIMUMMOVES = 15;
     
     private int totallines;
     private int totalblocks;
@@ -91,7 +103,9 @@ public class Table {
     private ArrayList<Integer> garbo = new ArrayList<Integer>();
     private Random garbagegen;
     private int well;
-    private int cap = 4;
+    private double startingGarbageCap = 4;
+    private double garbageCapIncreaseDelay = 1200;
+    private double garbageCapIncrease = 1 / 20;
     private int totalgarbage;
     
     //handling
@@ -113,22 +127,24 @@ public class Table {
     Table(Player p){
         player=p;
         world=p.getWorld();
+        Location location=player.getLocation();
         float yaw = player.getLocation().getYaw();
-        if(45<yaw && yaw<135) {
+        if(45<=yaw && yaw<135) {
             rotateTable("Y");
             rotateTable("Y");
             rotateTable("Y");
-            moveTable(player.getLocation().getBlockX()-STAGESIZEY, player.getLocation().getBlockY()+STAGESIZEY-VISIBLEROWS/2, player.getLocation().getBlockZ()+STAGESIZEX/2);
-        }else if(135<yaw && yaw<225) {
-            moveTable(player.getLocation().getBlockX()-STAGESIZEX/2, player.getLocation().getBlockY()+STAGESIZEY-VISIBLEROWS/2, player.getLocation().getBlockZ()-STAGESIZEY);
-        }else if(225<yaw && yaw<315) {
+            moveTable(location.getBlockX()-STAGESIZEY, location.getBlockY()+STAGESIZEY-VISIBLEROWS/2, location.getBlockZ()+STAGESIZEX/2);
+        }else if(135<=yaw && yaw<225) {
+            moveTable(location.getBlockX()-STAGESIZEX/2, location.getBlockY()+STAGESIZEY-VISIBLEROWS/2, location.getBlockZ()-STAGESIZEY);
+        }else if(225<=yaw && yaw<315) {
             rotateTable("Y");
-            moveTable(player.getLocation().getBlockX()+STAGESIZEY, player.getLocation().getBlockY()+STAGESIZEY-VISIBLEROWS/2, player.getLocation().getBlockZ()-STAGESIZEX/2);
-        }else if((315<yaw && yaw<360) || (0<yaw && yaw<45)) {
+            moveTable(location.getBlockX()+STAGESIZEY, location.getBlockY()+STAGESIZEY-VISIBLEROWS/2, location.getBlockZ()-STAGESIZEX/2);
+        }else if((315<=yaw && yaw<360) || (0<=yaw && yaw<45)) {
             rotateTable("Y");
             rotateTable("Y");
-            moveTable(player.getLocation().getBlockX()+STAGESIZEX/2, player.getLocation().getBlockY()+STAGESIZEY-VISIBLEROWS/2, player.getLocation().getBlockZ()+STAGESIZEY);
+            moveTable(location.getBlockX()+STAGESIZEX/2, location.getBlockY()+STAGESIZEY-VISIBLEROWS/2, location.getBlockZ()+STAGESIZEY);
         }
+        gameover=true;
     }
     
     public void destroy() {
@@ -182,26 +198,41 @@ public class Table {
     }
     
     private void stopZone() {
-        for(int i=0;i<STAGESIZEY;i++) {
-            for(int j=0;j<STAGESIZEX;j++) {
-                if(STAGESIZEY-zonelines-1-i>=0) {
-                    stage[STAGESIZEY-1-i][j] = stage[STAGESIZEY-zonelines-1-i][j];
-                    colPrint(j, STAGESIZEY-1-i, stage[STAGESIZEY-1-i][j]);
-                }
+
+        for(int i=STAGESIZEY-zonelines;i<STAGESIZEY;i++) {
+            for(int j=0;j<STAGESIZEX;j++){
+                turnToFallingBlock(j, i, 0.5);
             }
         }
-
-        player.sendTitle("", ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "" + zonelines + " LINE" + (zonelines==1?"":"S"), 20, 40, 20);
-        updateScore();
-
-        for(int i=0;i<zonelines/2+1;i++) {
-            player.playSound(player.getEyeLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.5f);
-        }
         
-        sendGarbage(zonelines*2);
-        zone = false;
-        zonelines = 0;
-        lines = 0;
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+        
+                for(int i=0;i<STAGESIZEY;i++) {
+                    for(int j=0;j<STAGESIZEX;j++) {
+                        if(STAGESIZEY-zonelines-1-i>=0) {
+                            stage[STAGESIZEY-1-i][j] = stage[STAGESIZEY-zonelines-1-i][j];
+                            colPrint(j, STAGESIZEY-1-i, stage[STAGESIZEY-1-i][j]);
+                        }
+                    }
+                }
+                    
+        
+                player.sendTitle("", ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "" + zonelines + " LINE" + (zonelines==1?"":"S"), 20, 40, 20);
+                updateScore();
+        
+                for(int i=0;i<zonelines/2+1;i++) {
+                    player.playSound(player.getEyeLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.5f);
+                }
+                
+                sendGarbage(zonelines*2);
+                zone = false;
+                zonelines = 0;
+                lines = 0;
+                
+            }
+        }.runTaskLater(Main.plugin, 1);
     }
     
     public void startZone() {
@@ -281,31 +312,10 @@ public class Table {
     }
     
     private void sendGarbage(int n) {
+        player.sendMessage(garbo.toString());
         Main.inwhichroom.get(player).forwardGarbage(n, player);
-    }
-    
-    public void receiveGarbage(int n) {
-        garbo.add(n);
-        printLava();
-    }
-    
-    private void printLava() {
-        int total=0;
-        for(int num: garbo){
-            total+=num;
-        }
-        
-        for(int i=0;i<STAGESIZEY/2;i++) {
-            colPrint(-2, STAGESIZEY-1-i, 7);
-        }
-        
-        for(int i=0;i<total;i++) {
-            colPrint(-2, STAGESIZEY-1-i%(STAGESIZEY/2), (i/(STAGESIZEY/2))%7);
-        }
-    }
-    
-    private void putGarbage(){
-        for(int h=0;h<cap;h++){
+        //todo
+        for(int h=0;h<startingGarbageCap;h++){
             if(!garbo.isEmpty()){
                 totalgarbage++;
                 for(int i=0;i<STAGESIZEY-1;i++){
@@ -331,8 +341,65 @@ public class Table {
                 }
             }
         }
-
+        //
+        
         printLava();
+    }
+    
+    public void receiveGarbage(int n) {
+        garbo.add(n);
+        printLava();
+    }
+    
+    private void printLava() {
+        int total=0;
+        for(int num: garbo){
+            total+=num;
+        }
+        
+        for(int i=0;i<STAGESIZEY/2;i++) {
+            colPrint(-2, STAGESIZEY-1-i, 7);
+        }
+        
+        for(int i=0;i<total;i++) {
+            colPrint(-2, STAGESIZEY-1-i%(STAGESIZEY/2), (i/(STAGESIZEY/2))%7);
+        }
+    }
+    
+    private void putGarbage(){
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for(int h=0;h<startingGarbageCap;h++){
+                    if(!garbo.isEmpty()){
+                        totalgarbage++;
+                        for(int i=0;i<STAGESIZEY-1;i++){
+                            for(int j=0;j<STAGESIZEX;j++){
+                                stage[i][j]=stage[i+1][j];
+                                colPrint(j, i, stage[i][j]);
+                            }
+                        }
+                        for(int j=0;j<STAGESIZEX;j++){
+                            if(j==well){
+                                stage[STAGESIZEY-1][j]=7;
+                                colPrint(j, STAGESIZEY-1, 7);
+                            }else{
+                                stage[STAGESIZEY-1][j]=8;
+                                colPrint(j, STAGESIZEY-1, 8);
+                            }
+                        }
+                        
+                        garbo.set(0, garbo.get(0)-1);
+                        if(garbo.get(0)<=0){
+                            garbo.remove(0);
+                            well=garbagegen.nextInt(10);
+                        }
+                    }
+                }
+        
+                printLava();
+            }
+        }.runTaskLater(Main.plugin, 1);
     }
     
     private int getBlockSize(int block){
@@ -359,6 +426,25 @@ public class Table {
         }
     }
     
+    @SuppressWarnings("deprecation")
+    private void turnToFallingBlock(int x, int y, double d) {
+        int tex, tey, tez;
+        ItemStack blocks[] = Blocks.blocks;
+        int color = stage[y][x];
+        for(int i=0;i<(coni!=0?coni:thickness);i++) {
+            tex = gx+(int)(x*m1x)+(int)(y*m1y)+i;
+            for(int j=0;j<(conj!=0?conj:thickness);j++) {
+                tey = gy+(int)(x*m2x)+(int)(y*m2y)+j;
+                for(int k=0;k<(conk!=0?conk:thickness);k++) {
+                    tez = gz+(int)(x*m3x)+(int)(y*m3y)+k;
+                    FallingBlock lol = world.spawnFallingBlock(new Location(world, tex, tey, tez), blocks[color].getType(), blocks[color].getData().getData());
+                    lol.setVelocity(new Vector(d*(2-Math.random()*4),d*(5-Math.random()*10),d*(2-Math.random()*4)));
+                    lol.setDropItem(false);
+                    lol.addScoreboardTag("sand");
+                }
+            }
+        }
+    }
     //new
     private void initScoreboard(){
         board=Netherboard.instance().createBoard(player, "Stats");
@@ -456,6 +542,7 @@ public class Table {
             
             if((totallines-totalgarbage)*10+totalgarbage==totalblocks*4){
                 s4="§6§lALL CLEAR§r";
+                player.sendTitle("", ChatColor.GOLD + "" + ChatColor.BOLD + "ALL CLEAR", 20, 40, 20);
             }
             
             //dont kill old title if its empty
@@ -464,7 +551,8 @@ public class Table {
             s2=s2+"                                ";
             
                 //Main.functions.sendTitle(player, s1, s2, 0, 20, 10);
-                player.sendTitle(s1, s2, 0, 20, 10);
+                
+                //player.sendTitle(s1, s2, 0, 20, 10);
             }
         }
     }
@@ -602,16 +690,17 @@ public class Table {
     
     //works
     private void colPrint(float x, float y, int color){
+        int tex, tey, tez;
         if(y>=STAGESIZEY-VISIBLEROWS) {
-            for(int i=0;i<=coni;i++) {
-                for(int j=0;j<=conj;j++) {
-                    for(int k=0;k<=conk;k++) {
-                        printSingleBlock(
-                        gx+(int)(x*m1x)+(int)(y*m1y)+(i==coni?0:i),
-                        gy+(int)(x*m2x)+(int)(y*m2y)+(j==conj?0:j),
-                        gz+(int)(x*m3x)+(int)(y*m3y)+(k==conk?0:k),
-                        color
-                        );
+            for(int i=0;i<(coni!=0?coni:thickness);i++) {
+                tex = gx+(int)(x*m1x)+(int)(y*m1y)+i;
+                for(int j=0;j<(conj!=0?conj:thickness);j++) {
+                    tey = gy+(int)(x*m2x)+(int)(y*m2y)+j;
+                    for(int k=0;k<(conk!=0?conk:thickness);k++) {
+                        tez = gz+(int)(x*m3x)+(int)(y*m3y)+k;
+                        printSingleBlock(tex, tey, tez, color);
+                        //debug
+                        //player.sendMessage("i="+i+",j="+j+",k="+k+",tex="+tex+",tey="+tey+",tez="+tez+";");
                     }
                 }
             }
@@ -626,8 +715,8 @@ public class Table {
         garbagegen=new Random(seed2);
         well = garbagegen.nextInt(STAGESIZEX);
         
-        if(task!=null){
-            task.cancel();
+        if(!getGameOver()){
+            setGameOver();
         }
         
         coni=Math.max((int)Math.abs(m1x),(int)Math.abs(m1y));
@@ -1204,6 +1293,11 @@ public class Table {
             if(j==STAGESIZEX) {
                 linesCleared++;
                 temp.add(i);
+                if(!zone) {
+                    for(int k=0;k<STAGESIZEX;k++) {
+                        turnToFallingBlock(k, i, 0.3);
+                    }
+                }
             }
         }
         
@@ -1211,61 +1305,75 @@ public class Table {
         //player.sendMessage(temp.toString());
         
         if(zone) {
-            zonelines+=linesCleared;
-            for(int i=1;i<temp.size()-1;i++) {
-                for(int j=temp.get(1);j<temp.get(i+1);j++) {
-                    for(int k=0;k<STAGESIZEX;k++) {
-                        /*if(k==0)
-                            player.sendMessage("i="+i+" j="+j+"stage["+j+"]=stage["+(j+i)+"]");
-                            */
-                        if(j+i<40)
-                        stage[j][k] = stage[j+i][k];
-                        colPrint(k, j, stage[j][k]);
-                    }
-                }
-            }
-                
-            for(int i=temp.get(temp.size()-1)-linesCleared;i<temp.get(temp.size()-1);i++) {
-                for(int j=0;j<STAGESIZEX;j++){
-                    stage[i][j] = 16;
-                    colPrint(j, i, 16);
-                }
-            }
+            zonelines += linesCleared;
         }else {
             lines = linesCleared;
-            for(int i=1;i<temp.size()-1;i++) {
-                for(int j=temp.get(temp.size()-i-1)+i-1;j>temp.get(temp.size()-i-2)+i-1;j--) {
-                    for(int k=0;k<STAGESIZEX;k++) {
-                        /*if(k==0)
-                            player.sendMessage("i="+i+" j="+j+" stage["+j+"]=stage["+(j-i)+"]");
-                            */
-                        if(j<STAGESIZEY) {
-                            stage[j][k] = stage[j-i][k];
-                            colPrint(k, j, stage[j][k]);
+        }
+        final int lc = linesCleared;
+        final int hr = highestRow;
+        
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+        
+                if(zone) {
+                    for(int i=1;i<temp.size()-1;i++) {
+                        for(int j=temp.get(1);j<temp.get(i+1);j++) {
+                            for(int k=0;k<STAGESIZEX;k++) {
+                                /*if(k==0)
+                                    player.sendMessage("i="+i+" j="+j+"stage["+j+"]=stage["+(j+i)+"]");
+                                    */
+                                if(j+i<STAGESIZEY) {
+                                    stage[j][k] = stage[j+i][k];
+                                    colPrint(k, j, stage[j][k]);
+                                }
+                            }
+                        }
+                    }
+                        
+                    for(int i=temp.get(temp.size()-1)-lc;i<temp.get(temp.size()-1);i++) {
+                        for(int j=0;j<STAGESIZEX;j++){
+                            stage[i][j] = 16;
+                            colPrint(j, i, 16);
+                        }
+                    }
+                }else {
+                    for(int i=1;i<temp.size()-1;i++) {
+                        for(int j=temp.get(temp.size()-i-1)+i-1;j>temp.get(temp.size()-i-2)+i-1;j--) {
+                            for(int k=0;k<STAGESIZEX;k++) {
+                                /*if(k==0)
+                                    player.sendMessage("i="+i+" j="+j+" stage["+j+"]=stage["+(j-i)+"]");
+                                    */
+                                if(j<STAGESIZEY) {
+                                    stage[j][k] = stage[j-i][k];
+                                    colPrint(k, j, stage[j][k]);
+                                }
+                            }
+                        }
+                    }
+                    
+                    for(int i=hr;i<hr+lc;i++) {
+        
+                        //player.sendMessage("stage["+i+"]=7");
+                        for(int j=0;j<STAGESIZEX;j++){
+                            stage[i][j] = 7;
+                            colPrint(j, i, 7);
                         }
                     }
                 }
+        
+        
+            totallines+=lc;
+            totalblocks+=1;
+            updateScore();
+            if(zone && lc>0) {
+                for(int i=0;i<20*zonelines;i++)
+                player.playSound(player.getEyeLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(zonelines*2-16)/(double)16));
             }
             
-            for(int i=highestRow;i<highestRow+linesCleared;i++) {
-
-                //player.sendMessage("stage["+i+"]=7");
-                for(int j=0;j<STAGESIZEX;j++){
-                    stage[i][j] = 7;
-                    colPrint(j, i, 7);
-                }
+            makeNextBlock();
             }
-        }
-        
-        totallines+=linesCleared;
-        totalblocks+=1;
-        updateScore();
-        if(zone && linesCleared>0) {
-            for(int i=0;i<20*zonelines;i++)
-            player.playSound(player.getEyeLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(zonelines*2-16)/(double)16));
-        }
-        
-        makeNextBlock();
+        }.runTaskLater(Main.plugin, 1);
     }
 
     private void placeBlock(){
@@ -1288,7 +1396,7 @@ public class Table {
     boolean singlemove;
     
    	private void playGame(){
-   	    task=new BukkitRunnable(){
+   	    new BukkitRunnable(){
    	        @Override
    	        public void run() {
    	            if(counter>=100){
@@ -1302,9 +1410,25 @@ public class Table {
    	            counter+=(totallines+4)/4;
    	            
    	            if(gameover){
+
+   	                boolean ot = transparent;
+   	                transparent = true;
+   	                for(int i=0;i<STAGESIZEY;i++){
+   	                    for(int j=0;j<STAGESIZEX;j++){
+   	                        colPrint(j, i, 7);
+   	                    }
+   	                }
+   	                transparent = ot;
+                    
+   	                for(int i=STAGESIZEY-VISIBLEROWS;i<STAGESIZEY;i++) {
+   	                    for(int j=0;j<STAGESIZEX;j++) {
+   	                        turnToFallingBlock(j, i, 1);
+   	                    }
+   	                }     
+                   	                  
+       	            
    	                player.setWalkSpeed(0.2f);
-   	                task.cancel();
-   	                task=null;
+   	                this.cancel();
    	                if(Main.roommap.containsKey(Main.inwhichroom.get(player).id)){
    	                    Main.inwhichroom.get(player).playersalive--;
        	                if(Main.inwhichroom.get(player).playersalive<=1){
