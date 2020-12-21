@@ -1,9 +1,9 @@
 name: TETR
-main: cabbageroll.tetr.Main
+main: tetr.minecraft.Main
 version: 1.2.4
 api-version: 1.13
 commands:
     tetr:
-        description: Open the window
+        description: Open the game menu
         usage: /<command>
 depend: [NoteBlockAPI, Netherboard]
