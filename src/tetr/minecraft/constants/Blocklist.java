@@ -1,7 +1,7 @@
 package tetr.minecraft.constants;
 
 public class Blocklist {
-    public static int[][][] block_list={
+    /*public static int[][][] block_list={
         //Z piece (3x3)
         {
             {0,0,7,7},
@@ -57,5 +57,5 @@ public class Blocklist {
             {7,7,7,7},
             {7,7,7,7}
         }
-    };
+    };*/
 }

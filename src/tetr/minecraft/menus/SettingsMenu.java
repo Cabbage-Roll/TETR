@@ -50,6 +50,7 @@ public class SettingsMenu implements InventoryHolder {
         inventory.setItem(42, createItem(XMaterial.DIRT, "M2Y: "+table.m2y));
         inventory.setItem(43, createItem(XMaterial.DIRT, "M3Y: "+table.m3y));
         inventory.setItem(53, createItem(XMaterial.DIRT, "BACKFIRE: "+Main.inwhichroom.get(player).backfire));
+        inventory.setItem(1, createItem(XMaterial.PACKED_ICE, ChatColor.WHITE + "Falling blocks: "+table.ULTRAGRAPHICS));
         
         
         player.openInventory(inventory);

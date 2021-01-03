@@ -11,6 +11,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import tetr.minecraft.Main;
+import tetr.minecraft.Table;
 import tetr.minecraft.constants.Blocks;
 import tetr.minecraft.xseries.XMaterial;
 

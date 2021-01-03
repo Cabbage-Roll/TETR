@@ -17,6 +17,7 @@ public class GameLogic {
     
     public final int STAGESIZEX = 10;
     public final int STAGESIZEY = 40;
+    public final int VISIBLEROWS = 24;
 
     public Point pieceOrigin;
     public int currentPiece;
@@ -73,7 +74,7 @@ public class GameLogic {
     
     //TETR FUNCTION
     //REQUIRES PRINTING
-    public void holdBlock() {
+    public boolean holdBlock() {
         if(!held) {
             int temp;
             
@@ -92,11 +93,14 @@ public class GameLogic {
                 heldPiece = temp;
                 
                 //spawn new block
-                pieceOrigin = new Point(3, 1);
+                pieceOrigin = new Point(3, 20);
                 rotation = 0;
             }
             
             held = true;
+            return true;
+        }else {
+            return false;
         }
     }
     
@@ -122,7 +126,7 @@ public class GameLogic {
     //TETR FUNCTION
     //REQUIRES PRINTING
     private void spawnBlock() {
-        pieceOrigin = new Point(3, 1);
+        pieceOrigin = new Point(3, 20);
         rotation = 0;
         currentPiece = nextPieces.get(0);
         nextPieces.remove(0);
@@ -132,26 +136,16 @@ public class GameLogic {
     //TETR FUNCTION
     public boolean collides(int x, int y, int rotation) {
         for(Point point: pieces[currentPiece][rotation]) {
-
-            System.out.println("A");
             //first we check if the piece is inside borders
             if((0<=point.y+y && point.y+y<STAGESIZEY) && (0<=point.x+x && point.x+x<STAGESIZEX)) {
-
-                System.out.println("B");
                 //check for the collision with other pieces
                 if(stage[point.y+y][point.x+x] != 7) {
-                    System.out.println("C");
                     return true;
                 }
-                System.out.println("OK");
             }else {
-                
-                System.out.println("OUT OF BOUNDS!"+(point.y+y)+","+(point.x+x));
                 return true;
             }
         }
-
-        System.out.println("E");
         return false;
     }
     
@@ -187,16 +181,14 @@ public class GameLogic {
         }else if(rotation==3 && newRotation==1) {
             special = 11;
         }
-        
-        int pieceType = 0;
+
+        int pieceType = currentPiece==4?1:0;
         
         int maxtries = kicktable[pieceType][special].length;
 
         for(int tries=0;tries<maxtries;tries++) {
             if(!collides(pieceOrigin.x + kicktable[pieceType][special][tries].x, pieceOrigin.y - kicktable[pieceType][special][tries].y, newRotation)){
-                pieceOrigin.x += kicktable[pieceType][special][tries].x;
-                pieceOrigin.y -= kicktable[pieceType][special][tries].y;
-                rotation = newRotation;
+                move(pieceOrigin.x + kicktable[pieceType][special][tries].x, pieceOrigin.y - kicktable[pieceType][special][tries].y, newRotation);
                 break;
             }
         }
@@ -204,10 +196,11 @@ public class GameLogic {
     
     // Move the piece left or right
     //REQUIRES PRINTING
-    public void move(int offsetX, int offsetY) {
-        if(!collides(pieceOrigin.x + offsetX, pieceOrigin.y + offsetY, rotation)) {
-            pieceOrigin.x += offsetX;
-            pieceOrigin.y += offsetY;
+    public void move(int x, int y, int r) {
+        if(!collides(x, y, r)) {
+            pieceOrigin.x = x;
+            pieceOrigin.y = y;
+            rotation = r;
         }
     }
     
@@ -215,7 +208,7 @@ public class GameLogic {
     // Make the dropping piece part of the well, so it is available for
     // collision detection.
     //REQUIRES PRINTING
-    public void fixToWell() {
+    public void placeBlock() {
         for (Point point: getCurrentPiece()) {
             stage[pieceOrigin.y + point.y][pieceOrigin.x + point.x] = currentPiece;
         }

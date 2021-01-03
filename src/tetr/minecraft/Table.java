@@ -1,5 +1,6 @@
 package tetr.minecraft;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -16,18 +17,22 @@ import org.bukkit.util.Vector;
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
 import net.md_5.bungee.api.ChatColor;
-import tetr.minecraft.constants.Blocklist;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import tetr.minecraft.constants.Blocks;
 import tetr.minecraft.constants.Garbagetable;
-import tetr.minecraft.constants.Kicktable;
 import tetr.minecraft.functions.SendBlockChangeCustom;
-import tetr.minecraft.xseries.XSound;
 import tetr.shared.GameLogic;
+import tetr.shared.Kicktable;
+import tetr.shared.Pieces;
 
 
 public class Table {
     
     GameLogic gl = new GameLogic();
+
+    public final Point[][][] pieces = Pieces.pieces;
+    private final Point[][][] kicktable = Kicktable.kicktable_srsplus;
     
     public static boolean transparent=false;
     
@@ -35,10 +40,6 @@ public class Table {
     private Player player;
     private int looptick;
     private BPlayerBoard board;
-    
-    private static final int CCW = -1;
-    private static final int CW = +1;
-    private static final int R180 = +2;
     
     private int gx = 100;
     private int gy = 50;
@@ -70,6 +71,8 @@ public class Table {
     private int combo;
     private int b2b;
     
+    public boolean ULTRAGRAPHICS = true;
+    
     //if counter > gravity^-1  fall
     //
     private int counter = 0;//gravity variable
@@ -87,13 +90,11 @@ public class Table {
     private final int STAGESIZEX = 10;
     private final int STAGESIZEY = 40;
     private final int VISIBLEROWS = 24;
-    private int[][] stage=new int[STAGESIZEY][STAGESIZEX];
-    private int[][] block=new int[4][4];
+    private int[][] stage = new int[STAGESIZEY][STAGESIZEX];
     
     //piece variables
     private int x;
     private int y;
-    private int block_size;
     private int rotation;
     private int ghostx;
     private int ghosty;
@@ -163,6 +164,7 @@ public class Table {
         transparent = ot;
     }
     
+    //UNIQUE
     public void moveTable(int x, int y, int z) {
         boolean ot = transparent;
         transparent = true;
@@ -223,8 +225,9 @@ public class Table {
                     }
                 }
                     
-        
-                player.sendTitle("", ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "" + zonelines + " LINE" + (zonelines==1?"":"S"), 20, 40, 20);
+                if(!Main.version.contains("1_8")) {
+                    player.sendTitle("", ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "" + zonelines + " LINE" + (zonelines==1?"":"S"), 20, 40, 20);
+                }
                 updateScore();
         
                 for(int i=0;i<zonelines/2+1;i++) {
@@ -247,22 +250,22 @@ public class Table {
         }
     }
     
+    //V2
     private void topOutCheck() {
-        for(int i=0;i<block_size;i++){
-            for(int j=0;j<block_size;j++){
-                if(stage[i+y][j+x]!=7 && block[i][j]!=7){
-                    if(!zone) {
-                        player.playSound(player.getEyeLocation(), SoundUtil.ORB_PICKUP, 1f, 1f);
-                        gameover=true;
-                    }else {
-                        stopZone();
-                    }
-                    return;
+        for(Point point: pieces[block_current][rotation]) {
+            if(stage[point.y+y][point.x+x]!=7){
+                if(!zone) {
+                    player.playSound(player.getEyeLocation(), SoundUtil.ORB_PICKUP, 1f, 1f);
+                    gameover=true;
+                }else {
+                    stopZone();
                 }
+                return;
             }
         }
     }
     
+    //UNIQUE
     public void rotateTable(String input) {
         boolean ot = transparent;
         transparent = true;
@@ -407,16 +410,7 @@ public class Table {
         }.runTaskLater(Main.plugin, 1);
     }
     
-    private int getBlockSize(int block){
-        if(block==4){
-            return 4;
-        }else if(block==2){
-            return 2;
-        }else{
-            return 3;
-        }
-    }
-    
+    //UNIQUE
     private void printSingleBlock(int x, int y, int z, int color){
         if(color==7 && transparent){
             Block b=world.getBlockAt(x, y, z);
@@ -431,26 +425,30 @@ public class Table {
         }
     }
     
+    //UNIQUE
     @SuppressWarnings("deprecation")
     private void turnToFallingBlock(int x, int y, double d) {
-        int tex, tey, tez;
-        ItemStack blocks[] = Blocks.blocks;
-        int color = stage[y][x];
-        for(int i=0;i<(coni!=0?coni:thickness);i++) {
-            tex = gx+(int)(x*m1x)+(int)(y*m1y)+i;
-            for(int j=0;j<(conj!=0?conj:thickness);j++) {
-                tey = gy+(int)(x*m2x)+(int)(y*m2y)+j;
-                for(int k=0;k<(conk!=0?conk:thickness);k++) {
-                    tez = gz+(int)(x*m3x)+(int)(y*m3y)+k;
-                    FallingBlock lol = world.spawnFallingBlock(new Location(world, tex, tey, tez), blocks[color].getType(), blocks[color].getData().getData());
-                    lol.setVelocity(new Vector(d*(2-Math.random()*4),d*(5-Math.random()*10),d*(2-Math.random()*4)));
-                    lol.setDropItem(false);
-                    lol.addScoreboardTag("sand");
+        if(ULTRAGRAPHICS == true) {
+            int tex, tey, tez;
+            ItemStack blocks[] = Blocks.blocks;
+            int color = stage[y][x];
+            for(int i=0;i<(coni!=0?coni:thickness);i++) {
+                tex = gx+(int)(x*m1x)+(int)(y*m1y)+i;
+                for(int j=0;j<(conj!=0?conj:thickness);j++) {
+                    tey = gy+(int)(x*m2x)+(int)(y*m2y)+j;
+                    for(int k=0;k<(conk!=0?conk:thickness);k++) {
+                        tez = gz+(int)(x*m3x)+(int)(y*m3y)+k;
+                        FallingBlock lol = world.spawnFallingBlock(new Location(world, tex, tey, tez), blocks[color].getType(), blocks[color].getData().getData());
+                        lol.setVelocity(new Vector(d*(2-Math.random()*4),d*(5-Math.random()*10),d*(2-Math.random()*4)));
+                        lol.setDropItem(false);
+                        lol.addScoreboardTag("sand");
+                    }
                 }
             }
         }
     }
-    //new
+    
+    //UNIQUE
     private void initScoreboard(){
         board=Netherboard.instance().createBoard(player, "Stats");
         
@@ -463,7 +461,7 @@ public class Table {
         board.set("", 1);
     }
     
-    //new
+    //UNIQUE
     private void sendTheScoreboard(){
         if(b2b>0){
             board.set("§6§lB2B x"+b2b, 1);
@@ -482,7 +480,7 @@ public class Table {
         board.set("Score: "+score, 2);
     }
     
-    //improve
+    //UNIQUE
     private void printStaticBlock(int x, int y, int block){
         for(int i=0;i<4;i++){
             for(int j=0;j<4;j++){
@@ -490,94 +488,84 @@ public class Table {
             }
         }
         
-        for(int i=0;i<(getBlockSize(block)==4?3:getBlockSize(block));i++){
-            for(int j=0;j<getBlockSize(block);j++){
-                switch(block){
-                case 2:
-                    colPrint(j+x+1, i+y+1, Blocklist.block_list[block][i][j]);
-                    break;
-                case 0:
-                case 1:
-                case 3:
-                case 5:
-                case 6:
-                    ///somethin g wrong
-                    colPrint(j+x+0.5f, i+y+1, Blocklist.block_list[block][i][j]);
-                    break;
-                case 4:
-                    colPrint(j+x, i+y+0.5f, Blocklist.block_list[block][i][j]);
-                    break;
-                }
+        for(Point point: pieces[block][0]) {
+            switch(block){
+            case 2:
+                colPrint(point.x+x+1, point.y+y+1, block);
+                break;
+            case 0:
+            case 1:
+            case 3:
+            case 5:
+            case 6:
+                ///somethin g wrong
+                colPrint(point.x+x+0.5f, point.y+y+1, block);
+                break;
+            case 4:
+                colPrint(point.x+x, point.y+y+0.5f, block);
+                break;
             }
         }
     }
     
-    //works
+    //UNIQUE
     private void sendTheTitle(){
-        if(!zone) {
-            String s1="";
-            String s2="";
-            String s3="";
-            String s4="         ";
-            if(combo>=1){
-                s2=String.valueOf(combo)+" COMBO";
-            }
-            
-            if(spun){
-                if(mini){
-                    s3="§5t-spin§r";
-                }else{
-                    s3="§5T-SPIN§r";
-                }
-            }
-            
-            if(lines==1){
-                s1="SINGLE";
-            }else if(lines==2){
-                s1="DOUBLE";
-            }else if(lines==3){
-                s1="TRIPLE";
-            }else if(lines==4){
-                s1="QUAD";
-            }
-            
-            if(lines==0 && spun){
-                s1=" ";
-            }
-            
-            if((totallines-totalgarbage)*STAGESIZEX+totalgarbage==totalblocks*4){
-                s4="§6§lALL CLEAR§r";
-                player.sendTitle("", ChatColor.GOLD + "" + ChatColor.BOLD + "ALL CLEAR", 20, 40, 20);
-            }
-            
-            //dont kill old title if its empty
-            if(s1!="" || s2!=""){
-            s1=s3+" "+s1+"       "+s4;
-            s2=s2+"                                ";
-            
-                //Main.functions.sendTitle(player, s1, s2, 0, 20, 10);
+        if(!Main.version.contains("1_8")) {
+            if(!zone) {
+                String s1="";
+                String s3="";
                 
-                //player.sendTitle(s1, s2, 0, 20, 10);
+                if(spun){
+                    if(mini){
+                        s3="§5t-spin§r";
+                    }else{
+                        s3="§5T-SPIN§r";
+                    }
+                }
+                
+                if(lines==1){
+                    s1="SINGLE";
+                }else if(lines==2){
+                    s1="DOUBLE";
+                }else if(lines==3){
+                    s1="TRIPLE";
+                }else if(lines==4){
+                    s1="QUAD";
+                }
+                
+                if(lines==0 && spun){
+                    s1=" ";
+                }
+                
+                if((totallines-totalgarbage)*STAGESIZEX+totalgarbage==totalblocks*4){
+                    player.sendTitle("", ChatColor.GOLD + "" + ChatColor.BOLD + "ALL CLEAR", 20, 40, 20);
+                }
+                
+                //dont kill old title if its empty
+                if(s1!=""){
+                s1=s3+" "+s1;
+                
+                    //Main.functions.sendTitle(player, s1, s2, 0, 20, 10);
+                    
+                    //player.sendTitle(s1, s2, 0, 20, 10);
+    
+                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder(s1).create());
+                }
             }
         }
     }
 
     //works
     private void removeGhost(){
-      //fill with air
-        for(int i=0;i<block_size;i++){
-            for(int j=0;j<block_size;j++){
-                if(block[i][j]!=7){
-                    colPrint(j+ghostx, i+ghosty, 7);
-                }
-            }
+        for(Point point: pieces[block_current][rotation]) {
+            colPrint(point.x+ghostx, point.y+ghosty, 7);
         }
     }
     
     //works
     private void drawGhost(){
         ghosty=y;
-        while(!isCollide(x, ghosty+1)){
+        while(!isCollide(x, ghosty+1, rotation)){
             ghosty++;
         }
         
@@ -585,12 +573,8 @@ public class Table {
         ghostx=x;
 
         //print ghost
-        for(int i=0;i<block_size;i++){
-            for(int j=0;j<block_size;j++){
-                if(block[i][j]!=7){
-                    colPrint(j+ghostx, i+ghosty, 9+block[i][j]);
-                }
-            }
+        for(Point point: pieces[block_current][rotation]) {
+            colPrint(point.x+ghostx, point.y+ghosty, 9+block_current);
         }
     }
     
@@ -600,19 +584,9 @@ public class Table {
         x=3;
         y=20;
         rotation=0;
-        
-        if(block_current==4){
-            block_size=4;
-        }else if(block_current==2){
-            block_size=2;
-        }else{
-            block_size=3;
-        }
-        
-        for(int i=0;i<block_size;i++){
-            for(int j=0;j<block_size;j++){
-                block[i][j] = Blocklist.block_list[block_current][i][j];
-            }
+       
+        for(Point point: pieces[block_current][0]) {
+            colPrint(x + point.x, y + point.y, block_current);
         }
         
         spun=false;
@@ -655,37 +629,17 @@ public class Table {
         //check if its possible then print it (at same time)
         
         topOutCheck();
-        for(int i=0;i<block_size;i++){
-            for(int j=0;j<block_size;j++){
-                if(block[i][j]!=7){
-                    colPrint(j+x, i+y, block[i][j]);
-                }
-            }
+        
+        for(Point point: pieces[block_current][rotation]) {
+            colPrint(point.x + x, point.y + y, block_current);
         }
     }
     
-    //works
-    private boolean isCollide(int x, int y){
+    //V2
+    private boolean isCollide(int x, int y, int rotation){
         gl.currentPiece = block_current;
         gl.stage = stage;
         return gl.collides(x, y, rotation);
-       /*
-        for(int i=0;i<block_size;i++){
-            for(int j=0;j<block_size;j++){
-                if(block[i][j]!=7) {
-                    //first we check if the piece is inside borders
-                    if((0<=y+i && y+i<STAGESIZEY) && (0<=x+j && x+j<STAGESIZEX)){
-                        //check for the collision with other pieces
-                        if(stage[y+i][x+j] != 7) {
-                            return true;
-                        }
-                    }else {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;*/
     }
     
     //works
@@ -782,6 +736,7 @@ public class Table {
         */
         zone = false;
         zonelines = 0;
+        
     }
     
     private void tSpin(){
@@ -986,37 +941,31 @@ public class Table {
     
     private void dropBlock(){
         int lines=0;
-        while(!isCollide(x, y+lines+1)){
+        while(!isCollide(x, y+lines+1, rotation)){
             lines++;
         }
-        moveAndPrintPiece(x, y+lines);
+        moveAndPrintPiece(x, y+lines, rotation);
         score+=lines*2;
         placeBlock();
     }
     
-    private void moveAndPrintPiece(int x, int y){
+    private void moveAndPrintPiece(int x, int y, int r){
         //fill with air
-        for(int i=0;i<block_size;i++){
-            for(int j=0;j<block_size;j++){
-                if(block[i][j]!=7){
-                    colPrint(j+this.x, i+this.y, 7);
-                }
-            }
+        for(Point point: pieces[block_current][rotation]) {
+            colPrint(point.x+this.x, point.y+this.y, 7);
         }
+
+        removeGhost();
         
         //update position
         this.x = x;
         this.y = y;
+        rotation = r;
 
-        removeGhost();
         drawGhost();
         //print piece
-        for(int i=0;i<block_size;i++){
-            for(int j=0;j<block_size;j++){
-                if(block[i][j]!=7){
-                    colPrint(j+this.x, i+this.y, block[i][j]);
-                }
-            }
+        for(Point point: pieces[block_current][r]) {
+            colPrint(point.x+this.x, point.y+this.y, block_current);
         }
     }
     
@@ -1036,14 +985,14 @@ public class Table {
             break;
             
         case "left":
-            if(!isCollide(x-1, y)){
-                moveAndPrintPiece(x-1, y);
+            if(!isCollide(x-1, y, rotation)){
+                moveAndPrintPiece(x-1, y, rotation);
                 counter=0;
             }
             break;
         case "right":
-            if(!isCollide(x+1, y)){
-                moveAndPrintPiece(x+1, y);
+            if(!isCollide(x+1, y, rotation)){
+                moveAndPrintPiece(x+1, y, rotation);
                 counter=0;
             }
             break;
@@ -1053,8 +1002,8 @@ public class Table {
             counter=0;
             break;
         case "down":
-            if(!isCollide(x, y+1)){
-                moveAndPrintPiece(x, y+1);
+            if(!isCollide(x, y+1, rotation)){
+                moveAndPrintPiece(x, y+1, rotation);
                 counter=0;
                 score+=1;
                 sendTheScoreboard();
@@ -1069,10 +1018,10 @@ public class Table {
             break;
         case "instant":
             int temp = y;
-            while(!isCollide(x, temp+1)){
+            while(!isCollide(x, temp+1, rotation)){
                 temp++;
             }
-            moveAndPrintPiece(x, temp);
+            moveAndPrintPiece(x, temp, rotation);
             break;
             
         default:
@@ -1089,12 +1038,8 @@ public class Table {
             printStaticBlock(-7, STAGESIZEY/2, block_current);
             
             //erase current block from board
-            for (int i=0;i<block_size;i++){
-                for(int j=0;j<block_size;j++){
-                    if(block[i][j]!=7){
-                        colPrint(j+x, i+y, 7);
-                    }
-                }
+            for(Point point: pieces[block_current][rotation]) {
+                colPrint(point.x+x, point.y+y, 7);
             }
 
             //if first hold
@@ -1115,12 +1060,9 @@ public class Table {
                 drawGhost();
                 
                 topOutCheck();
-                for(int i=0;i<block_size;i++){
-                    for(int j=0;j<block_size;j++){
-                        if(block[i][j]!=7){
-                            colPrint(j+x, i+y, block[i][j]);
-                        }
-                    }
+                
+                for(Point point: pieces[block_current][rotation]) {
+                    colPrint(point.x+x, point.y+y, block_current);
                 }
                 
             }
@@ -1132,147 +1074,55 @@ public class Table {
         held=true;
     }
     
+    //V2
     private void rotateBlock(int d){
-        int piece_type;
+        int newRotation = (rotation + d + 4) % 4;
+        
         int special = -1;
-        int tries = 0;
-        int maxtries;
-        int oldrotation=rotation;
-
-        int[][] temp=new int[block_size][block_size];
-
-        for(int i=0;i<block_size;i++)
-            for(int j=0;j<block_size;j++)
-                temp[i][j]=block[i][j];
         
-        if(d==R180){
-            if(block_current==6) {
-                piece_type = 0;
-            }else{
-                piece_type = 1;
-            }
-            special = rotation;
-            
-        }else{
-            if(rotation==0 && d==CW)
-                special = 0;
-            else if(rotation==1 && d==CCW)
-                special = 1;
-            else if(rotation==1 && d==CW)
-                special = 2;
-            else if(rotation==2 && d==CCW)
-                special = 3;
-            else if(rotation==2 && d==CW)
-                special = 4;
-            else if(rotation==3 && d==CCW)
-                special = 5;
-            else if(rotation==3 && d==CW)
-                special = 6;
-            else if(rotation==0 && d==CCW)
-                special = 7;
-            piece_type = block_current==4?1:0;
-        }
-
-        removeGhost();
-        switch(d){
-        case CCW:
-            for(int i=0;i<block_size;i++){
-                for(int j=0;j<block_size;j++){
-                    block[i][j]=temp[j][block_size-1-i];
-                }
-            }
-            rotation--;
-            break;
-        case CW:
-            for(int i=0;i<block_size;i++){
-                for(int j=0;j<block_size;j++){
-                    block[i][j]=temp[block_size-1-j][i];
-                }
-            }
-            rotation++;
-            break;
-        case R180:
-            for(int i=0;i<block_size;i++){
-                for(int j=0;j<block_size;j++){
-                    block[i][j]=temp[block_size-1-i][block_size-1-j];
-                }
-            }
-            rotation+=2;
-            break;
+        if(rotation==0 && newRotation==1) {
+            special = 0;
+        }else if(rotation==1 && newRotation==0) {
+            special = 1;
+        }else if(rotation==1 && newRotation==2) {
+            special = 2;
+        }else if(rotation==2 && newRotation==1) {
+            special = 3;
+        }else if(rotation==2 && newRotation==3) {
+            special = 4;
+        }else if(rotation==3 && newRotation==2) {
+            special = 5;
+        }else if(rotation==3 && newRotation==0) {
+            special = 6;
+        }else if(rotation==0 && newRotation==3) {
+            special = 7;
+        }else if(rotation==0 && newRotation==2) {
+            special = 8;
+        }else if(rotation==2 && newRotation==0) {
+            special = 9;
+        }else if(rotation==1 && newRotation==3) {
+            special = 10;
+        }else if(rotation==3 && newRotation==1) {
+            special = 11;
         }
         
-        rotation += 4;
-        rotation %= 4;
-        if(d==R180) {
-            maxtries = Kicktable.kicks_180[piece_type][special].length;
-        }else {
-            maxtries = Kicktable.kicks[piece_type][special].length;
-        }
+        int pieceType = block_current==4?1:0;
+        
+        int maxtries = kicktable[pieceType][special].length;
 
-        for(tries=0;tries<maxtries;tries++){
-            if(d==R180){
-                if(!(isCollide(
-                    x + Kicktable.kicks_180[piece_type][special][tries][0],
-                    y - Kicktable.kicks_180[piece_type][special][tries][1]
-                    ))){
-                        break;
-                    }
-            }else{
-                if(!(isCollide(
-                    x + Kicktable.kicks[piece_type][special][tries][0],
-                    y - Kicktable.kicks[piece_type][special][tries][1]
-                    ))){
-                        break;
-                    }
-            }
-            
-            
-            if(tries==maxtries-1){
-                for(int i=0;i<block_size;i++){
-                    for(int j=0;j<block_size;j++){
-                        block[i][j]=temp[i][j];
+        for(int tries=0;tries<maxtries;tries++) {
+            if(!isCollide(x + kicktable[pieceType][special][tries].x, y - kicktable[pieceType][special][tries].y, newRotation)){
+                moveAndPrintPiece(x + kicktable[pieceType][special][tries].x, y - kicktable[pieceType][special][tries].y, newRotation);
+                
+                if(block_current == 6){
+                    if((tries==4) && (special==0 || special==3 || special==4 || special==7)){
+                        spun=true;
+                        mini=false;
+                    }else{
+                        tSpin();
                     }
                 }
-                rotation = oldrotation;
-                moveAndPrintPiece(x, y);
-                player.sendMessage("No kick");
-                return;
-            }
-        }
-        
-        for(int i=0;i<block_size;i++){
-            for(int j=0;j<block_size;j++){
-                if(temp[i][j]!=7){
-                    colPrint(j+x, i+y, 7);
-                }
-            }
-        }
-        
-        if(d==R180){
-            x += Kicktable.kicks_180[piece_type][special][tries][0];
-            y -= Kicktable.kicks_180[piece_type][special][tries][1];
-        }else{
-            x += Kicktable.kicks[piece_type][special][tries][0];
-            y -= Kicktable.kicks[piece_type][special][tries][1];
-        }
-        
-        drawGhost();
-        ///if it succeeds show it
-        for(int i=0;i<block_size;i++){
-            for(int j=0;j<block_size;j++){
-                if(block[i][j]!=7){
-                    colPrint(j+x, i+y, block[i][j]);
-                }
-            }
-        }
-        
-        //special t kick
-        if(block_current == 6){
-            if((d!=R180 && tries==4) && (special==0 || special==3 || special==4 || special==7)){
-                spun=true;
-                mini=false;
-            }else{
-                tSpin();
+                break;
             }
         }
     }
@@ -1382,7 +1232,7 @@ public class Table {
                 for(int i=0;i<20*zonelines;i++)
                 player.playSound(player.getEyeLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(zonelines*2-16)/(double)16));
             }
-            
+            /*
             if(!zone && lc==0) {
                 for(int i=0;i<7;i++) {
                     switch(block_current) {
@@ -1409,7 +1259,7 @@ public class Table {
                         break;
                     }
                 }
-            }
+            }*/
             
             makeNextBlock();
             }
@@ -1417,18 +1267,13 @@ public class Table {
     }
 
     private void placeBlock(){
-        for(int i=0;i<block_size;i++){
-            for(int j=0;j<block_size;j++){
-                if(block[i][j]!=7){
-                    colPrint(j+x, i+y, block[i][j]);
-                    stage[i+y][j+x]=block[i][j];
-                }
-            }
+        for(Point point: pieces[block_current][rotation]) {
+            colPrint(point.x+x, point.y+y, block_current);
+            stage[point.y+y][point.x+x]=block_current;
         }
         checkPlaced();
     }
     
-
     double maxvelocity=0;
     long startTime;
     boolean moving=false;
@@ -1440,8 +1285,8 @@ public class Table {
    	        @Override
    	        public void run() {
    	            if(counter>=100){
-   	                if(!isCollide(x, y+1)){
-   	                    moveAndPrintPiece(x, y+1);
+   	                if(!isCollide(x, y+1, rotation)){
+   	                    moveAndPrintPiece(x, y+1, rotation);
    	                }else{
    	                    placeBlock();
    	                }
@@ -1469,7 +1314,7 @@ public class Table {
    	                }     
                    	                  
        	            
-   	                player.setWalkSpeed(0.2f);
+   	                //player.setWalkSpeed(0.2f);
    	                this.cancel();
    	                if(Main.roommap.containsKey(Main.inwhichroom.get(player).id)){
    	                    Main.inwhichroom.get(player).playersalive--;
@@ -1479,7 +1324,7 @@ public class Table {
    	                }
    	            }
    	            
-       	        board.set("TIME "+looptick+" C "+counter, 0);
+       	        board.set("TIME "+looptick, 0);
        	        looptick++;
     
                 /*PacketPlayOutUpdateHealth test;

@@ -240,6 +240,9 @@ public class Listen implements Listener {
                 case 53:
                     Main.inwhichroom.get(player).backfire=!Main.inwhichroom.get(player).backfire;
                     break;
+                case 1:
+                    table.ULTRAGRAPHICS=!table.ULTRAGRAPHICS;
+                    break;
                 default:
                     return;
                 }

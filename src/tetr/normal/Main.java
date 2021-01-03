@@ -19,10 +19,11 @@ import tetr.shared.GameLogic;
 public class Main extends JPanel {
     
     GameLogic gl = new GameLogic();
+    
 
     private static final long serialVersionUID = 1L;
 
-    private static final int PIXELSIZE = 20;
+    private static final int PIXELSIZE = 12;
     private static final int GRIDSIZE = 0;
     private static final Point TOPLEFTCORNER = new Point(PIXELSIZE*10, PIXELSIZE*3);
     
@@ -32,24 +33,24 @@ public class Main extends JPanel {
     
     private void drawHold(Graphics g) {
         g.setColor(Color.BLACK);
-        g.fillRect(TOPLEFTCORNER.x -7 * PIXELSIZE, TOPLEFTCORNER.y, PIXELSIZE * 4, PIXELSIZE * 4);
+        g.fillRect(TOPLEFTCORNER.x -7 * PIXELSIZE, TOPLEFTCORNER.y + gl.STAGESIZEY/2 * PIXELSIZE, PIXELSIZE * 4, PIXELSIZE * 4);
         if(gl.heldPiece!=-1) {
             g.setColor(tetrominoColors[gl.heldPiece]);
             for(Point point: gl.pieces[gl.heldPiece][0]) {
-                g.fillRect(TOPLEFTCORNER.x + (-7 + point.x) * PIXELSIZE, TOPLEFTCORNER.y + point.y * PIXELSIZE, PIXELSIZE, PIXELSIZE);
+                g.fillRect(TOPLEFTCORNER.x + (-7 + point.x) * PIXELSIZE, TOPLEFTCORNER.y + (point.y + gl.STAGESIZEY/2) * PIXELSIZE, PIXELSIZE, PIXELSIZE);
             }
         }
     }
     
     private void drawQueue(Graphics g) {
         g.setColor(Color.BLACK);
-        g.fillRect(TOPLEFTCORNER.x + (3 + gl.STAGESIZEX) * PIXELSIZE, TOPLEFTCORNER.y, PIXELSIZE * 4, PIXELSIZE * 4 * 5);
+        g.fillRect(TOPLEFTCORNER.x + (3 + gl.STAGESIZEX) * PIXELSIZE, TOPLEFTCORNER.y + gl.STAGESIZEY/2 * PIXELSIZE, PIXELSIZE * 4, PIXELSIZE * 4 * 5);
         ///prints next blocks
         for(int i=0;i<5;i++){
             int piece = gl.nextPieces.get(i);
             g.setColor(tetrominoColors[piece]);
             for(Point point: gl.pieces[piece][0]) {
-                g.fillRect(TOPLEFTCORNER.x + (3 + point.x + gl.STAGESIZEX) * PIXELSIZE, TOPLEFTCORNER.y + (i * 4 + point.y) * PIXELSIZE, PIXELSIZE-GRIDSIZE, PIXELSIZE-GRIDSIZE);
+                g.fillRect(TOPLEFTCORNER.x + (3 + point.x + gl.STAGESIZEX) * PIXELSIZE, TOPLEFTCORNER.y + (i * 4 + point.y + gl.STAGESIZEY/2) * PIXELSIZE, PIXELSIZE-GRIDSIZE, PIXELSIZE-GRIDSIZE);
             }
         }
     }
@@ -66,8 +67,7 @@ public class Main extends JPanel {
     public void paintComponent(Graphics g)
     {
         // Paint the well
-        g.fillRect(TOPLEFTCORNER.x, TOPLEFTCORNER.y, PIXELSIZE*gl.STAGESIZEX, PIXELSIZE*gl.STAGESIZEY);
-        for(int i=0;i<gl.STAGESIZEY;i++) {
+        for(int i=gl.STAGESIZEY-gl.VISIBLEROWS;i<gl.STAGESIZEY;i++) {
             for(int j=0;j<gl.STAGESIZEX;j++) {
                 g.setColor(gl.intToColor(gl.stage[i][j]));
                 g.fillRect(TOPLEFTCORNER.x + PIXELSIZE*j, TOPLEFTCORNER.y + PIXELSIZE*i, PIXELSIZE-GRIDSIZE, PIXELSIZE-GRIDSIZE);
@@ -76,10 +76,23 @@ public class Main extends JPanel {
         
         // Display the score
         g.setColor(Color.WHITE);
-        g.drawString("Bruh points: " + gl.score, 19*6, PIXELSIZE-GRIDSIZE);
+        g.drawString("points: " + gl.score, 19*6, PIXELSIZE-GRIDSIZE);
 
         g.setColor(Color.WHITE);
         g.drawString("alpha", 20*12, 20*2);
+        
+        //show controls
+
+        g.setColor(Color.WHITE);
+        g.drawString("Controls:", 50, 80);
+        g.drawString("move left/right - left/right arrow\n", 50, 90);
+        g.drawString("rotate counterclockwise: z/y\n", 50, 100);
+        g.drawString("rotate clockwise: x\n", 50, 110);
+        g.drawString("rotate 180: arrow up\n", 50, 120);
+        g.drawString("hold: c\n", 50, 130);
+        g.drawString("hard drop: space\n", 50, 140);
+        g.drawString("soft drop: arrown down", 50, 150);
+        
         
         
         drawPiece(g);
@@ -102,7 +115,7 @@ public class Main extends JPanel {
         
         JFrame f = new JFrame("TETR");
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setSize(PIXELSIZE * 30 + 16, PIXELSIZE * 26 + 39);
+        f.setSize(PIXELSIZE * 30 + 16, PIXELSIZE * 46 + 39);
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (int) ((dimension.getWidth() - f.getWidth()) / 2);
         int y = (int) ((dimension.getHeight() - f.getHeight()) / 2);
@@ -123,20 +136,21 @@ public class Main extends JPanel {
             public void keyPressed(KeyEvent e) {
                 switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT:
-                    game.gl.move(-1, 0);
+                    game.gl.move(game.gl.pieceOrigin.x - 1, game.gl.pieceOrigin.y, game.gl.rotation);
                     break;
                 case KeyEvent.VK_RIGHT:
-                    game.gl.move(+1, 0);
+                    game.gl.move(game.gl.pieceOrigin.x + 1, game.gl.pieceOrigin.y, game.gl.rotation);
                     break;
                 case KeyEvent.VK_DOWN:
-                    game.gl.move(0, +1);
+                    game.gl.move(game.gl.pieceOrigin.x, game.gl.pieceOrigin.y + 1, game.gl.rotation);
                     break;
                 case KeyEvent.VK_SPACE:
                     while (!game.gl.collides(game.gl.pieceOrigin.x, game.gl.pieceOrigin.y + 1, game.gl.rotation)) {
                         game.gl.pieceOrigin.y += 1;
                     }
-                        game.gl.fixToWell();
+                        game.gl.placeBlock();
                     break;
+                case KeyEvent.VK_Z:
                 case KeyEvent.VK_Y:
                     game.gl.rotate(-1);
                     break;
@@ -169,8 +183,8 @@ public class Main extends JPanel {
             @Override public void run() {
                 while (true) {
                     try {
-                        Thread.sleep(100000);
-                        game.gl.move(0, +1);
+                        Thread.sleep(1000);
+                        game.gl.move(game.gl.pieceOrigin.x, game.gl.pieceOrigin.y + 1, game.gl.rotation);
                     } catch ( InterruptedException e ) {}
                 }
             }
