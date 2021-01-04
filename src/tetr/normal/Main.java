@@ -18,6 +18,32 @@ import tetr.shared.GameLogic;
 
 public class Main extends JPanel {
     
+    private final Color[] tetrominoColors = { Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA };
+    public Color intToColor(int number) {
+        if(number == 0){
+            return tetrominoColors[0];
+        }else if(number == 1){
+            return tetrominoColors[1];
+        }else if(number == 2){
+            return tetrominoColors[2];
+        }else if(number == 3){
+            return tetrominoColors[3];
+        }else if(number == 4){
+            return tetrominoColors[4];
+        }else if(number == 5){
+            return tetrominoColors[5];
+        }else if(number == 6){
+            return tetrominoColors[6];
+        }else if(number == 7){
+            return Color.BLACK;
+        }else if(number == 8){
+            return Color.GRAY;
+        }else if(number == 16){
+            return Color.WHITE;
+        }
+        return null;
+    }
+    
     GameLogic gl = new GameLogic();
     
 
@@ -26,10 +52,6 @@ public class Main extends JPanel {
     private static final int PIXELSIZE = 12;
     private static final int GRIDSIZE = 0;
     private static final Point TOPLEFTCORNER = new Point(PIXELSIZE*10, PIXELSIZE*3);
-    
-    private final Color[] tetrominoColors = {
-        Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA
-    };
     
     private void drawHold(Graphics g) {
         g.setColor(Color.BLACK);
@@ -58,8 +80,8 @@ public class Main extends JPanel {
     // Draw the falling piece
     private void drawPiece(Graphics g) {
         g.setColor(tetrominoColors[gl.currentPiece]);
-        for (Point point: gl.pieces[gl.currentPiece][gl.rotation]) {
-            g.fillRect(TOPLEFTCORNER.x + (point.x + gl.pieceOrigin.x) * PIXELSIZE, TOPLEFTCORNER.y + (point.y + gl.pieceOrigin.y) * PIXELSIZE, PIXELSIZE-GRIDSIZE, PIXELSIZE-GRIDSIZE);
+        for (Point point: gl.pieces[gl.currentPiece][gl.currentPieceRotation]) {
+            g.fillRect(TOPLEFTCORNER.x + (point.x + gl.currentPiecePosition.x) * PIXELSIZE, TOPLEFTCORNER.y + (point.y + gl.currentPiecePosition.y) * PIXELSIZE, PIXELSIZE-GRIDSIZE, PIXELSIZE-GRIDSIZE);
         }
     }
     
@@ -69,7 +91,7 @@ public class Main extends JPanel {
         // Paint the well
         for(int i=gl.STAGESIZEY-gl.VISIBLEROWS;i<gl.STAGESIZEY;i++) {
             for(int j=0;j<gl.STAGESIZEX;j++) {
-                g.setColor(gl.intToColor(gl.stage[i][j]));
+                g.setColor(intToColor(gl.stage[i][j]));
                 g.fillRect(TOPLEFTCORNER.x + PIXELSIZE*j, TOPLEFTCORNER.y + PIXELSIZE*i, PIXELSIZE-GRIDSIZE, PIXELSIZE-GRIDSIZE);
             }
         }
@@ -136,33 +158,33 @@ public class Main extends JPanel {
             public void keyPressed(KeyEvent e) {
                 switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT:
-                    game.gl.move(game.gl.pieceOrigin.x - 1, game.gl.pieceOrigin.y, game.gl.rotation);
+                    game.gl.movePiece(game.gl.currentPiecePosition.x - 1, game.gl.currentPiecePosition.y, game.gl.currentPieceRotation);
                     break;
                 case KeyEvent.VK_RIGHT:
-                    game.gl.move(game.gl.pieceOrigin.x + 1, game.gl.pieceOrigin.y, game.gl.rotation);
+                    game.gl.movePiece(game.gl.currentPiecePosition.x + 1, game.gl.currentPiecePosition.y, game.gl.currentPieceRotation);
                     break;
                 case KeyEvent.VK_DOWN:
-                    game.gl.move(game.gl.pieceOrigin.x, game.gl.pieceOrigin.y + 1, game.gl.rotation);
+                    game.gl.movePiece(game.gl.currentPiecePosition.x, game.gl.currentPiecePosition.y + 1, game.gl.currentPieceRotation);
                     break;
                 case KeyEvent.VK_SPACE:
-                    while (!game.gl.collides(game.gl.pieceOrigin.x, game.gl.pieceOrigin.y + 1, game.gl.rotation)) {
-                        game.gl.pieceOrigin.y += 1;
+                    while (!game.gl.collides(game.gl.currentPiecePosition.x, game.gl.currentPiecePosition.y + 1, game.gl.currentPieceRotation)) {
+                        game.gl.currentPiecePosition.y += 1;
                     }
-                        game.gl.placeBlock();
+                        game.gl.placePiece();
                     break;
                 case KeyEvent.VK_Z:
                 case KeyEvent.VK_Y:
-                    game.gl.rotate(-1);
+                    game.gl.rotatePiece(-1);
                     break;
                 case KeyEvent.VK_X:
-                    game.gl.rotate(+1);
+                    game.gl.rotatePiece(+1);
                     break;
                 case KeyEvent.VK_UP:
                     //180
-                    game.gl.rotate(+2);
+                    game.gl.rotatePiece(+2);
                     break;
                 case KeyEvent.VK_C:
-                    game.gl.holdBlock();
+                    game.gl.holdPiece();
                     break;
                 } 
             }
@@ -184,7 +206,7 @@ public class Main extends JPanel {
                 while (true) {
                     try {
                         Thread.sleep(1000);
-                        game.gl.move(game.gl.pieceOrigin.x, game.gl.pieceOrigin.y + 1, game.gl.rotation);
+                        game.gl.movePiece(game.gl.currentPiecePosition.x, game.gl.currentPiecePosition.y + 1, game.gl.currentPieceRotation);
                     } catch ( InterruptedException e ) {}
                 }
             }

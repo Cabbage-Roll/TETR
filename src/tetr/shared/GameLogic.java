@@ -1,67 +1,42 @@
 package tetr.shared;
 
-import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
+import java.util.Collections;
 
 public class GameLogic {
 
-    private final Color[] tetrominoColors = {
-            Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA
-        };
-    
     public final Point[][][] pieces = Pieces.pieces;
     private final Point[][][] kicktable = Kicktable.kicktable_srsplus;
     
     public final int STAGESIZEX = 10;
     public final int STAGESIZEY = 40;
     public final int VISIBLEROWS = 24;
+    public final int next_blocks = 5;
 
-    public Point pieceOrigin;
+    public Point currentPiecePosition;
+    public int currentPieceRotation;
     public int currentPiece;
     public int heldPiece = -1;
-    public int rotation;
-    private boolean held;
+    public boolean held;
     public ArrayList<Integer> nextPieces = new ArrayList<Integer>();
     
     public long score;
     public int[][] stage;
     
-    private Random gen = new Random((int)(Math.random()*Integer.MAX_VALUE));
-    
     private Point[] getCurrentPiece() {
-        return pieces[currentPiece][rotation];
+        return pieces[currentPiece][currentPieceRotation];
     }
     
-    public Color intToColor(int number) {
-        if(number == 0){
-            return tetrominoColors[0];
-        }else if(number == 1){
-            return tetrominoColors[1];
-        }else if(number == 2){
-            return tetrominoColors[2];
-        }else if(number == 3){
-            return tetrominoColors[3];
-        }else if(number == 4){
-            return tetrominoColors[4];
-        }else if(number == 5){
-            return tetrominoColors[5];
-        }else if(number == 6){
-            return tetrominoColors[6];
-        }else if(number == 7){
-            return Color.BLACK;
-        }else if(number == 8){
-            return Color.GRAY;
-        }else if(number == 16){
-            return Color.WHITE;
+    public boolean topOutCheck() {
+        for(Point point: pieces[currentPiece][currentPieceRotation]) {
+            if(stage[point.y+currentPiecePosition.y][point.x+currentPiecePosition.x]!=7){
+                return true;
+            }
         }
-        return null;
+        return false;
     }
     
-    //TETR FUNCTION
-    //REQUIRES PRINTING
     public void initGame() {
         stage = new int[STAGESIZEY][STAGESIZEX];
         for(int i=0;i<STAGESIZEY;i++) {
@@ -69,32 +44,27 @@ public class GameLogic {
                 stage[i][j] = 7;
             }
         }
-        makeNextBlock();
+        makeNextPiece();
     }
     
-    //TETR FUNCTION
-    //REQUIRES PRINTING
-    public boolean holdBlock() {
+    public boolean holdPiece() {
         if(!held) {
             int temp;
             
-            //print current block into hold slot
-            
-            //erase current block from board
-
             //if first hold
             if(heldPiece==-1) {
                 heldPiece = currentPiece;
-                makeNextBlock();
+                makeNextPiece();
             }else {
                 //swap
                 temp = currentPiece;
                 currentPiece = heldPiece;
                 heldPiece = temp;
                 
-                //spawn new block
-                pieceOrigin = new Point(3, 20);
-                rotation = 0;
+                currentPiecePosition = new Point(3, 20);
+                currentPieceRotation = 0;
+                
+                topOutCheck();
             }
             
             held = true;
@@ -104,36 +74,29 @@ public class GameLogic {
         }
     }
     
-    //TETR FUNCTION
-    //retarded bag generator
-    private void makeNextBlock() {
+    private void makeNextPiece() {
         if(nextPieces.size() <= 7) {
-            Integer[] bag2 = new Integer[7];
-            for(int i=0;i<7;i++){
-                bag2[i]=(int)(gen.nextInt(7));
-                for(int j=0;j<i;j++){
-                    if(bag2[i]==bag2[j]){
-                        i--;
-                    }
-                }
+            ArrayList<Integer> bag = new ArrayList<Integer>();
+            for(int i=0;i<7;i++) {
+                bag.add(i);
             }
-            nextPieces.addAll(Arrays.asList(bag2));
+            Collections.shuffle(bag);
+            nextPieces.addAll(bag);
         }
         
-        spawnBlock();
+        spawnPiece();
+        
+        topOutCheck();
     }
     
-    //TETR FUNCTION
-    //REQUIRES PRINTING
-    private void spawnBlock() {
-        pieceOrigin = new Point(3, 20);
-        rotation = 0;
+    private void spawnPiece() {
+        currentPiecePosition = new Point(3, 20);
+        currentPieceRotation = 0;
         currentPiece = nextPieces.get(0);
         nextPieces.remove(0);
         held = false;
     }
     
-    //TETR FUNCTION
     public boolean collides(int x, int y, int rotation) {
         for(Point point: pieces[currentPiece][rotation]) {
             //first we check if the piece is inside borders
@@ -149,36 +112,34 @@ public class GameLogic {
         return false;
     }
     
-    //TETR FUNCTION
-    //REQUIRES PRINTING
-    public void rotate(int d) {
-        int newRotation = (rotation + d + 4) % 4;
+    public void rotatePiece(int d) {
+        int newRotation = (currentPieceRotation + d + 4) % 4;
         
         int special = -1;
         
-        if(rotation==0 && newRotation==1) {
+        if(currentPieceRotation==0 && newRotation==1) {
             special = 0;
-        }else if(rotation==1 && newRotation==0) {
+        }else if(currentPieceRotation==1 && newRotation==0) {
             special = 1;
-        }else if(rotation==1 && newRotation==2) {
+        }else if(currentPieceRotation==1 && newRotation==2) {
             special = 2;
-        }else if(rotation==2 && newRotation==1) {
+        }else if(currentPieceRotation==2 && newRotation==1) {
             special = 3;
-        }else if(rotation==2 && newRotation==3) {
+        }else if(currentPieceRotation==2 && newRotation==3) {
             special = 4;
-        }else if(rotation==3 && newRotation==2) {
+        }else if(currentPieceRotation==3 && newRotation==2) {
             special = 5;
-        }else if(rotation==3 && newRotation==0) {
+        }else if(currentPieceRotation==3 && newRotation==0) {
             special = 6;
-        }else if(rotation==0 && newRotation==3) {
+        }else if(currentPieceRotation==0 && newRotation==3) {
             special = 7;
-        }else if(rotation==0 && newRotation==2) {
+        }else if(currentPieceRotation==0 && newRotation==2) {
             special = 8;
-        }else if(rotation==2 && newRotation==0) {
+        }else if(currentPieceRotation==2 && newRotation==0) {
             special = 9;
-        }else if(rotation==1 && newRotation==3) {
+        }else if(currentPieceRotation==1 && newRotation==3) {
             special = 10;
-        }else if(rotation==3 && newRotation==1) {
+        }else if(currentPieceRotation==3 && newRotation==1) {
             special = 11;
         }
 
@@ -187,41 +148,32 @@ public class GameLogic {
         int maxtries = kicktable[pieceType][special].length;
 
         for(int tries=0;tries<maxtries;tries++) {
-            if(!collides(pieceOrigin.x + kicktable[pieceType][special][tries].x, pieceOrigin.y - kicktable[pieceType][special][tries].y, newRotation)){
-                move(pieceOrigin.x + kicktable[pieceType][special][tries].x, pieceOrigin.y - kicktable[pieceType][special][tries].y, newRotation);
+            if(!collides(currentPiecePosition.x + kicktable[pieceType][special][tries].x, currentPiecePosition.y - kicktable[pieceType][special][tries].y, newRotation)){
+                movePiece(currentPiecePosition.x + kicktable[pieceType][special][tries].x, currentPiecePosition.y - kicktable[pieceType][special][tries].y, newRotation);
                 break;
             }
         }
     }
     
-    // Move the piece left or right
-    //REQUIRES PRINTING
-    public void move(int x, int y, int r) {
+    public void movePiece(int x, int y, int r) {
         if(!collides(x, y, r)) {
-            pieceOrigin.x = x;
-            pieceOrigin.y = y;
-            rotation = r;
+            currentPiecePosition.x = x;
+            currentPiecePosition.y = y;
+            currentPieceRotation = r;
         }
     }
     
-    
-    // Make the dropping piece part of the well, so it is available for
-    // collision detection.
-    //REQUIRES PRINTING
-    public void placeBlock() {
-        for (Point point: getCurrentPiece()) {
-            stage[pieceOrigin.y + point.y][pieceOrigin.x + point.x] = currentPiece;
+    public void placePiece() {
+        for(Point point: getCurrentPiece()) {
+            stage[currentPiecePosition.y + point.y][currentPiecePosition.x + point.x] = currentPiece;
         }
         clearRows();
-        makeNextBlock();
+        makeNextPiece();
     }
     
-
-    //REQUIRES PRINTING
     public void deleteRow(int row) {
 
         System.out.println("Clearing row "+row);
-        
         
         for(int j=0;j<STAGESIZEX;j++) {
             stage[0][j] = 7;
@@ -234,10 +186,6 @@ public class GameLogic {
         }
     }
     
-    // Clear completed rows from the field and award score according to
-    // the number of simultaneously cleared rows.
-
-    //REQUIRES PRINTING
     public void clearRows() {
         boolean gap;
         int numClears = 0;

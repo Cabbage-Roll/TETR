@@ -129,7 +129,7 @@ public class Room {
         if(Main.numberofsongs>0){
             rsp.removePlayer(player);
         }
-        playerboards.get(player).destroy();
+        playerboards.get(player).destroyTable();
         playerboards.get(player).setGameOver();
         playersalive--;
         if(playersalive<=1){

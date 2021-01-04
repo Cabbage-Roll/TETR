@@ -2,6 +2,7 @@ package tetr.minecraft;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 import org.bukkit.Location;
@@ -23,17 +24,11 @@ import tetr.minecraft.constants.Blocks;
 import tetr.minecraft.constants.Garbagetable;
 import tetr.minecraft.functions.SendBlockChangeCustom;
 import tetr.shared.GameLogic;
-import tetr.shared.Kicktable;
-import tetr.shared.Pieces;
-
 
 public class Table {
     
     GameLogic gl = new GameLogic();
 
-    public final Point[][][] pieces = Pieces.pieces;
-    private final Point[][][] kicktable = Kicktable.kicktable_srsplus;
-    
     public static boolean transparent=false;
     
     private World world;
@@ -59,12 +54,7 @@ public class Table {
     
     //bag variables
     private Random gen;
-    private int bag_counter = 0;
-    private int[] bag1 = new int[7];
-    private int[] bag2 = new int[7];
-    private int next_blocks = 5;
-    private int block_hold = -1;
-    private int block_current = -1;
+    private ArrayList<Integer> nextPieces = new ArrayList<Integer>();
     
     private int lines;
     private int score;
@@ -74,7 +64,6 @@ public class Table {
     public boolean ULTRAGRAPHICS = true;
     
     //if counter > gravity^-1  fall
-    //
     private int counter = 0;//gravity variable
     private double startingGravity = 20;
     private int gravityIncreaseDelay = 600;
@@ -90,20 +79,15 @@ public class Table {
     private final int STAGESIZEX = 10;
     private final int STAGESIZEY = 40;
     private final int VISIBLEROWS = 24;
-    private int[][] stage = new int[STAGESIZEY][STAGESIZEX];
+    private int[][] stage = new int[gl.STAGESIZEY][gl.STAGESIZEX];
     
     //piece variables
-    private int x;
-    private int y;
-    private int rotation;
-    private int ghostx;
-    private int ghosty;
+    private Point currentPiecePosition;
+    private int currentPieceRotation;
     
     private boolean spun = false;//tspin
     private boolean mini = false;
     private boolean gameover = false;
-    private boolean held = false;
-    private boolean power = false;//spike
     
     //garbage
     private ArrayList<Integer> garbo = new ArrayList<Integer>();
@@ -130,7 +114,7 @@ public class Table {
     private int zonelines;
     private boolean zone;
     
-    Table(Player p){
+    Table(Player p) {
         player=p;
         world=p.getWorld();
         Location location=player.getLocation();
@@ -151,37 +135,6 @@ public class Table {
             moveTable(location.getBlockX()+STAGESIZEX/2, location.getBlockY()+STAGESIZEY-VISIBLEROWS/2, location.getBlockZ()+STAGESIZEY);
         }
         gameover=true;
-    }
-    
-    public void destroy() {
-        boolean ot = transparent;
-        transparent = true;
-        for(int i=0;i<STAGESIZEY;i++){
-            for(int j=0;j<STAGESIZEX;j++){
-                colPrint(j, i, 7);
-            }
-        }
-        transparent = ot;
-    }
-    
-    //UNIQUE
-    public void moveTable(int x, int y, int z) {
-        boolean ot = transparent;
-        transparent = true;
-        for(int i=0;i<STAGESIZEY;i++){
-            for(int j=0;j<STAGESIZEX;j++){
-                colPrint(j, i, 7);
-            }
-        }
-        gx = x;
-        gy = y;
-        gz = z;
-        for(int i=0;i<STAGESIZEY;i++){
-            for(int j=0;j<STAGESIZEX;j++){
-                colPrint(j, i, 16);
-            }
-        }
-        transparent = ot;
     }
     
     public int getGx() {
@@ -207,108 +160,39 @@ public class Table {
     private void stopZone() {
 
         for(int i=STAGESIZEY-zonelines;i<STAGESIZEY;i++) {
-            for(int j=0;j<STAGESIZEX;j++){
+            for(int j=0;j<STAGESIZEX;j++) {
                 turnToFallingBlock(j, i, 0.5);
             }
         }
         
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-        
-                for(int i=0;i<STAGESIZEY;i++) {
-                    for(int j=0;j<STAGESIZEX;j++) {
-                        if(STAGESIZEY-zonelines-1-i>=0) {
-                            stage[STAGESIZEY-1-i][j] = stage[STAGESIZEY-zonelines-1-i][j];
-                            colPrint(j, STAGESIZEY-1-i, stage[STAGESIZEY-1-i][j]);
-                        }
-                    }
+        for(int i=0;i<STAGESIZEY;i++) {
+            for(int j=0;j<STAGESIZEX;j++) {
+                if(STAGESIZEY-zonelines-1-i>=0) {
+                    stage[STAGESIZEY-1-i][j] = stage[STAGESIZEY-zonelines-1-i][j];
                 }
-                    
-                if(!Main.version.contains("1_8")) {
-                    player.sendTitle("", ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "" + zonelines + " LINE" + (zonelines==1?"":"S"), 20, 40, 20);
-                }
-                updateScore();
-        
-                for(int i=0;i<zonelines/2+1;i++) {
-                    player.playSound(player.getEyeLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.5f);
-                }
-                
-                sendGarbage(zonelines*2);
-                zone = false;
-                zonelines = 0;
-                lines = 0;
-                
             }
-        }.runTaskLater(Main.plugin, 1);
+        }
+            
+        if(!Main.version.contains("1_8")) {
+            player.sendTitle("", ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "" + zonelines + " LINE" + (zonelines==1?"":"S"), 20, 40, 20);
+        }
+        updateScore();
+
+        for(int i=0;i<zonelines/2+1;i++) {
+            player.playSound(player.getEyeLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.5f);
+        }
+        
+        sendGarbage(zonelines*2);
+        zone = false;
+        zonelines = 0;
+        lines = 0;
+                
     }
     
     public void startZone() {
         if(!zone) {
             zone = true;
-            
         }
-    }
-    
-    //V2
-    private void topOutCheck() {
-        for(Point point: pieces[block_current][rotation]) {
-            if(stage[point.y+y][point.x+x]!=7){
-                if(!zone) {
-                    player.playSound(player.getEyeLocation(), SoundUtil.ORB_PICKUP, 1f, 1f);
-                    gameover=true;
-                }else {
-                    stopZone();
-                }
-                return;
-            }
-        }
-    }
-    
-    //UNIQUE
-    public void rotateTable(String input) {
-        boolean ot = transparent;
-        transparent = true;
-        for(int i=0;i<STAGESIZEY;i++){
-            for(int j=0;j<STAGESIZEX;j++){
-                colPrint(j, i, 7);
-            }
-        }
-        
-        int temp;
-        switch(input) {
-        case "X":
-            temp=-m3x;
-            m3x=m2x;
-            m2x=temp;
-            temp=-m3y;
-            m3y=m2y;
-            m2y=temp;
-            break;
-        case "Y":
-            temp=-m3x;
-            m3x=m1x;
-            m1x=temp;
-            temp=-m3y;
-            m3y=m1y;
-            m1y=temp;
-            break;
-        case "Z":
-            temp=-m2x;
-            m2x=m1x;
-            m1x=temp;
-            temp=-m2y;
-            m2y=m1y;
-            m1y=temp;
-            break;
-        }
-        
-        for(int i=0;i<STAGESIZEY;i++){
-            for(int j=0;j<STAGESIZEX;j++){
-                colPrint(j, i, 16);
-            }
-        }
-        transparent = ot;
     }
     
     public void setGameOver() {
@@ -319,357 +203,131 @@ public class Table {
         return gameover;
     }
     
+    //v1.1
+    private void topOutCheck() {
+        gl.currentPieceRotation = currentPieceRotation;
+        gl.currentPiecePosition = currentPiecePosition;
+        gl.stage = stage;
+        
+        if(gl.topOutCheck()) {
+            if(!zone) {
+                player.playSound(player.getEyeLocation(), SoundUtil.ORB_PICKUP, 1f, 1f);
+                setGameOver();
+            }else {
+                stopZone();
+            }
+            return;
+        }
+    }
+    
+    //v0
     private void sendGarbage(int n) {
         player.sendMessage(garbo.toString());
         Main.inwhichroom.get(player).forwardGarbage(n, player);
         //todo
-        for(int h=0;h<startingGarbageCap;h++){
-            if(!garbo.isEmpty()){
+        for(int h=0;h<startingGarbageCap;h++) {
+            if(!garbo.isEmpty()) {
                 totalgarbage++;
-                for(int i=0;i<STAGESIZEY-1;i++){
-                    for(int j=0;j<STAGESIZEX;j++){
+                for(int i=0;i<STAGESIZEY-1;i++) {
+                    for(int j=0;j<STAGESIZEX;j++) {
                         stage[i][j]=stage[i+1][j];
-                        colPrint(j, i, stage[i][j]);
                     }
                 }
-                for(int j=0;j<STAGESIZEX;j++){
-                    if(j==well){
+                for(int j=0;j<STAGESIZEX;j++) {
+                    if(j==well) {
                         stage[STAGESIZEY-1][j]=7;
-                        colPrint(j, STAGESIZEY-1, 7);
                     }else{
                         stage[STAGESIZEY-1][j]=8;
-                        colPrint(j, STAGESIZEY-1, 8);
                     }
                 }
                 
                 garbo.set(0, garbo.get(0)-1);
-                if(garbo.get(0)<=0){
+                if(garbo.get(0)<=0) {
                     garbo.remove(0);
                     well=garbagegen.nextInt(STAGESIZEX);
                 }
             }
         }
-        //
-        
-        printLava();
     }
     
+    //v0
     public void receiveGarbage(int n) {
         garbo.add(n);
-        printLava();
     }
     
-    private void printLava() {
-        int total=0;
-        for(int num: garbo){
-            total+=num;
-        }
-        
-        for(int i=0;i<STAGESIZEY/2;i++) {
-            colPrint(-2, STAGESIZEY-1-i, 7);
-        }
-        
-        for(int i=0;i<total;i++) {
-            colPrint(-2, STAGESIZEY-1-i%(STAGESIZEY/2), (i/(STAGESIZEY/2))%7);
-        }
-    }
-    
-    private void putGarbage(){
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                for(int h=0;h<startingGarbageCap;h++){
-                    if(!garbo.isEmpty()){
-                        totalgarbage++;
-                        for(int i=0;i<STAGESIZEY-1;i++){
-                            for(int j=0;j<STAGESIZEX;j++){
-                                stage[i][j]=stage[i+1][j];
-                                colPrint(j, i, stage[i][j]);
-                            }
-                        }
-                        for(int j=0;j<STAGESIZEX;j++){
-                            if(j==well){
-                                stage[STAGESIZEY-1][j]=7;
-                                colPrint(j, STAGESIZEY-1, 7);
-                            }else{
-                                stage[STAGESIZEY-1][j]=8;
-                                colPrint(j, STAGESIZEY-1, 8);
-                            }
-                        }
-                        
-                        garbo.set(0, garbo.get(0)-1);
-                        if(garbo.get(0)<=0){
-                            garbo.remove(0);
-                            well=garbagegen.nextInt(STAGESIZEX);
-                        }
+    //v0
+    private void putGarbage() {
+        System.out.println("putGarbage()");
+        for(int h=0;h<startingGarbageCap;h++) {
+            if(!garbo.isEmpty()) {
+                totalgarbage++;
+                for(int i=0;i<STAGESIZEY-1;i++) {
+                    for(int j=0;j<STAGESIZEX;j++) {
+                        stage[i][j]=stage[i+1][j];
                     }
                 }
-        
-                printLava();
-            }
-        }.runTaskLater(Main.plugin, 1);
-    }
-    
-    //UNIQUE
-    private void printSingleBlock(int x, int y, int z, int color){
-        if(color==7 && transparent){
-            Block b=world.getBlockAt(x, y, z);
-            for(Player player: Main.inwhichroom.get(player).playerlist){
-                SendBlockChangeCustom.sendBlockChangeCustom(player, new Location(world, x, y, z), b);
-            }
-            return;
-        }
-        
-        for(Player player: Main.inwhichroom.get(player).playerlist){
-            SendBlockChangeCustom.sendBlockChangeCustom(player, new Location(world, x, y, z), color);
-        }
-    }
-    
-    //UNIQUE
-    @SuppressWarnings("deprecation")
-    private void turnToFallingBlock(int x, int y, double d) {
-        if(ULTRAGRAPHICS == true) {
-            int tex, tey, tez;
-            ItemStack blocks[] = Blocks.blocks;
-            int color = stage[y][x];
-            for(int i=0;i<(coni!=0?coni:thickness);i++) {
-                tex = gx+(int)(x*m1x)+(int)(y*m1y)+i;
-                for(int j=0;j<(conj!=0?conj:thickness);j++) {
-                    tey = gy+(int)(x*m2x)+(int)(y*m2y)+j;
-                    for(int k=0;k<(conk!=0?conk:thickness);k++) {
-                        tez = gz+(int)(x*m3x)+(int)(y*m3y)+k;
-                        FallingBlock lol = world.spawnFallingBlock(new Location(world, tex, tey, tez), blocks[color].getType(), blocks[color].getData().getData());
-                        lol.setVelocity(new Vector(d*(2-Math.random()*4),d*(5-Math.random()*10),d*(2-Math.random()*4)));
-                        lol.setDropItem(false);
-                        lol.addScoreboardTag("sand");
-                    }
-                }
-            }
-        }
-    }
-    
-    //UNIQUE
-    private void initScoreboard(){
-        board=Netherboard.instance().createBoard(player, "Stats");
-        
-        board.clear();
-        
-        board.set(" ", 5);
-        board.set("Lines: "+totallines, 4);
-        board.set("Pieces: "+totalblocks, 3);
-        board.set("Score: "+score, 2);
-        board.set("", 1);
-    }
-    
-    //UNIQUE
-    private void sendTheScoreboard(){
-        if(b2b>0){
-            board.set("§6§lB2B x"+b2b, 1);
-        }else{
-            board.set("", 1);
-        }
-        
-        if(combo>0){
-            board.set("COMBO "+combo, 5);
-        }else{
-            board.set(" ", 5);
-        }
-        
-        board.set("Lines: "+totallines, 4);
-        board.set("Pieces: "+totalblocks, 3);
-        board.set("Score: "+score, 2);
-    }
-    
-    //UNIQUE
-    private void printStaticBlock(int x, int y, int block){
-        for(int i=0;i<4;i++){
-            for(int j=0;j<4;j++){
-                colPrint(j+x, i+y, 7);
-            }
-        }
-        
-        for(Point point: pieces[block][0]) {
-            switch(block){
-            case 2:
-                colPrint(point.x+x+1, point.y+y+1, block);
-                break;
-            case 0:
-            case 1:
-            case 3:
-            case 5:
-            case 6:
-                ///somethin g wrong
-                colPrint(point.x+x+0.5f, point.y+y+1, block);
-                break;
-            case 4:
-                colPrint(point.x+x, point.y+y+0.5f, block);
-                break;
-            }
-        }
-    }
-    
-    //UNIQUE
-    private void sendTheTitle(){
-        if(!Main.version.contains("1_8")) {
-            if(!zone) {
-                String s1="";
-                String s3="";
-                
-                if(spun){
-                    if(mini){
-                        s3="§5t-spin§r";
+                for(int j=0;j<STAGESIZEX;j++) {
+                    if(j==well) {
+                        stage[STAGESIZEY-1][j]=7;
                     }else{
-                        s3="§5T-SPIN§r";
+                        stage[STAGESIZEY-1][j]=8;
                     }
                 }
                 
-                if(lines==1){
-                    s1="SINGLE";
-                }else if(lines==2){
-                    s1="DOUBLE";
-                }else if(lines==3){
-                    s1="TRIPLE";
-                }else if(lines==4){
-                    s1="QUAD";
-                }
-                
-                if(lines==0 && spun){
-                    s1=" ";
-                }
-                
-                if((totallines-totalgarbage)*STAGESIZEX+totalgarbage==totalblocks*4){
-                    player.sendTitle("", ChatColor.GOLD + "" + ChatColor.BOLD + "ALL CLEAR", 20, 40, 20);
-                }
-                
-                //dont kill old title if its empty
-                if(s1!=""){
-                s1=s3+" "+s1;
-                
-                    //Main.functions.sendTitle(player, s1, s2, 0, 20, 10);
-                    
-                    //player.sendTitle(s1, s2, 0, 20, 10);
-    
-                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder(s1).create());
+                garbo.set(0, garbo.get(0)-1);
+                if(garbo.get(0)<=0) {
+                    garbo.remove(0);
+                    well=garbagegen.nextInt(STAGESIZEX);
                 }
             }
         }
     }
 
-    //works
-    private void removeGhost(){
-        for(Point point: pieces[block_current][rotation]) {
-            colPrint(point.x+ghostx, point.y+ghosty, 7);
-        }
-    }
-    
-    //works
-    private void drawGhost(){
-        ghosty=y;
-        while(!isCollide(x, ghosty+1, rotation)){
-            ghosty++;
-        }
-        
-        //update ghost position
-        ghostx=x;
-
-        //print ghost
-        for(Point point: pieces[block_current][rotation]) {
-            colPrint(point.x+ghostx, point.y+ghosty, 9+block_current);
-        }
-    }
-    
-
-    //works
-    private void spawnBlock(){
-        x=3;
-        y=20;
-        rotation=0;
-       
-        for(Point point: pieces[block_current][0]) {
-            colPrint(x + point.x, y + point.y, block_current);
-        }
+    //v0
+    private void spawnPiece() {
+        currentPiecePosition = new Point(3, 20);
+        currentPieceRotation = 0;
+        gl.currentPiece = nextPieces.get(0);
+        nextPieces.remove(0);
         
         spun=false;
         mini=false;
         counter = 0;
     }
     
-    //works
-    private void makeNextBlock(){
-        block_current=bag1[0];
-        
-        if(bag_counter>6){
-            bag_counter=0;
-            for(int i=0;i<7;i++){
-                bag2[i]=(int)(gen.nextInt(7));
-                for(int j=0;j<i;j++){
-                    if(bag2[i]==bag2[j]){
-                        i--;
-                    }
-                }
+    //v0 - urgent
+    private void makeNextPiece() {
+        if(nextPieces.size() <= 7) {
+            ArrayList<Integer> bag = new ArrayList<Integer>();
+            for(int i=0;i<7;i++) {
+                bag.add(i);
             }
-        }
-        for(int i=0;i<6;i++){
-            bag1[i]=bag1[i+1];
-        }
-        bag1[6]=bag2[0];
-        for(int i=0;i<6;i++){
-            bag2[i]=bag2[i+1];
-        }
-        bag_counter++;
-
-        ///prints next blocks
-        for(int i=0;i<next_blocks;i++){
-            printStaticBlock(STAGESIZEX+3, STAGESIZEY/2+i*4, bag1[i]);
+            Collections.shuffle(bag);
+            nextPieces.addAll(bag);
         }
         
-        spawnBlock();
-        drawGhost();
-        
-        //check if its possible then print it (at same time)
+        spawnPiece();
         
         topOutCheck();
         
-        for(Point point: pieces[block_current][rotation]) {
-            colPrint(point.x + x, point.y + y, block_current);
-        }
     }
     
-    //V2
-    private boolean isCollide(int x, int y, int rotation){
-        gl.currentPiece = block_current;
+    //v2
+    private boolean collides(int x, int y, int rotation) {
         gl.stage = stage;
         return gl.collides(x, y, rotation);
     }
     
-    //works
-    private void colPrint(float x, float y, int color){
-        int tex, tey, tez;
-        if(y>=STAGESIZEY-VISIBLEROWS) {
-            for(int i=0;i<(coni!=0?coni:thickness);i++) {
-                tex = gx+(int)(x*m1x)+(int)(y*m1y)+i;
-                for(int j=0;j<(conj!=0?conj:thickness);j++) {
-                    tey = gy+(int)(x*m2x)+(int)(y*m2y)+j;
-                    for(int k=0;k<(conk!=0?conk:thickness);k++) {
-                        tez = gz+(int)(x*m3x)+(int)(y*m3y)+k;
-                        printSingleBlock(tex, tey, tez, color);
-                        //debug
-                        //player.sendMessage("i="+i+",j="+j+",k="+k+",tex="+tex+",tey="+tey+",tez="+tez+";");
-                    }
-                }
-            }
-        }
-    }
-    
-    public void initGame(long seed, long seed2){
+    //v0 - urgent
+    public void initGame(long seed, long seed2) {
 
-        player.setWalkSpeed(0.2f);
         garbo.clear();
+        nextPieces.clear();
         gen=new Random(seed);
         garbagegen=new Random(seed2);
         well = garbagegen.nextInt(STAGESIZEX);
         
-        if(!getGameOver()){
+        if(!getGameOver()) {
             setGameOver();
         }
         
@@ -677,58 +335,31 @@ public class Table {
         conj=Math.max((int)Math.abs(m2x),(int)Math.abs(m2y));
         conk=Math.max((int)Math.abs(m3x),(int)Math.abs(m3y));
         
-        for(int y=0;y<STAGESIZEY;y++){
-            for(int x=0;x<STAGESIZEX;x++){
-                stage[y][x]=7;
-                colPrint(x, y, 7);
+        for(int y=0;y<STAGESIZEY;y++) {
+            for(int x=0;x<STAGESIZEX;x++) {
+                stage[y][x] = 7;
             }
         }
         
         spun=false;
         gameover=false;
-        held=false;
-        power=false;
+        gl.held=false;
         
         combo=-1;
         score=0;
-        block_hold=-1;
+        gl.heldPiece=-1;
         b2b=-1;
         
         totallines = 0;
         totalblocks = 0;
         totalgarbage = 0;
         
-        bag_counter=0;
-        for(int i=0;i<7;i++){
-            bag1[i]=(int)(gen.nextInt(7));
-            for(int j=0;j<i;j++){
-                if(bag1[i]==bag1[j]){
-                    i--;
-                }
-            }
-        }
-        for(int i=0;i<7;i++){
-            bag2[i]=(int)(gen.nextInt(7));
-            for(int j=0;j<i;j++){
-                if(bag2[i]==bag2[j]){
-                    i--;
-                }
-            }
-        }
+        makeNextPiece();
         
-        makeNextBlock();
         
-        //fill hold place with air
-        for(int i=0;i<4;i++){
-            for(int j=0;j<4;j++){
-                colPrint(j-7, i+20, 7);
-            }
-        }
-        
-        playGame();
+        gameLoop();
         initScoreboard();
         player.getInventory().setHeldItemSlot(8);
-        printLava();
         
         /*oldx=player.getLocation().getX();
         oldy=player.getLocation().getY();
@@ -739,60 +370,62 @@ public class Table {
         
     }
     
-    private void tSpin(){
+    //v0
+    /*
+    private void tSpin() {
         int truth=0;
         boolean wall=false;
-        if((y<0 || STAGESIZEY<=y) || (x<0 || STAGESIZEX<=x)){
+        if((currentPiecePosition.y<0 || STAGESIZEY<=currentPiecePosition.y) || (currentPiecePosition.x<0 || STAGESIZEX<=currentPiecePosition.x)) {
             truth++;
             wall=true;
-        }else if(stage[y][x]!=7){
+        }else if(stage[currentPiecePosition.y][currentPiecePosition.x]!=7) {
             truth++;
         }
         
-        if((y<0 || STAGESIZEY<=y) || (x+2<0 || STAGESIZEX<=x+2)){
+        if((currentPiecePosition.y<0 || STAGESIZEY<=currentPiecePosition.y) || (currentPiecePosition.x+2<0 || STAGESIZEX<=currentPiecePosition.x+2)) {
             truth++;
             wall=true;
-        }else if(stage[y][x+2]!=7){
+        }else if(stage[currentPiecePosition.y][currentPiecePosition.x+2]!=7) {
             truth++;
         }
         
-        if((y+2<0 || STAGESIZEY<=y+2) || (x<0 || STAGESIZEX<=x)){
+        if((currentPiecePosition.y+2<0 || STAGESIZEY<=currentPiecePosition.y+2) || (currentPiecePosition.x<0 || STAGESIZEX<=currentPiecePosition.x)) {
             truth++;
             wall=true;
-        }else if(stage[y+2][x]!=7){
+        }else if(stage[currentPiecePosition.y+2][currentPiecePosition.x]!=7) {
             truth++;
         }
         
-        if((y+2<0 || STAGESIZEY<=y+2) || (x+2<0 || STAGESIZEX<=x+2)){
+        if((currentPiecePosition.y+2<0 || STAGESIZEY<=currentPiecePosition.y+2) || (currentPiecePosition.x+2<0 || STAGESIZEX<=currentPiecePosition.x+2)) {
             truth++;
             wall=true;
-        }else if(stage[y+2][x+2]!=7){
+        }else if(stage[currentPiecePosition.y+2][currentPiecePosition.x+2]!=7) {
             truth++;
         }
         
-        if(truth>=3 && wall){
+        if(truth>=3 && wall) {
             spun=true;
             mini=true;
             return;
         }
         
-        if(truth>=3){
+        if(truth>=3) {
             spun=true;
             mini=true;
-            if(rotation==0){
-                if(stage[y][x]!=7 && stage[y][x+2]!=7){
+            if(rotation==0) {
+                if(stage[currentPiecePosition.y][currentPiecePosition.x]!=7 && stage[currentPiecePosition.y][currentPiecePosition.x+2]!=7) {
                     mini=false;
                 }
-            }else if(rotation==1){
-                if(stage[y][x+2]!=7 && stage[y+2][x+2]!=7){
+            }else if(rotation==1) {
+                if(stage[currentPiecePosition.y][currentPiecePosition.x+2]!=7 && stage[currentPiecePosition.y+2][currentPiecePosition.x+2]!=7) {
                     mini=false;
                 }
-            }else if(rotation==2){
-                if(stage[y+2][x+2]!=7 && stage[y+2][x]!=7){
+            }else if(rotation==2) {
+                if(stage[currentPiecePosition.y+2][currentPiecePosition.x+2]!=7 && stage[currentPiecePosition.y+2][currentPiecePosition.x]!=7) {
                     mini=false;
                 }
-            }else if(rotation==3){
-                if(stage[y+2][x]!=7 && stage[y][x]!=7){
+            }else if(rotation==3) {
+                if(stage[currentPiecePosition.y+2][currentPiecePosition.x]!=7 && stage[currentPiecePosition.y][currentPiecePosition.x]!=7) {
                     mini=false;
                 }
             }
@@ -800,29 +433,29 @@ public class Table {
             spun=false;
             mini=false;
         }
-    }
+    }*/
     
-    private void updateScore(){
+    //v0
+    private void updateScore() {
         if(!zone) {
             
-            if((spun && lines>0) || lines==4){
+            if((spun && lines>0) || lines==4) {
                 b2b++;
-            }else if(lines>0){
+            }else if(lines>0) {
                 b2b=-1;
             }
             
-            if(lines>0){
+            if(lines>0) {
                 combo++;
             }else{
                 putGarbage();
                 combo=-1;
-                power=false;
             }
             
-            if(spun){
+            if(spun) {
                 player.playSound(player.getEyeLocation(), SoundUtil.THUNDER, 1f, 0.75f);
-                if(mini){
-                    switch(lines){
+                if(mini) {
+                    switch(lines) {
                     case 0:
                         score+=100;
                         break;
@@ -834,7 +467,7 @@ public class Table {
                         break;
                     }
                 }else{
-                    switch(lines){
+                    switch(lines) {
                     case 0:
                         score+=400;
                         break;
@@ -851,7 +484,7 @@ public class Table {
                 }
                 
             }else{
-                switch(lines){
+                switch(lines) {
                 case 1:
                     score+=100;
                     break;
@@ -867,21 +500,13 @@ public class Table {
                 }
             }
             
-            //condition for triggering power...
-            if(combo>3){
-                power=true;
-            }
             
-            if(combo>=0){
-                if(power){
-                    player.playSound(player.getEyeLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
-                }else{
-                    player.playSound(player.getEyeLocation(), SoundUtil.NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
-                }
+            if(combo>=0) {
+                player.playSound(player.getEyeLocation(), SoundUtil.NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
                 score+=combo*50;
             }
             
-            if((totallines-totalgarbage)*STAGESIZEX+totalgarbage==totalblocks*4){
+            if((totallines-totalgarbage)*STAGESIZEX+totalgarbage==totalblocks*4) {
                 score+=3500;
                 sendGarbage(STAGESIZEX);
             }
@@ -890,20 +515,20 @@ public class Table {
             sendTheScoreboard();
             
             ///sendgarbage
-            if(lines>0){
+            if(lines>0) {
                 int temp=0;
-                if(spun==false){
+                if(spun==false) {
                     temp=lines-1;
-                }else if(mini==true){
-                    if(lines==1){
+                }else if(mini==true) {
+                    if(lines==1) {
                         temp=4;
                     }else{
                         temp=6;
                     }
                 }else{
-                    if(lines==1){
+                    if(lines==1) {
                         temp=5;
-                    }else if(lines==2){
+                    }else if(lines==2) {
                         temp=7;
                     }else{
                         temp=8;
@@ -916,7 +541,7 @@ public class Table {
         
         spun=false;
         mini=false;
-        held=false;
+        gl.held=false;
         
     }
         /*scoring:
@@ -939,195 +564,50 @@ public class Table {
         HARDDROP:2
         */
     
-    private void dropBlock(){
+    //v0
+    private void hardDropPiece() {
         int lines=0;
-        while(!isCollide(x, y+lines+1, rotation)){
+        while(!collides(currentPiecePosition.x, currentPiecePosition.y+lines+1, currentPieceRotation)) {
             lines++;
         }
-        moveAndPrintPiece(x, y+lines, rotation);
+        movePiece(currentPiecePosition.x, currentPiecePosition.y+lines, currentPieceRotation);
         score+=lines*2;
-        placeBlock();
+        placePiece();
     }
     
-    private void moveAndPrintPiece(int x, int y, int r){
-        //fill with air
-        for(Point point: pieces[block_current][rotation]) {
-            colPrint(point.x+this.x, point.y+this.y, 7);
-        }
-
-        removeGhost();
+    //v2
+    private void movePiece(int x, int y, int r) {
+        gl.currentPieceRotation = currentPieceRotation;
+        gl.currentPiecePosition = currentPiecePosition;
+        gl.movePiece(x, y, r);
         
-        //update position
-        this.x = x;
-        this.y = y;
-        rotation = r;
-
-        drawGhost();
-        //print piece
-        for(Point point: pieces[block_current][r]) {
-            colPrint(point.x+this.x, point.y+this.y, block_current);
-        }
+        currentPieceRotation = gl.currentPieceRotation;
     }
     
-    public void userInput(String input){
-        switch(input){
-        case "y":
-            rotateBlock(-1);
-            counter=0;
-            break;
-        case "x":
-            rotateBlock(+1);
-            counter=0;
-            break;
-        case "c":
-            holdBlock();
-            counter=0;
-            break;
-            
-        case "left":
-            if(!isCollide(x-1, y, rotation)){
-                moveAndPrintPiece(x-1, y, rotation);
-                counter=0;
-            }
-            break;
-        case "right":
-            if(!isCollide(x+1, y, rotation)){
-                moveAndPrintPiece(x+1, y, rotation);
-                counter=0;
-            }
-            break;
-            
-        case "up":
-            rotateBlock(+2);
-            counter=0;
-            break;
-        case "down":
-            if(!isCollide(x, y+1, rotation)){
-                moveAndPrintPiece(x, y+1, rotation);
-                counter=0;
-                score+=1;
-                sendTheScoreboard();
-            }
-            break;
-        
-        case "space":
-            dropBlock();
-            break;
-        case "l":
-            gameover=true;
-            break;
-        case "instant":
-            int temp = y;
-            while(!isCollide(x, temp+1, rotation)){
-                temp++;
-            }
-            moveAndPrintPiece(x, temp, rotation);
-            break;
-            
-        default:
-            System.out.println("Wrong input");
+    //v2
+    private boolean holdPiece() {
+        gl.currentPiecePosition = currentPiecePosition;
+        gl.currentPieceRotation = currentPieceRotation;
+        if(gl.holdPiece()) {
+            currentPiecePosition = gl.currentPiecePosition;
+            currentPieceRotation = gl.currentPieceRotation;
+            return true;
         }
-    }
-
-    private void holdBlock(){
-        int temp;
-
-        if(!held){
-            removeGhost();
-            //print current block into hold slot
-            printStaticBlock(-7, STAGESIZEY/2, block_current);
-            
-            //erase current block from board
-            for(Point point: pieces[block_current][rotation]) {
-                colPrint(point.x+x, point.y+y, 7);
-            }
-
-            //if first hold
-            if(block_hold==-1){
-                block_hold=block_current;
-                makeNextBlock();
-            }else{
-                //swap
-                temp=block_current;
-                block_current=block_hold;
-                block_hold=temp;
-                
-                //spawn new block
-                
-                spawnBlock();
-                
-                //check if its possible then print it
-                drawGhost();
-                
-                topOutCheck();
-                
-                for(Point point: pieces[block_current][rotation]) {
-                    colPrint(point.x+x, point.y+y, block_current);
-                }
-                
-            }
-            
-        }else{
-            //already held
-            player.playSound(player.getEyeLocation(), SoundUtil.VILLAGER_NO, 1f, 1f);
-        }
-        held=true;
+        return false;
     }
     
-    //V2
-    private void rotateBlock(int d){
-        int newRotation = (rotation + d + 4) % 4;
+    //v2
+    private void rotatePiece(int d) {
+        gl.currentPieceRotation = currentPieceRotation;
+        gl.currentPiecePosition = currentPiecePosition;
+        gl.rotatePiece(d);
         
-        int special = -1;
-        
-        if(rotation==0 && newRotation==1) {
-            special = 0;
-        }else if(rotation==1 && newRotation==0) {
-            special = 1;
-        }else if(rotation==1 && newRotation==2) {
-            special = 2;
-        }else if(rotation==2 && newRotation==1) {
-            special = 3;
-        }else if(rotation==2 && newRotation==3) {
-            special = 4;
-        }else if(rotation==3 && newRotation==2) {
-            special = 5;
-        }else if(rotation==3 && newRotation==0) {
-            special = 6;
-        }else if(rotation==0 && newRotation==3) {
-            special = 7;
-        }else if(rotation==0 && newRotation==2) {
-            special = 8;
-        }else if(rotation==2 && newRotation==0) {
-            special = 9;
-        }else if(rotation==1 && newRotation==3) {
-            special = 10;
-        }else if(rotation==3 && newRotation==1) {
-            special = 11;
-        }
-        
-        int pieceType = block_current==4?1:0;
-        
-        int maxtries = kicktable[pieceType][special].length;
-
-        for(int tries=0;tries<maxtries;tries++) {
-            if(!isCollide(x + kicktable[pieceType][special][tries].x, y - kicktable[pieceType][special][tries].y, newRotation)){
-                moveAndPrintPiece(x + kicktable[pieceType][special][tries].x, y - kicktable[pieceType][special][tries].y, newRotation);
-                
-                if(block_current == 6){
-                    if((tries==4) && (special==0 || special==3 || special==4 || special==7)){
-                        spun=true;
-                        mini=false;
-                    }else{
-                        tSpin();
-                    }
-                }
-                break;
-            }
-        }
+        currentPieceRotation = gl.currentPieceRotation;
     }
     
-    private void checkPlaced(){
+    //resudual zone code
+    /*
+    private void clearRows() {
         int highestRow = STAGESIZEY;
         int linesCleared = 0;
         ArrayList<Integer> temp = new ArrayList<Integer>();
@@ -1135,7 +615,7 @@ public class Table {
         //find highest row
         for(int i=0;i<STAGESIZEY;i++) {
             for(int j=0;j<STAGESIZEX;j++) {
-                if(stage[i][j]!=7){
+                if(stage[i][j]!=7) {
                     highestRow = i;
                     i = STAGESIZEY;
                     break;
@@ -1174,104 +654,70 @@ public class Table {
         final int lc = linesCleared;
         final int hr = highestRow;
         
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-        
-                if(zone) {
-                    for(int i=1;i<temp.size()-1;i++) {
-                        for(int j=temp.get(1);j<temp.get(i+1);j++) {
-                            for(int k=0;k<STAGESIZEX;k++) {
-                                /*if(k==0)
-                                    player.sendMessage("i="+i+" j="+j+"stage["+j+"]=stage["+(j+i)+"]");
-                                    */
-                                if(j+i<STAGESIZEY) {
-                                    stage[j][k] = stage[j+i][k];
-                                    colPrint(k, j, stage[j][k]);
-                                }
-                            }
-                        }
-                    }
-                        
-                    for(int i=temp.get(temp.size()-1)-lc;i<temp.get(temp.size()-1);i++) {
-                        for(int j=0;j<STAGESIZEX;j++){
-                            stage[i][j] = 16;
-                            colPrint(j, i, 16);
-                        }
-                    }
-                }else {
-                    for(int i=1;i<temp.size()-1;i++) {
-                        for(int j=temp.get(temp.size()-i-1)+i-1;j>temp.get(temp.size()-i-2)+i-1;j--) {
-                            for(int k=0;k<STAGESIZEX;k++) {
-                                /*if(k==0)
-                                    player.sendMessage("i="+i+" j="+j+" stage["+j+"]=stage["+(j-i)+"]");
-                                    */
-                                if(j<STAGESIZEY) {
-                                    stage[j][k] = stage[j-i][k];
-                                    colPrint(k, j, stage[j][k]);
-                                }
-                            }
-                        }
-                    }
-                    
-                    for(int i=hr;i<hr+lc;i++) {
-        
-                        //player.sendMessage("stage["+i+"]=7");
-                        for(int j=0;j<STAGESIZEX;j++){
-                            stage[i][j] = 7;
-                            colPrint(j, i, 7);
+        if(zone) {
+            for(int i=1;i<temp.size()-1;i++) {
+                for(int j=temp.get(1);j<temp.get(i+1);j++) {
+                    for(int k=0;k<STAGESIZEX;k++) {
+                        //if(k==0)
+                            //player.sendMessage("i="+i+" j="+j+"stage["+j+"]=stage["+(j+i)+"]");
+                            
+                        if(j+i<STAGESIZEY) {
+                            stage[j][k] = stage[j+i][k];
                         }
                     }
                 }
-        
-        
-            totallines+=lc;
-            totalblocks+=1;
-            updateScore();
-            if(zone && lc>0) {
-                for(int i=0;i<20*zonelines;i++)
-                player.playSound(player.getEyeLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(zonelines*2-16)/(double)16));
             }
-            /*
-            if(!zone && lc==0) {
-                for(int i=0;i<7;i++) {
-                    switch(block_current) {
-                    case 0:
-                        player.playSound(player.getEyeLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1f, (float)Math.pow(2,(STAGESIZEY-y-12)/(double)12));
-                        break;
-                    case 1:
-                        player.playSound(player.getEyeLocation(), XSound.BLOCK_NOTE_BLOCK_XYLOPHONE.parseSound(), 1f, (float)Math.pow(2,(STAGESIZEY-y-12)/(double)12));
-                        break;
-                    case 2:
-                        player.playSound(player.getEyeLocation(), XSound.BLOCK_NOTE_BLOCK_HARP.parseSound(), 1f, (float)Math.pow(2,(STAGESIZEY-y-12)/(double)12));
-                        break;
-                    case 3:
-                        player.playSound(player.getEyeLocation(), XSound.BLOCK_NOTE_BLOCK_BELL.parseSound(), 1f, (float)Math.pow(2,(STAGESIZEY-y-12)/(double)12));
-                        break;
-                    case 4:
-                        player.playSound(player.getEyeLocation(), XSound.BLOCK_NOTE_BLOCK_FLUTE.parseSound(), 1f, (float)Math.pow(2,(STAGESIZEY-y-12)/(double)12));
-                        break;
-                    case 5:
-                        player.playSound(player.getEyeLocation(), XSound.BLOCK_NOTE_BLOCK_BASEDRUM.parseSound(), 1f, (float)Math.pow(2,(STAGESIZEY-y-12)/(double)12));
-                        break;
-                    case 6:
-                        player.playSound(player.getEyeLocation(), XSound.BLOCK_NOTE_BLOCK_SNARE.parseSound(), 1f, (float)Math.pow(2,(STAGESIZEY-y-12)/(double)12));
-                        break;
+                
+            for(int i=temp.get(temp.size()-1)-lc;i<temp.get(temp.size()-1);i++) {
+                for(int j=0;j<STAGESIZEX;j++) {
+                    stage[i][j] = 16;
+                }
+            }
+        }else {
+            for(int i=1;i<temp.size()-1;i++) {
+                for(int j=temp.get(temp.size()-i-1)+i-1;j>temp.get(temp.size()-i-2)+i-1;j--) {
+                    for(int k=0;k<STAGESIZEX;k++) {
+                        //if(k==0)
+                            //player.sendMessage("i="+i+" j="+j+" stage["+j+"]=stage["+(j-i)+"]");
+                            
+                        if(j<STAGESIZEY) {
+                            stage[j][k] = stage[j-i][k];
+                        }
                     }
                 }
-            }*/
+            }
             
-            makeNextBlock();
-            }
-        }.runTaskLater(Main.plugin, 1);
-    }
+            for(int i=hr;i<hr+lc;i++) {
 
-    private void placeBlock(){
-        for(Point point: pieces[block_current][rotation]) {
-            colPrint(point.x+x, point.y+y, block_current);
-            stage[point.y+y][point.x+x]=block_current;
+                //player.sendMessage("stage["+i+"]=7");
+                for(int j=0;j<STAGESIZEX;j++) {
+                    stage[i][j] = 7;
+                }
+            }
         }
-        checkPlaced();
+
+
+        totallines+=lc;
+        totalblocks+=1;
+        updateScore();
+        if(zone && lc>0) {
+            for(int i=0;i<20*zonelines;i++)
+            player.playSound(player.getEyeLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(zonelines*2-16)/(double)16));
+        }
+            
+    }
+    */
+
+    //v2
+    private void placePiece() {
+        gl.nextPieces = nextPieces;
+        gl.stage = stage;
+        gl.currentPiecePosition = currentPiecePosition;
+        gl.currentPieceRotation = currentPieceRotation;
+        gl.placePiece();
+        stage = gl.stage;
+        currentPiecePosition = gl.currentPiecePosition;
+        currentPieceRotation = gl.currentPieceRotation;
     }
     
     double maxvelocity=0;
@@ -1280,126 +726,473 @@ public class Table {
     String direction;
     boolean singlemove;
     
-   	private void playGame(){
-   	    new BukkitRunnable(){
-   	        @Override
-   	        public void run() {
-   	            if(counter>=100){
-   	                if(!isCollide(x, y+1, rotation)){
-   	                    moveAndPrintPiece(x, y+1, rotation);
-   	                }else{
-   	                    placeBlock();
-   	                }
+   	//unique functions
+    
+    private void gameLoop() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if(counter>=100) {
+                    if(!collides(currentPiecePosition.x, currentPiecePosition.y+1, currentPieceRotation)) {
+                        movePiece(currentPiecePosition.x, currentPiecePosition.y+1, currentPieceRotation);
+                    }else{
+                        placePiece();
+                    }
 
                     counter = 0;
-   	            }
+                }
 
-   	            counter+=(totallines+4)/4;
-   	            
-   	            if(gameover){
-   	                
-   	                boolean ot = transparent;
-   	                transparent = true;
-   	                for(int i=0;i<STAGESIZEY;i++){
-   	                    for(int j=0;j<STAGESIZEX;j++){
-   	                        colPrint(j, i, 7);
-   	                    }
-   	                }
-   	                transparent = ot;
+                counter+=(totallines+4)/4;
+                
+                if(gameover) {
                     
-   	                for(int i=STAGESIZEY-VISIBLEROWS;i<STAGESIZEY;i++) {
-   	                    for(int j=0;j<STAGESIZEX;j++) {
-   	                        turnToFallingBlock(j, i, 1);
-   	                    }
-   	                }     
-                   	                  
-       	            
-   	                //player.setWalkSpeed(0.2f);
-   	                this.cancel();
-   	                if(Main.roommap.containsKey(Main.inwhichroom.get(player).id)){
-   	                    Main.inwhichroom.get(player).playersalive--;
-       	                if(Main.inwhichroom.get(player).playersalive<=1){
-       	                    Main.inwhichroom.get(player).stopRoom();
-       	                }
-   	                }
-   	            }
-   	            
-       	        board.set("TIME "+looptick, 0);
-       	        looptick++;
+                    boolean ot = transparent;
+                    transparent = true;
+                    for(int i=0;i<STAGESIZEY;i++) {
+                        for(int j=0;j<STAGESIZEX;j++) {
+                            colPrintNewRender(j, i, 7);
+                        }
+                    }
+                    transparent = ot;
+                    
+                    for(int i=STAGESIZEY-VISIBLEROWS;i<STAGESIZEY;i++) {
+                        for(int j=0;j<STAGESIZEX;j++) {
+                            turnToFallingBlock(j, i, 1);
+                        }
+                    }     
+                                     
+                    this.cancel();
+                    if(Main.roommap.containsKey(Main.inwhichroom.get(player).id)) {
+                        Main.inwhichroom.get(player).playersalive--;
+                        if(Main.inwhichroom.get(player).playersalive<=1) {
+                            Main.inwhichroom.get(player).stopRoom();
+                        }
+                    }
+                }
+                
+                board.set("TIME "+looptick, 0);
+                looptick++;
+                render();
     
                 /*PacketPlayOutUpdateHealth test;
                 test=new PacketPlayOutUpdateHealth((float)player.getHealth(), 2, player.getSaturation());
                 ((CraftPlayer) player).getHandle().playerConnection.sendPacket(test);*/
-       	        
-       	        //movement code
-       	        /*
-       	        Vector vel = new Vector(player.getLocation().getX()-oldx, 
-                       	                player.getLocation().getY()-oldy, 
-                       	                player.getLocation().getZ()-oldz);
+                
+                //movement code
+                /*
+                Vector vel = new Vector(player.getLocation().getX()-oldx, 
+                                        player.getLocation().getY()-oldy, 
+                                        player.getLocation().getZ()-oldz);
     
-       	        if(Math.abs(vel.getX())>0 && !singlemove) {
-       	            if(vel.getX()<0) {
-       	                direction="left";
-       	            }else {
-       	                direction="right";
-       	            }
-       	            userInput(direction);
-       	            singlemove=true;
-       	            player.sendMessage("single move");
-       	        }
-       	        
-       	        if(maxvelocity<Math.abs(vel.getX()) && !moving && Math.abs(vel.getX())>0.05f*player.getWalkSpeed()*5) {
-       	            startTime = System.nanoTime();
-       	            moving=true;
-       	            if(vel.getX()<0) {
-       	                direction="left";
-       	            }else {
-       	                direction="right";
-       	            }
-       	            dura=looptick;
-       	        }
+                if(Math.abs(vel.getX())>0 && !singlemove) {
+                    if(vel.getX()<0) {
+                        direction="left";
+                    }else {
+                        direction="right";
+                    }
+                    userInput(direction);
+                    singlemove=true;
+                    player.sendMessage("single move");
+                }
+                
+                if(maxvelocity<Math.abs(vel.getX()) && !moving && Math.abs(vel.getX())>0.05f*player.getWalkSpeed()*5) {
+                    startTime = System.nanoTime();
+                    moving=true;
+                    if(vel.getX()<0) {
+                        direction="left";
+                    }else {
+                        direction="right";
+                    }
+                    dura=looptick;
+                }
     
-       	        if(maxvelocity>Math.abs(vel.getX()) && moving && Math.abs(vel.getX())<0.2f*player.getWalkSpeed()*5) {
-       	            singlemove=false;
-       	            moving=false;
-       	            dasing=false;
-       	        }
-       	        
-       	        board.set(""+vel.getX(), -10);
-       	        
-       	        maxvelocity=Math.abs(vel.getX());
-       	        
+                if(maxvelocity>Math.abs(vel.getX()) && moving && Math.abs(vel.getX())<0.2f*player.getWalkSpeed()*5) {
+                    singlemove=false;
+                    moving=false;
+                    dasing=false;
+                }
+                
+                board.set(""+vel.getX(), -10);
+                
+                maxvelocity=Math.abs(vel.getX());
+                
     
-       	        oldx=player.getLocation().getX();
-       	        oldy=player.getLocation().getY();
-       	        oldz=player.getLocation().getZ();
-       	        
-       	        if(ARR>0) {
-           	        if(dasing && (looptick-dura)%ARR==0) {
-           	            userInput(direction);
-           	        }
-       	        }else {
-       	            if(dasing) {
-       	                userInput(direction);
-       	                userInput(direction);
-       	                userInput(direction);
-       	                userInput(direction);
-       	                userInput(direction);
-       	                userInput(direction);
-       	                userInput(direction);
-       	                userInput(direction);
-       	                userInput(direction);
-       	                userInput(direction);
-       	            }
-       	        }
-       	        
-       	        if(looptick-dura>=DAS && moving) {
-       	            dasing=true;
-       	        }
-   	        */
-   	        
-       	    
-   	        }
-   	    }.runTaskTimer(Main.plugin, 0, 0);
+                oldx=player.getLocation().getX();
+                oldy=player.getLocation().getY();
+                oldz=player.getLocation().getZ();
+                
+                if(ARR>0) {
+                    if(dasing && (looptick-dura)%ARR==0) {
+                        userInput(direction);
+                    }
+                }else {
+                    if(dasing) {
+                        userInput(direction);
+                        userInput(direction);
+                        userInput(direction);
+                        userInput(direction);
+                        userInput(direction);
+                        userInput(direction);
+                        userInput(direction);
+                        userInput(direction);
+                        userInput(direction);
+                        userInput(direction);
+                    }
+                }
+                
+                if(looptick-dura>=DAS && moving) {
+                    dasing=true;
+                }
+            */
+            
+            
+            }
+        }.runTaskTimer(Main.plugin, 0, 0);
     }
+   	
+    @SuppressWarnings("deprecation")
+    private void turnToFallingBlock(int x, int y, double d) {
+        if(ULTRAGRAPHICS == true) {
+            int tex, tey, tez;
+            ItemStack blocks[] = Blocks.blocks;
+            int color = stage[y][x];
+            for(int i=0;i<(coni!=0?coni:thickness);i++) {
+                tex = gx+(int)(x*m1x)+(int)(y*m1y)+i;
+                for(int j=0;j<(conj!=0?conj:thickness);j++) {
+                    tey = gy+(int)(x*m2x)+(int)(y*m2y)+j;
+                    for(int k=0;k<(conk!=0?conk:thickness);k++) {
+                        tez = gz+(int)(x*m3x)+(int)(y*m3y)+k;
+                        FallingBlock lol = world.spawnFallingBlock(new Location(world, tex, tey, tez), blocks[color].getType(), blocks[color].getData().getData());
+                        lol.setVelocity(new Vector(d*(2-Math.random()*4),d*(5-Math.random()*10),d*(2-Math.random()*4)));
+                        lol.setDropItem(false);
+                        lol.addScoreboardTag("sand");
+                    }
+                }
+            }
+        }
+    }
+    
+    private void initScoreboard() {
+        board=Netherboard.instance().createBoard(player, "Stats");
+        
+        board.clear();
+        
+        board.set(" ", 5);
+        board.set("Lines: "+totallines, 4);
+        board.set("Pieces: "+totalblocks, 3);
+        board.set("Score: "+score, 2);
+        board.set("", 1);
+    }
+    
+    private void sendTheScoreboard() {
+        if(b2b>0) {
+            board.set("§6§lB2B x"+b2b, 1);
+        }else{
+            board.set("", 1);
+        }
+        
+        if(combo>0) {
+            board.set("COMBO "+combo, 5);
+        }else{
+            board.set(" ", 5);
+        }
+        
+        board.set("Lines: "+totallines, 4);
+        board.set("Pieces: "+totalblocks, 3);
+        board.set("Score: "+score, 2);
+    }
+    
+    private void sendTheTitle() {
+        if(!Main.version.contains("1_8")) {
+            if(!zone) {
+                String s1="";
+                String s3="";
+                
+                if(spun) {
+                    if(mini) {
+                        s3="§5t-spin§r";
+                    }else{
+                        s3="§5T-SPIN§r";
+                    }
+                }
+                
+                if(lines==1) {
+                    s1="SINGLE";
+                }else if(lines==2) {
+                    s1="DOUBLE";
+                }else if(lines==3) {
+                    s1="TRIPLE";
+                }else if(lines==4) {
+                    s1="QUAD";
+                }
+                
+                if(lines==0 && spun) {
+                    s1=" ";
+                }
+                
+                if((totallines-totalgarbage)*STAGESIZEX+totalgarbage==totalblocks*4) {
+                    player.sendTitle("", ChatColor.GOLD + "" + ChatColor.BOLD + "ALL CLEAR", 20, 40, 20);
+                }
+                
+                //dont kill old title if its empty
+                if(s1!="") {
+                s1=s3+" "+s1;
+                
+                    //Main.functions.sendTitle(player, s1, s2, 0, 20, 10);
+                    
+                    //player.sendTitle(s1, s2, 0, 20, 10);
+    
+                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder(s1).create());
+                }
+            }
+        }
+    }
+    
+    public void userInput(String input) {
+        switch(input) {
+        case "y":
+            rotatePiece(-1);
+            counter=0;
+            break;
+        case "x":
+            rotatePiece(+1);
+            counter=0;
+            break;
+        case "c":
+            if(holdPiece()==true) {
+                counter=0;   
+            }else {
+                player.playSound(player.getEyeLocation(), SoundUtil.VILLAGER_NO, 1f, 1f);
+            }
+            break;
+            
+        case "left":
+            if(!collides(currentPiecePosition.x-1, currentPiecePosition.y, currentPieceRotation)) {
+                movePiece(currentPiecePosition.x-1, currentPiecePosition.y, currentPieceRotation);
+                counter=0;
+            }
+            break;
+        case "right":
+            if(!collides(currentPiecePosition.x+1, currentPiecePosition.y, currentPieceRotation)) {
+                movePiece(currentPiecePosition.x+1, currentPiecePosition.y, currentPieceRotation);
+                counter=0;
+            }
+            break;
+            
+        case "up":
+            rotatePiece(+2);
+            counter=0;
+            break;
+        case "down":
+            if(!collides(currentPiecePosition.x, currentPiecePosition.y+1, currentPieceRotation)) {
+                movePiece(currentPiecePosition.x, currentPiecePosition.y+1, currentPieceRotation);
+                counter=0;
+                score+=1;
+                sendTheScoreboard();
+            }
+            break;
+        
+        case "space":
+            hardDropPiece();
+            break;
+        case "l":
+            gameover=true;
+            break;
+        case "instant":
+            int temp = currentPiecePosition.y;
+            while(!collides(currentPiecePosition.x, temp+1, currentPieceRotation)) {
+                temp++;
+            }
+            movePiece(currentPiecePosition.x, temp, currentPieceRotation);
+            break;
+            
+        default:
+            System.out.println("wee woo wee woo");
+        }
+    }
+   	
+   	//rendering functions
+   	
+    private void printSingleBlock(int x, int y, int z, int color) {
+        if(color==7 && transparent) {
+            Block b=world.getBlockAt(x, y, z);
+            for(Player player: Main.inwhichroom.get(player).playerlist) {
+                SendBlockChangeCustom.sendBlockChangeCustom(player, new Location(world, x, y, z), b);
+            }
+            return;
+        }
+        
+        for(Player player: Main.inwhichroom.get(player).playerlist) {
+            SendBlockChangeCustom.sendBlockChangeCustom(player, new Location(world, x, y, z), color);
+        }
+    }
+   	
+   	private void colPrintNewRender(float x, float y, int color) {
+        int tex, tey, tez;
+        if(y>=STAGESIZEY-VISIBLEROWS) {
+            for(int i=0;i<(coni!=0?coni:thickness);i++) {
+                tex = gx+(int)Math.floor(x*m1x)+(int)Math.floor(y*m1y)+i;
+                for(int j=0;j<(conj!=0?conj:thickness);j++) {
+                    tey = gy+(int)Math.floor(x*m2x)+(int)Math.floor(y*m2y)+j;
+                    for(int k=0;k<(conk!=0?conk:thickness);k++) {
+                        tez = gz+(int)Math.floor(x*m3x)+(int)Math.floor(y*m3y)+k;
+                        printSingleBlock(tex, tey, tez, color);
+                        //debug
+                        //player.sendMessage("i="+i+",j="+j+",k="+k+",tex="+tex+",tey="+tey+",tez="+tez+";");
+                    }
+                }
+            }
+        }
+    }
+   	
+   	private void printStaticPieceNewRender(int x, int y, int block) {
+        for(int i=0;i<4;i++) {
+            for(int j=0;j<4;j++) {
+                colPrintNewRender(j+x, i+y, 7);
+            }
+        }
+        
+        if(block != -1) {
+            for(Point point: gl.pieces[block][0]) {
+                switch(block) {
+                case 2:
+                    colPrintNewRender(point.x+x+1, point.y+y+1, block);
+                    break;
+                case 0:
+                case 1:
+                case 3:
+                case 5:
+                case 6:
+                    ///something wrong
+                    colPrintNewRender(point.x+x+0.5f, point.y+y+1, block);
+                    break;
+                case 4:
+                    colPrintNewRender(point.x+x, point.y+y+0.5f, block);
+                    break;
+                }
+            }
+        }
+    }
+   	
+   	public void destroyTable() {
+        boolean ot = transparent;
+        transparent = true;
+        for(int i=0;i<STAGESIZEY;i++) {
+            for(int j=0;j<STAGESIZEX;j++) {
+                colPrintNewRender(j, i, 7);
+            }
+        }
+        transparent = ot;
+    }
+    
+    public void moveTable(int x, int y, int z) {
+        boolean ot = transparent;
+        transparent = true;
+        for(int i=0;i<STAGESIZEY;i++) {
+            for(int j=0;j<STAGESIZEX;j++) {
+                colPrintNewRender(j, i, 7);
+            }
+        }
+        gx = x;
+        gy = y;
+        gz = z;
+        for(int i=0;i<STAGESIZEY;i++) {
+            for(int j=0;j<STAGESIZEX;j++) {
+                colPrintNewRender(j, i, 16);
+            }
+        }
+        transparent = ot;
+    }
+    
+    public void rotateTable(String input) {
+        boolean ot = transparent;
+        transparent = true;
+        for(int i=0;i<STAGESIZEY;i++) {
+            for(int j=0;j<STAGESIZEX;j++) {
+                colPrintNewRender(j, i, 7);
+            }
+        }
+        
+        int temp;
+        switch(input) {
+        case "X":
+            temp=-m3x;
+            m3x=m2x;
+            m2x=temp;
+            temp=-m3y;
+            m3y=m2y;
+            m2y=temp;
+            break;
+        case "Y":
+            temp=-m3x;
+            m3x=m1x;
+            m1x=temp;
+            temp=-m3y;
+            m3y=m1y;
+            m1y=temp;
+            break;
+        case "Z":
+            temp=-m2x;
+            m2x=m1x;
+            m1x=temp;
+            temp=-m2y;
+            m2y=m1y;
+            m1y=temp;
+            break;
+        }
+        
+        for(int i=0;i<STAGESIZEY;i++) {
+            for(int j=0;j<STAGESIZEX;j++) {
+                colPrintNewRender(j, i, 16);
+            }
+        }
+        transparent = ot;
+    }
+   	
+   	private void render() {
+   	    //print board
+   	    for(int i=0;i<STAGESIZEY;i++) {
+   	        for(int j=0;j<STAGESIZEX;j++) {
+   	            colPrintNewRender(j, i, stage[i][j]);
+   	        }
+   	    }
+   	    
+   	    //print next queue
+        for(int i=0;i<gl.next_blocks;i++) {
+            printStaticPieceNewRender(STAGESIZEX+3, STAGESIZEY/2+i*4, nextPieces.get(i));
+        }
+        
+        //print held piece
+        printStaticPieceNewRender(-7, STAGESIZEY/2, gl.heldPiece);
+        
+        //print ghost
+        int ghosty=currentPiecePosition.y;
+        while(!collides(currentPiecePosition.x, ghosty+1, currentPieceRotation)) {
+            ghosty++;
+        }
+
+        for(Point point: gl.pieces[gl.currentPiece][currentPieceRotation]) {
+            colPrintNewRender(point.x+currentPiecePosition.x, point.y+ghosty, 9+gl.currentPiece);
+        }
+        
+        //print current piece
+        for(Point point: gl.pieces[gl.currentPiece][currentPieceRotation]) {
+            colPrintNewRender(point.x + currentPiecePosition.x, point.y + currentPiecePosition.y, gl.currentPiece);
+        }
+        
+        //print garbage meter
+        int total=0;
+        for(int num: garbo) {
+            total+=num;
+        }
+        
+        for(int i=0;i<STAGESIZEY/2;i++) {
+            colPrintNewRender(-2, STAGESIZEY-1-i, 7);
+        }
+        
+        for(int i=0;i<total;i++) {
+            colPrintNewRender(-2, STAGESIZEY-1-i%(STAGESIZEY/2), (i/(STAGESIZEY/2))%7);
+        }
+   	    
+   	}
 }
