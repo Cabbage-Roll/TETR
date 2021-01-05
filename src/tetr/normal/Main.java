@@ -150,7 +150,6 @@ public class Main extends JPanel {
         
         
         f.setVisible(true);
-        
         // Keyboard controls
         f.addKeyListener(new KeyListener() {
             
@@ -167,10 +166,7 @@ public class Main extends JPanel {
                     game.gl.movePiece(game.gl.currentPiecePosition.x, game.gl.currentPiecePosition.y + 1, game.gl.currentPieceRotation);
                     break;
                 case KeyEvent.VK_SPACE:
-                    while (!game.gl.collides(game.gl.currentPiecePosition.x, game.gl.currentPiecePosition.y + 1, game.gl.currentPieceRotation)) {
-                        game.gl.currentPiecePosition.y += 1;
-                    }
-                        game.gl.placePiece();
+                    game.gl.hardDropPiece();
                     break;
                 case KeyEvent.VK_Z:
                 case KeyEvent.VK_Y:
@@ -203,7 +199,7 @@ public class Main extends JPanel {
         //gravity
         new Thread() {
             @Override public void run() {
-                while (true) {
+                while (!game.gl.gameover) {
                     try {
                         Thread.sleep(1000);
                         game.gl.movePiece(game.gl.currentPiecePosition.x, game.gl.currentPiecePosition.y + 1, game.gl.currentPieceRotation);
@@ -219,7 +215,7 @@ public class Main extends JPanel {
         new Thread() {
             @Override
             public void run() {
-                while(true) {
+                while(!game.gl.gameover) {
                     try {
                         Thread.sleep(10);
                             Color color = new Color(

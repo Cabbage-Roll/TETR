@@ -9,20 +9,22 @@ public class GameLogic {
     public final Point[][][] pieces = Pieces.pieces;
     private final Point[][][] kicktable = Kicktable.kicktable_srsplus;
     
+    public boolean gameover = false;
+    
     public final int STAGESIZEX = 10;
     public final int STAGESIZEY = 40;
     public final int VISIBLEROWS = 24;
     public final int next_blocks = 5;
 
+    public int currentPiece;
     public Point currentPiecePosition;
     public int currentPieceRotation;
-    public int currentPiece;
     public int heldPiece = -1;
     public boolean held;
     public ArrayList<Integer> nextPieces = new ArrayList<Integer>();
     
     public long score;
-    public int[][] stage;
+    public int[][] stage = new int[STAGESIZEY][STAGESIZEX];
     
     private Point[] getCurrentPiece() {
         return pieces[currentPiece][currentPieceRotation];
@@ -31,6 +33,7 @@ public class GameLogic {
     public boolean topOutCheck() {
         for(Point point: pieces[currentPiece][currentPieceRotation]) {
             if(stage[point.y+currentPiecePosition.y][point.x+currentPiecePosition.x]!=7){
+                gameover=true;
                 return true;
             }
         }
@@ -74,7 +77,7 @@ public class GameLogic {
         }
     }
     
-    private void makeNextPiece() {
+    public void makeNextPiece() {
         if(nextPieces.size() <= 7) {
             ArrayList<Integer> bag = new ArrayList<Integer>();
             for(int i=0;i<7;i++) {
@@ -89,7 +92,7 @@ public class GameLogic {
         topOutCheck();
     }
     
-    private void spawnPiece() {
+    public void spawnPiece() {
         currentPiecePosition = new Point(3, 20);
         currentPieceRotation = 0;
         currentPiece = nextPieces.get(0);
@@ -155,12 +158,24 @@ public class GameLogic {
         }
     }
     
-    public void movePiece(int x, int y, int r) {
+    public boolean movePiece(int x, int y, int r) {
         if(!collides(x, y, r)) {
             currentPiecePosition.x = x;
             currentPiecePosition.y = y;
             currentPieceRotation = r;
+            return true;
         }
+        return false;
+    }
+    
+    public void hardDropPiece() {
+        int lines=0;
+        while(!collides(currentPiecePosition.x, currentPiecePosition.y+lines+1, currentPieceRotation)) {
+            lines++;
+        }
+        movePiece(currentPiecePosition.x, currentPiecePosition.y+lines, currentPieceRotation);
+        score+=lines*2;
+        placePiece();
     }
     
     public void placePiece() {
