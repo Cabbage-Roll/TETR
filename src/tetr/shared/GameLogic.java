@@ -23,7 +23,12 @@ public class GameLogic {
     public boolean held;
     public ArrayList<Integer> nextPieces = new ArrayList<Integer>();
     
+    public int combo;
+    public int b2b;
     public long score;
+    public long totalLinesCleared = 0;
+    public long totalPiecesPlaced = 0;
+    public long totalGarbageReceived = 0;
     public int[][] stage = new int[STAGESIZEY][STAGESIZEX];
     
     private Point[] getCurrentPiece() {
@@ -41,12 +46,23 @@ public class GameLogic {
     }
     
     public void initGame() {
-        stage = new int[STAGESIZEY][STAGESIZEX];
         for(int i=0;i<STAGESIZEY;i++) {
             for(int j=0;j<STAGESIZEX;j++) {
                 stage[i][j] = 7;
             }
         }
+        gameover = false;
+        nextPieces.clear();
+        heldPiece = -1;
+        held = false;
+        score = 0;
+        combo = -1;
+        b2b = -1;
+        
+        totalLinesCleared = 0;
+        totalPiecesPlaced = 0;
+        totalGarbageReceived = 0;
+        
         makeNextPiece();
     }
     

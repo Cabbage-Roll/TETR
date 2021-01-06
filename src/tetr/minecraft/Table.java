@@ -4,7 +4,6 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Random;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -28,9 +27,7 @@ public class Table {
     GameLogic gl = new GameLogic();
 
     public static boolean transparent=false;
-    
-    long gameStartTime;
-    
+    boolean destroying = false;
     
     private World world;
     private Player player;
@@ -56,10 +53,7 @@ public class Table {
     //bag variables
     private Random gen;
     
-    private int lines;
-    private int score;
-    private int combo;
-    private int b2b;
+    private int lins;
     
     public boolean ULTRAGRAPHICS = true;
     
@@ -72,9 +66,6 @@ public class Table {
     private int timesMoved = 0;
     private static final int MAXIMUMMOVES = 15;
     
-    private int totallines;
-    private int totalblocks;
-    
     private boolean spun = false;//tspin
     private boolean mini = false;
     
@@ -85,19 +76,6 @@ public class Table {
     private double startingGarbageCap = 4;
     private double garbageCapIncreaseDelay = 1200;
     private double garbageCapIncrease = 1 / 20;
-    private int totalgarbage;
-    
-    //handling
-    /*
-    private final int DAS=4;
-    private final int ARR=0;
-    private final int SDR=1;
-    private boolean dasing;
-    private int dura;
-    private double oldx;
-    private double oldy;
-    private double oldz;
-    */
     
     //zone
     private int zonelines;
@@ -201,7 +179,7 @@ public class Table {
         //todo
         for(int h=0;h<startingGarbageCap;h++) {
             if(!garbo.isEmpty()) {
-                totalgarbage++;
+                gl.totalGarbageReceived++;
                 for(int i=0;i<gl.STAGESIZEY-1;i++) {
                     for(int j=0;j<gl.STAGESIZEX;j++) {
                         gl.stage[i][j]=gl.stage[i+1][j];
@@ -234,7 +212,7 @@ public class Table {
         System.out.println("putGarbage()");
         for(int h=0;h<startingGarbageCap;h++) {
             if(!garbo.isEmpty()) {
-                totalgarbage++;
+                gl.totalGarbageReceived++;
                 for(int i=0;i<gl.STAGESIZEY-1;i++) {
                     for(int j=0;j<gl.STAGESIZEX;j++) {
                         gl.stage[i][j]=gl.stage[i+1][j];
@@ -267,62 +245,34 @@ public class Table {
         return gl.collides(x, y, rotation);
     }
     
-    //v0 - urgent
+    //v1
     public void initGame(long seed, long seed2) {
-
-        gameStartTime = System.nanoTime();
         garbo.clear();
-        gl.nextPieces.clear();
         gen=new Random(seed);
         garbagegen=new Random(seed2);
         well = garbagegen.nextInt(gl.STAGESIZEX);
-        
-        if(!getGameOver()) {
-            setGameOver();
-        }
         
         coni=Math.max(Math.abs(m1x),Math.abs(m1y));
         conj=Math.max(Math.abs(m2x),Math.abs(m2y));
         conk=Math.max(Math.abs(m3x),Math.abs(m3y));
         
-        for(int y=0;y<gl.STAGESIZEY;y++) {
-            for(int x=0;x<gl.STAGESIZEX;x++) {
-                gl.stage[y][x] = 7;
-            }
-        }
-        
         spun=false;
-        gl.gameover=false;
-        gl.held=false;
         
-        combo=-1;
-        score=0;
-        gl.heldPiece=-1;
-        b2b=-1;
-        
-        totallines = 0;
-        totalblocks = 0;
-        totalgarbage = 0;
-        
-        makeNextPiece();
-        
-        
-        gameLoop();
-        initScoreboard();
         player.getInventory().setHeldItemSlot(8);
         
-        /*oldx=player.getLocation().getX();
-        oldy=player.getLocation().getY();
-        oldz=player.getLocation().getZ();
-        */
         zone = false;
         zonelines = 0;
         
+        looptick = 0;
+        
+        gl.initGame();
+        initScoreboard();
+        gameLoop();
     }
     
     //v0 - delayed
-    /*
     private void tSpin() {
+        /*
         int truth=0;
         boolean wall=false;
         if((currentPiecePosition.y<0 || STAGESIZEY<=currentPiecePosition.y) || (currentPiecePosition.x<0 || STAGESIZEX<=currentPiecePosition.x)) {
@@ -383,11 +333,12 @@ public class Table {
             spun=false;
             mini=false;
         }
-    }*/
+        */
+    }
     
     //v0 - delayed
-    /*
     private void updateScore() {
+        /*
         if(!zone) {
             
             if((spun && lines>0) || lines==4) {
@@ -493,7 +444,7 @@ public class Table {
         spun=false;
         mini=false;
         gl.held=false;
-        
+        */
     }
         /*scoring:
         SINGLE:100
@@ -536,8 +487,8 @@ public class Table {
     }
     
     //v0 - delayed
-    /*
     private void clearRows() {
+        /*
         int highestRow = STAGESIZEY;
         int linesCleared = 0;
         ArrayList<Integer> temp = new ArrayList<Integer>();
@@ -634,9 +585,9 @@ public class Table {
             for(int i=0;i<20*zonelines;i++)
             player.playSound(player.getEyeLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(zonelines*2-16)/(double)16));
         }
-            
+            */
     }
-    */
+    
 
     //v3
     private void placePiece() {
@@ -656,12 +607,9 @@ public class Table {
         new BukkitRunnable() {
             @Override
             public void run() {
-                board.set("TIME "+looptick, 0);
-                board.set("COUNTER "+counter, -1);
-                
-                looptick++;
-                render();
-                if(gl.gameover) {
+                if(destroying) {
+                    this.cancel();
+                }else if(gl.gameover) {
                     boolean ot = transparent;
                     transparent = true;
                     for(int i=0;i<gl.STAGESIZEY;i++) {
@@ -678,6 +626,9 @@ public class Table {
                     }
                     
                     this.cancel();
+                }else {
+                    looptick++;
+                    render();
                 }
             }
         }.runTaskTimer(Main.plugin, 0, 1);
@@ -695,7 +646,7 @@ public class Table {
                         }
                     }
     
-                    counter+=(totallines+4)/4;
+                    counter+=(gl.totalLinesCleared+4)/4;
                     
                     try {
                         Thread.sleep(10);
@@ -704,10 +655,12 @@ public class Table {
                         e.printStackTrace();
                     }
                 }
-                if(Main.roommap.containsKey(Main.inwhichroom.get(player).id)) {
-                    Main.inwhichroom.get(player).playersalive--;
-                    if(Main.inwhichroom.get(player).playersalive<=1) {
-                        Main.inwhichroom.get(player).stopRoom();
+                if(Main.inwhichroom.get(player) != null) {
+                    if(Main.roommap.containsKey(Main.inwhichroom.get(player).id)) {
+                        Main.inwhichroom.get(player).playersalive--;
+                        if(Main.inwhichroom.get(player).playersalive<=1) {
+                            Main.inwhichroom.get(player).stopRoom();
+                        }
                     }
                 }
             }
@@ -738,35 +691,32 @@ public class Table {
     
     private void initScoreboard() {
         board=Netherboard.instance().createBoard(player, "Stats");
-        
-        board.clear();
-        
-        board.set(" ", 5);
-        board.set("Lines: "+totallines, 4);
-        board.set("Pieces: "+totalblocks, 3);
-        board.set("Score: "+score, 2);
-        board.set("", 1);
     }
     
-    private void sendTheScoreboard() {
-        if(b2b>0) {
-            board.set("§6§lB2B x"+b2b, 1);
+    private void sendScoreboard() {
+        
+        if(gl.combo>0) {
+            board.set("Combo: " + gl.combo, 6);
         }else{
-            board.set("", 1);
+            board.set("     ", 6);
         }
         
-        if(combo>0) {
-            board.set("COMBO "+combo, 5);
-        }else{
-            board.set(" ", 5);
-        }
+        board.set("Lines: " + gl.totalLinesCleared, 5);
+        board.set("Pieces: " + gl.totalPiecesPlaced, 4);
+        board.set("Score: " + gl.score, 3);
         
-        board.set("Lines: "+totallines, 4);
-        board.set("Pieces: "+totalblocks, 3);
-        board.set("Score: "+score, 2);
+        if(gl.b2b>0) {
+            board.set("Back to back: " + gl.b2b, 2);
+        }else{
+            board.set(" ", 2);
+        }
+
+        board.set("Time: " + looptick, 1);
+        board.set("Counter: " + counter, 0);
     }
     
-    private void sendTheTitle() {
+    private void sendTitleAndActionBar() {
+        /*
         if(!Main.version.contains("1_8")) {
             if(!zone) {
                 String s1="";
@@ -794,7 +744,7 @@ public class Table {
                     s1=" ";
                 }
                 
-                if((totallines-totalgarbage)*gl.STAGESIZEX+totalgarbage==totalblocks*4) {
+                if((gl.totalLinesCleared-gl.totalGarbageReceived)*gl.STAGESIZEX+gl.totalGarbageReceived==gl.totalPiecesPlaced*4) {
                     player.sendTitle("", ChatColor.GOLD + "" + ChatColor.BOLD + "ALL CLEAR", 20, 40, 20);
                 }
                 
@@ -810,6 +760,7 @@ public class Table {
                 }
             }
         }
+        */
     }
     
     public void userInput(String input) {
@@ -851,8 +802,7 @@ public class Table {
             if(!collides(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation)) {
                 movePiece(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation);
                 counter=0;
-                score+=1;
-                sendTheScoreboard();
+                gl.score+=1;
             }
             break;
         
@@ -875,6 +825,10 @@ public class Table {
         }
     }
    	
+    private void debug(String s) {
+        System.out.println(s);
+    }
+    
    	//rendering functions
    	
     private void printSingleBlock(int x, int y, int z, int color) {
@@ -939,7 +893,7 @@ public class Table {
     }
    	
    	public void destroyTable() {
-        boolean ot = transparent;
+   	    boolean ot = transparent;
         transparent = true;
         for(int i=0;i<gl.STAGESIZEY;i++) {
             for(int j=0;j<gl.STAGESIZEX;j++) {
@@ -947,6 +901,10 @@ public class Table {
             }
         }
         transparent = ot;
+        gl.gameover = true;
+        board.delete();
+        board = null;
+        destroying = true;
     }
     
     public void moveTable(int x, int y, int z) {
@@ -1057,6 +1015,10 @@ public class Table {
         for(int i=0;i<total;i++) {
             colPrintNewRender(-2, gl.STAGESIZEY-1-i%(gl.STAGESIZEY/2), (i/(gl.STAGESIZEY/2))%7);
         }
+        
+        //send scoreboard
+
+        sendScoreboard();
    	    
    	}
 }

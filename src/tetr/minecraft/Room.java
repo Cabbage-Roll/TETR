@@ -136,9 +136,6 @@ public class Room {
             stopRoom();
         }
         
-        if(playerboards.get(player).getBoard()!=null) {
-            playerboards.get(player).getBoard().delete();
-        }
         
         playerlist.remove(player);
         playerboards.remove(player);
