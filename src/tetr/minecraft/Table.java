@@ -1,7 +1,6 @@
 package tetr.minecraft;
 
 import java.awt.Point;
-import java.util.ArrayList;
 import java.util.Random;
 
 import org.bukkit.Location;
@@ -15,16 +14,11 @@ import org.bukkit.util.Vector;
 
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import tetr.minecraft.constants.Blocks;
 import tetr.minecraft.functions.SendBlockChangeCustom;
 import tetr.shared.GameLogic;
 
 public class Table {
-    
-    GameLogic gl = new GameLogic();
 
     public static boolean transparent=false;
     boolean destroying = false;
@@ -53,8 +47,6 @@ public class Table {
     //bag variables
     private Random gen;
     
-    private int lins;
-    
     public boolean ULTRAGRAPHICS = true;
     
     //if counter > gravity^-1  fall
@@ -66,20 +58,11 @@ public class Table {
     private int timesMoved = 0;
     private static final int MAXIMUMMOVES = 15;
     
-    private boolean spun = false;//tspin
-    private boolean mini = false;
-    
     //garbage
-    private ArrayList<Integer> garbo = new ArrayList<Integer>();
-    private Random garbagegen;
-    private int well;
-    private double startingGarbageCap = 4;
     private double garbageCapIncreaseDelay = 1200;
     private double garbageCapIncrease = 1 / 20;
     
-    //zone
-    private int zonelines;
-    private boolean zone;
+    GameLogic gl = new GameLogic(player);
     
     Table(Player p) {
         player=p;
@@ -124,44 +107,9 @@ public class Table {
         return player;
     }
     
-    /*
-    private void stopZone() {
-
-        for(int i=STAGESIZEY-zonelines;i<STAGESIZEY;i++) {
-            for(int j=0;j<STAGESIZEX;j++) {
-                turnToFallingBlock(j, i, 0.5);
-            }
-        }
-        
-        for(int i=0;i<STAGESIZEY;i++) {
-            for(int j=0;j<STAGESIZEX;j++) {
-                if(STAGESIZEY-zonelines-1-i>=0) {
-                    stage[STAGESIZEY-1-i][j] = stage[STAGESIZEY-zonelines-1-i][j];
-                }
-            }
-        }
-            
-        if(!Main.version.contains("1_8")) {
-            player.sendTitle("", ChatColor.DARK_GREEN + "" + ChatColor.BOLD + "" + zonelines + " LINE" + (zonelines==1?"":"S"), 20, 40, 20);
-        }
-        //updateScore();
-
-        for(int i=0;i<zonelines/2+1;i++) {
-            player.playSound(player.getEyeLocation(), Sound.ENTITY_GENERIC_EXPLODE, 1f, 0.5f);
-        }
-        
-        sendGarbage(zonelines*2);
-        zone = false;
-        zonelines = 0;
-        lines = 0;
-                
-    }
-    */
-    
+    //v4
     public void startZone() {
-        if(!zone) {
-            zone = true;
-        }
+        gl.startZone();
     }
     
     public void setGameOver() {
@@ -172,96 +120,13 @@ public class Table {
         return gl.gameover;
     }
 
-    //v0 - delayed
-    private void sendGarbage(int n) {
-        player.sendMessage(garbo.toString());
-        Main.inwhichroom.get(player).forwardGarbage(n, player);
-        //todo
-        for(int h=0;h<startingGarbageCap;h++) {
-            if(!garbo.isEmpty()) {
-                gl.totalGarbageReceived++;
-                for(int i=0;i<gl.STAGESIZEY-1;i++) {
-                    for(int j=0;j<gl.STAGESIZEX;j++) {
-                        gl.stage[i][j]=gl.stage[i+1][j];
-                    }
-                }
-                for(int j=0;j<gl.STAGESIZEX;j++) {
-                    if(j==well) {
-                        gl.stage[gl.STAGESIZEY-1][j]=7;
-                    }else{
-                        gl.stage[gl.STAGESIZEY-1][j]=8;
-                    }
-                }
-                
-                garbo.set(0, garbo.get(0)-1);
-                if(garbo.get(0)<=0) {
-                    garbo.remove(0);
-                    well=garbagegen.nextInt(gl.STAGESIZEX);
-                }
-            }
-        }
-    }
-    
-    //v0 - delayed
-    public void receiveGarbage(int n) {
-        garbo.add(n);
-    }
-    
-    //v0 - delayed
-    private void putGarbage() {
-        System.out.println("putGarbage()");
-        for(int h=0;h<startingGarbageCap;h++) {
-            if(!garbo.isEmpty()) {
-                gl.totalGarbageReceived++;
-                for(int i=0;i<gl.STAGESIZEY-1;i++) {
-                    for(int j=0;j<gl.STAGESIZEX;j++) {
-                        gl.stage[i][j]=gl.stage[i+1][j];
-                    }
-                }
-                for(int j=0;j<gl.STAGESIZEX;j++) {
-                    if(j==well) {
-                        gl.stage[gl.STAGESIZEY-1][j]=7;
-                    }else{
-                        gl.stage[gl.STAGESIZEY-1][j]=8;
-                    }
-                }
-                
-                garbo.set(0, garbo.get(0)-1);
-                if(garbo.get(0)<=0) {
-                    garbo.remove(0);
-                    well=garbagegen.nextInt(gl.STAGESIZEX);
-                }
-            }
-        }
-    }
-
-    //v3
-    private void makeNextPiece() {
-        gl.makeNextPiece();
-    }
-    
-    //v3
-    private boolean collides(int x, int y, int rotation) {
-        return gl.collides(x, y, rotation);
-    }
-    
-    //v1
+    //v2
     public void initGame(long seed, long seed2) {
-        garbo.clear();
-        gen=new Random(seed);
-        garbagegen=new Random(seed2);
-        well = garbagegen.nextInt(gl.STAGESIZEX);
-        
         coni=Math.max(Math.abs(m1x),Math.abs(m1y));
         conj=Math.max(Math.abs(m2x),Math.abs(m2y));
         conk=Math.max(Math.abs(m3x),Math.abs(m3y));
         
-        spun=false;
-        
         player.getInventory().setHeldItemSlot(8);
-        
-        zone = false;
-        zonelines = 0;
         
         looptick = 0;
         
@@ -269,330 +134,27 @@ public class Table {
         initScoreboard();
         gameLoop();
     }
-    
-    //v0 - delayed
-    private void tSpin() {
-        /*
-        int truth=0;
-        boolean wall=false;
-        if((currentPiecePosition.y<0 || STAGESIZEY<=currentPiecePosition.y) || (currentPiecePosition.x<0 || STAGESIZEX<=currentPiecePosition.x)) {
-            truth++;
-            wall=true;
-        }else if(stage[currentPiecePosition.y][currentPiecePosition.x]!=7) {
-            truth++;
-        }
-        
-        if((currentPiecePosition.y<0 || STAGESIZEY<=currentPiecePosition.y) || (currentPiecePosition.x+2<0 || STAGESIZEX<=currentPiecePosition.x+2)) {
-            truth++;
-            wall=true;
-        }else if(stage[currentPiecePosition.y][currentPiecePosition.x+2]!=7) {
-            truth++;
-        }
-        
-        if((currentPiecePosition.y+2<0 || STAGESIZEY<=currentPiecePosition.y+2) || (currentPiecePosition.x<0 || STAGESIZEX<=currentPiecePosition.x)) {
-            truth++;
-            wall=true;
-        }else if(stage[currentPiecePosition.y+2][currentPiecePosition.x]!=7) {
-            truth++;
-        }
-        
-        if((currentPiecePosition.y+2<0 || STAGESIZEY<=currentPiecePosition.y+2) || (currentPiecePosition.x+2<0 || STAGESIZEX<=currentPiecePosition.x+2)) {
-            truth++;
-            wall=true;
-        }else if(stage[currentPiecePosition.y+2][currentPiecePosition.x+2]!=7) {
-            truth++;
-        }
-        
-        if(truth>=3 && wall) {
-            spun=true;
-            mini=true;
-            return;
-        }
-        
-        if(truth>=3) {
-            spun=true;
-            mini=true;
-            if(rotation==0) {
-                if(stage[currentPiecePosition.y][currentPiecePosition.x]!=7 && stage[currentPiecePosition.y][currentPiecePosition.x+2]!=7) {
-                    mini=false;
-                }
-            }else if(rotation==1) {
-                if(stage[currentPiecePosition.y][currentPiecePosition.x+2]!=7 && stage[currentPiecePosition.y+2][currentPiecePosition.x+2]!=7) {
-                    mini=false;
-                }
-            }else if(rotation==2) {
-                if(stage[currentPiecePosition.y+2][currentPiecePosition.x+2]!=7 && stage[currentPiecePosition.y+2][currentPiecePosition.x]!=7) {
-                    mini=false;
-                }
-            }else if(rotation==3) {
-                if(stage[currentPiecePosition.y+2][currentPiecePosition.x]!=7 && stage[currentPiecePosition.y][currentPiecePosition.x]!=7) {
-                    mini=false;
-                }
-            }
-        }else{
-            spun=false;
-            mini=false;
-        }
-        */
-    }
-    
-    //v0 - delayed
-    private void updateScore() {
-        /*
-        if(!zone) {
-            
-            if((spun && lines>0) || lines==4) {
-                b2b++;
-            }else if(lines>0) {
-                b2b=-1;
-            }
-            
-            if(lines>0) {
-                combo++;
-            }else{
-                putGarbage();
-                combo=-1;
-            }
-            
-            if(spun) {
-                player.playSound(player.getEyeLocation(), SoundUtil.THUNDER, 1f, 0.75f);
-                if(mini) {
-                    switch(lines) {
-                    case 0:
-                        score+=100;
-                        break;
-                    case 1:
-                        score+=200*(b2b>0?1.5:1);
-                        break;
-                    case 2:
-                        score+=400*(b2b>0?1.5:1);
-                        break;
-                    }
-                }else{
-                    switch(lines) {
-                    case 0:
-                        score+=400;
-                        break;
-                    case 1:
-                        score+=800*(b2b>0?1.5:1);
-                        break;
-                    case 2:
-                        score+=1200*(b2b>0?1.5:1);
-                        break;
-                    case 3:
-                        score+=1600*(b2b>0?1.5:1);
-                        break;
-                    }
-                }
-                
-            }else{
-                switch(lines) {
-                case 1:
-                    score+=100;
-                    break;
-                case 2:
-                    score+=300;
-                    break;
-                case 3:
-                    score+=500;
-                    break;
-                case 4:
-                    score+=800*(b2b>0?1.5:1);
-                    break;
-                }
-            }
-            
-            
-            if(combo>=0) {
-                player.playSound(player.getEyeLocation(), SoundUtil.NOTE_HARP, 1f, (float)Math.pow(2,(combo*2-16)/(double)16));
-                score+=combo*50;
-            }
-            
-            if((totallines-totalgarbage)*STAGESIZEX+totalgarbage==totalblocks*4) {
-                score+=3500;
-                sendGarbage(STAGESIZEX);
-            }
-    
-            sendTheTitle();
-            sendTheScoreboard();
-            
-            ///sendgarbage
-            if(lines>0) {
-                int temp=0;
-                if(spun==false) {
-                    temp=lines-1;
-                }else if(mini==true) {
-                    if(lines==1) {
-                        temp=4;
-                    }else{
-                        temp=6;
-                    }
-                }else{
-                    if(lines==1) {
-                        temp=5;
-                    }else if(lines==2) {
-                        temp=7;
-                    }else{
-                        temp=8;
-                    }
-                }
-                
-                sendGarbage(Garbagetable.garbage_table[temp][combo]);
-            }
-        }
-        
-        spun=false;
-        mini=false;
-        gl.held=false;
-        */
-    }
-        /*scoring:
-        SINGLE:100
-        DOUBLE:300
-        TRIPLE:500
-        QUAD:800
-        TSPIN_MINI:100
-        TSPIN:400
-        TSPIN_MINI_SINGLE:200
-        TSPIN_SINGLE:800
-        TSPIN_MINI_DOUBLE:400
-        TSPIN_DOUBLE:1200
-        TSPIN_TRIPLE:1600
-        TSPIN_QUAD:2600
-        BACKTOBACK_MULTIPLIER:1.5
-        COMBO:50
-        ALL_CLEAR:3500
-        SOFTDROP:1
-        HARDDROP:2
-        */
-    
-    //v3
-    private void hardDropPiece() {
-        gl.hardDropPiece();
-    }
-    
-    //v3
-    private boolean movePiece(int x, int y, int r) {
-        return gl.movePiece(x, y, r);
-    }
-    
-    //v3
-    private boolean holdPiece() {
-        return gl.holdPiece();
-    }
-    
-    //v3
-    private void rotatePiece(int d) {
-        gl.rotatePiece(d);
-    }
-    
-    //v0 - delayed
-    private void clearRows() {
-        /*
-        int highestRow = STAGESIZEY;
-        int linesCleared = 0;
-        ArrayList<Integer> temp = new ArrayList<Integer>();
-        
-        //find highest row
-        for(int i=0;i<STAGESIZEY;i++) {
-            for(int j=0;j<STAGESIZEX;j++) {
-                if(stage[i][j]!=7) {
-                    highestRow = i;
-                    i = STAGESIZEY;
-                    break;
-                }
-            }
-        }
-        
-        temp.add(highestRow);
-        
-        for(int i=highestRow, j;i<STAGESIZEY;i++) {
-            for(j=0;j<STAGESIZEX;j++) {
-                if(stage[i][j]==7 || stage[i][j]==16) {
-                    break;
-                }
-            }
 
-            if(j==STAGESIZEX) {
-                linesCleared++;
-                temp.add(i);
-                if(!zone) {
-                    for(int k=0;k<STAGESIZEX;k++) {
-                        turnToFallingBlock(k, i, 0.3);
-                    }
-                }
-            }
-        }
-        
-        temp.add(STAGESIZEY-zonelines);
-        //player.sendMessage(temp.toString());
-        
-        if(zone) {
-            zonelines += linesCleared;
-        }else {
-            lines = linesCleared;
-        }
-        final int lc = linesCleared;
-        final int hr = highestRow;
-        
-        if(zone) {
-            for(int i=1;i<temp.size()-1;i++) {
-                for(int j=temp.get(1);j<temp.get(i+1);j++) {
-                    for(int k=0;k<STAGESIZEX;k++) {
-                        //if(k==0)
-                            //player.sendMessage("i="+i+" j="+j+"stage["+j+"]=stage["+(j+i)+"]");
-                            
-                        if(j+i<STAGESIZEY) {
-                            stage[j][k] = stage[j+i][k];
-                        }
-                    }
-                }
-            }
-                
-            for(int i=temp.get(temp.size()-1)-lc;i<temp.get(temp.size()-1);i++) {
-                for(int j=0;j<STAGESIZEX;j++) {
-                    stage[i][j] = 16;
-                }
-            }
-        }else {
-            for(int i=1;i<temp.size()-1;i++) {
-                for(int j=temp.get(temp.size()-i-1)+i-1;j>temp.get(temp.size()-i-2)+i-1;j--) {
-                    for(int k=0;k<STAGESIZEX;k++) {
-                        //if(k==0)
-                            //player.sendMessage("i="+i+" j="+j+" stage["+j+"]=stage["+(j-i)+"]");
-                            
-                        if(j<STAGESIZEY) {
-                            stage[j][k] = stage[j-i][k];
-                        }
-                    }
-                }
-            }
-            
-            for(int i=hr;i<hr+lc;i++) {
-
-                //player.sendMessage("stage["+i+"]=7");
-                for(int j=0;j<STAGESIZEX;j++) {
-                    stage[i][j] = 7;
-                }
-            }
-        }
-
-
-        totallines+=lc;
-        totalblocks+=1;
-        updateScore();
-        if(zone && lc>0) {
-            for(int i=0;i<20*zonelines;i++)
-            player.playSound(player.getEyeLocation(), SoundUtil.NOTE_PLING, 1f, (float)Math.pow(2,(zonelines*2-16)/(double)16));
-        }
-            */
-    }
-    
-
-    //v3
-    private void placePiece() {
-        gl.placePiece();
-    }
+    /*
+    scoring:
+    SINGLE:100
+    DOUBLE:300
+    TRIPLE:500
+    QUAD:800
+    TSPIN_MINI:100
+    TSPIN:400
+    TSPIN_MINI_SINGLE:200
+    TSPIN_SINGLE:800
+    TSPIN_MINI_DOUBLE:400
+    TSPIN_DOUBLE:1200
+    TSPIN_TRIPLE:1600
+    TSPIN_QUAD:2600
+    BACKTOBACK_MULTIPLIER:1.5
+    COMBO:50
+    ALL_CLEAR:3500
+    SOFTDROP:1
+    HARDDROP:2
+    */
     
     double maxvelocity=0;
     long startTime;
@@ -628,10 +190,22 @@ public class Table {
                     this.cancel();
                 }else {
                     looptick++;
-                    render();
                 }
             }
         }.runTaskTimer(Main.plugin, 0, 1);
+        
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if(destroying) {
+                    this.cancel();
+                }else if(gl.gameover) {
+                    this.cancel();
+                }else {
+                    render();
+                }
+            }
+        }.runTaskTimer(Main.plugin, 0, 20);
         
         //thread safe code
         new Thread() {
@@ -639,8 +213,8 @@ public class Table {
             public void run() {
                 while(!gl.gameover) {
                     if(counter>=100) {
-                        if(!movePiece(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation)){
-                            placePiece();
+                        if(!gl.movePiece(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation)){
+                            gl.placePiece();
                         }else {
                             counter = 0;   
                         }
@@ -766,15 +340,15 @@ public class Table {
     public void userInput(String input) {
         switch(input) {
         case "y":
-            rotatePiece(-1);
+            gl.rotatePiece(-1);
             counter=0;
             break;
         case "x":
-            rotatePiece(+1);
+            gl.rotatePiece(+1);
             counter=0;
             break;
         case "c":
-            if(holdPiece()==true) {
+            if(gl.holdPiece()==true) {
                 counter=0;   
             }else {
                 player.playSound(player.getEyeLocation(), SoundUtil.VILLAGER_NO, 1f, 1f);
@@ -782,47 +356,48 @@ public class Table {
             break;
             
         case "left":
-            if(!collides(gl.currentPiecePosition.x-1, gl.currentPiecePosition.y, gl.currentPieceRotation)) {
-                movePiece(gl.currentPiecePosition.x-1, gl.currentPiecePosition.y, gl.currentPieceRotation);
+            if(!gl.collides(gl.currentPiecePosition.x-1, gl.currentPiecePosition.y, gl.currentPieceRotation)) {
+                gl.movePiece(gl.currentPiecePosition.x-1, gl.currentPiecePosition.y, gl.currentPieceRotation);
                 counter=0;
             }
             break;
         case "right":
-            if(!collides(gl.currentPiecePosition.x+1, gl.currentPiecePosition.y, gl.currentPieceRotation)) {
-                movePiece(gl.currentPiecePosition.x+1, gl.currentPiecePosition.y, gl.currentPieceRotation);
+            if(!gl.collides(gl.currentPiecePosition.x+1, gl.currentPiecePosition.y, gl.currentPieceRotation)) {
+                gl.movePiece(gl.currentPiecePosition.x+1, gl.currentPiecePosition.y, gl.currentPieceRotation);
                 counter=0;
             }
             break;
             
         case "up":
-            rotatePiece(+2);
+            gl.rotatePiece(+2);
             counter=0;
             break;
         case "down":
-            if(!collides(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation)) {
-                movePiece(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation);
+            if(!gl.collides(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation)) {
+                gl.movePiece(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation);
                 counter=0;
                 gl.score+=1;
             }
             break;
         
         case "space":
-            hardDropPiece();
+            gl.hardDropPiece();
             break;
         case "l":
             gl.gameover=true;
             break;
         case "instant":
             int temp = gl.currentPiecePosition.y;
-            while(!collides(gl.currentPiecePosition.x, temp+1, gl.currentPieceRotation)) {
+            while(!gl.collides(gl.currentPiecePosition.x, temp+1, gl.currentPieceRotation)) {
                 temp++;
             }
-            movePiece(gl.currentPiecePosition.x, temp, gl.currentPieceRotation);
+            gl.movePiece(gl.currentPiecePosition.x, temp, gl.currentPieceRotation);
             break;
             
         default:
             System.out.println("wee woo wee woo");
         }
+        render();
     }
    	
     private void debug(String s) {
@@ -989,7 +564,7 @@ public class Table {
         
         //print ghost
         int ghosty=gl.currentPiecePosition.y;
-        while(!collides(gl.currentPiecePosition.x, ghosty+1, gl.currentPieceRotation)) {
+        while(!gl.collides(gl.currentPiecePosition.x, ghosty+1, gl.currentPieceRotation)) {
             ghosty++;
         }
 
@@ -1004,7 +579,7 @@ public class Table {
         
         //print garbage meter
         int total=0;
-        for(int num: garbo) {
+        for(int num: gl.garbageToCome) {
             total+=num;
         }
         

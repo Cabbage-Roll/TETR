@@ -88,6 +88,20 @@ public class Main extends JPanel {
     @Override 
     public void paintComponent(Graphics g)
     {
+        // garbage meter
+        int total=0;
+        for(int num: gl.garbageToCome) {
+            total+=num;
+        }
+        
+        g.setColor(Color.BLACK);
+        g.fillRect(TOPLEFTCORNER.x - PIXELSIZE*2, TOPLEFTCORNER.y + gl.STAGESIZEY/2*PIXELSIZE, PIXELSIZE-GRIDSIZE, (PIXELSIZE-GRIDSIZE)*20);
+        
+        for(int i=0;i<total;i++) {
+            g.setColor(intToColor((i/(gl.STAGESIZEY/2))%7));
+            g.fillRect(TOPLEFTCORNER.x - PIXELSIZE*2, TOPLEFTCORNER.y + (gl.STAGESIZEY - 1 - i%20)*PIXELSIZE, PIXELSIZE-GRIDSIZE, PIXELSIZE-GRIDSIZE);
+        }
+        
         // Paint the well
         for(int i=gl.STAGESIZEY-gl.VISIBLEROWS;i<gl.STAGESIZEY;i++) {
             for(int j=0;j<gl.STAGESIZEX;j++) {
@@ -181,6 +195,9 @@ public class Main extends JPanel {
                     break;
                 case KeyEvent.VK_C:
                     game.gl.holdPiece();
+                    break;
+                case KeyEvent.VK_SHIFT:
+                    game.gl.startZone();
                     break;
                 } 
             }

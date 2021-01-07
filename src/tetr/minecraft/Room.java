@@ -157,7 +157,7 @@ public class Room {
             int rand = (int) (Math.random()*playerlist.size());
             if(playerboards.get(playerlist.get(rand)).getPlayer()!=player || (playerboards.get(playerlist.get(rand)).getPlayer()==player && backfire)) {
                 if(!playerboards.get(playerlist.get(rand)).getGameOver()) {
-                    playerboards.get(playerlist.get(rand)).receiveGarbage(n);
+                    playerboards.get(playerlist.get(rand)).gl.receiveGarbage(n);
                 }else {
                     forwardGarbage(n, player);
                 }

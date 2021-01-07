@@ -1,7 +1,7 @@
-package tetr.minecraft.constants;
+package tetr.shared;
 
 public class Garbagetable {
-    public static int[][] garbage_table={
+    public static int[][] tetrio={
         //single
         {0,0,1,1,1,1,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3},
         //double
