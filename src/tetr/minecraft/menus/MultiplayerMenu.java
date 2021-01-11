@@ -17,8 +17,8 @@ public class MultiplayerMenu implements InventoryHolder{
     private Inventory inventory=null;
     
     protected final static int BACK_LOCATION = 0;
-    protected final static int CREATEROOM_LOCATION = 9;
-    protected final static int LISTROOMS_LOCATION = 10;
+    protected final static int CREATEROOM_LOCATION = 21;
+    protected final static int LISTROOMS_LOCATION = 23;
     
     public MultiplayerMenu(Player player){
         Main.lastui.put(player, "multiplayer");

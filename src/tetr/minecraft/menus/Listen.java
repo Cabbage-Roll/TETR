@@ -30,33 +30,30 @@ public class Listen implements Listener {
         int slot=event.getSlot();
         if(event.getInventory().getHolder() instanceof HomeMenu){
             event.setCancelled(true);
-            if(slot==HomeMenu.MULTIPLAYER_LOCATION){
-                new MultiplayerMenu(player);
-            }else if(slot==HomeMenu.SKINEDITOR_LOCATION){
-                new SkinMenu(player);
-            }
-        }else if(event.getInventory().getHolder() instanceof MultiplayerMenu){
-            event.setCancelled(true);
-            if(slot==MultiplayerMenu.CREATEROOM_LOCATION){
-                new MakeRoomMenu(player);
-            }else if(slot==MultiplayerMenu.LISTROOMS_LOCATION){
-                new ChooseJoinMethodMenu(player);
-            }else if(slot==MultiplayerMenu.BACK_LOCATION){
-                new HomeMenu(player);
-            }
-        }else if(event.getInventory().getHolder() instanceof MakeRoomMenu){
-            event.setCancelled(true);
             switch(slot) {
-            case MakeRoomMenu.NEWROOM_LOCATION:
-                new Room(player, false);
-                new RoomMenu(player);
+            case HomeMenu.MULTIPLAYER_LOCATION:
+                new MultiplayerMenu(player);
                 break;
-            case MakeRoomMenu.NEWPRIVATEROOM_LOCATION:
+            case HomeMenu.SINGLEPLAYER_LOCATION:
                 new Room(player, true);
                 new RoomMenu(player);
                 break;
-            case MakeRoomMenu.BACK_LOCATION:
-                new MultiplayerMenu(player);
+            case HomeMenu.SKINEDITOR_LOCATION:
+                new SkinMenu(player);
+                break;
+            }
+        }else if(event.getInventory().getHolder() instanceof MultiplayerMenu){
+            event.setCancelled(true);
+            switch(slot) {
+            case MultiplayerMenu.BACK_LOCATION:
+                new HomeMenu(player);
+                break;
+            case MultiplayerMenu.CREATEROOM_LOCATION:
+                new Room(player, false);
+                new RoomMenu(player);
+                break;
+            case MultiplayerMenu.LISTROOMS_LOCATION:
+                new JoinRoomMenu(player, 0);
                 break;
             }
         }else if(event.getInventory().getHolder() instanceof JoinRoomMenu){
@@ -78,10 +75,16 @@ public class Listen implements Listener {
             }
         }else if(event.getInventory().getHolder() instanceof RoomMenu){
             event.setCancelled(true);
-            if(slot==RoomMenu.BACK_LOCATION){
+            switch(slot) {
+            case RoomMenu.BACK_LOCATION:
+                if(Main.inwhichroom.get(player).isSingleplayer) {
+                    new HomeMenu(player);
+                }else {
+                    new MultiplayerMenu(player);
+                }
                 Main.inwhichroom.get(player).removePlayer(player);
-                new MultiplayerMenu(player);
-            }else if(slot==49){
+                break;
+            case 49:
                 if(Main.inwhichroom.get(player).host.equals(player)){
                     if(Main.inwhichroom.get(player).running){
                         Main.inwhichroom.get(player).stopRoom();
@@ -90,10 +93,13 @@ public class Listen implements Listener {
                     }
                     new RoomMenu(player);
                 }
-            }else if(slot==RoomMenu.SETTINGS_LOCATION){
+                break;
+            case RoomMenu.SETTINGS_LOCATION:
                 new SimpleSettingsMenu(player);
-            }else if(slot==RoomMenu.SONG_LOCATION){
+                break;
+            case RoomMenu.SONG_LOCATION:
                 new SongMenu(player);
+                break;
             }
         }else if(event.getInventory().getHolder() instanceof SkinMenu){
             if(Main.skineditorver.get(player)==0) {
@@ -153,6 +159,20 @@ public class Listen implements Listener {
                         blocks[7]=new ItemStack(XMaterial.AIR.parseMaterial());
                     }
                     
+                    if(inv.getItem(13)!=null){
+                        blocks[8]=inv.getItem(13);
+                    }else{
+                        blocks[8]=new ItemStack(XMaterial.AIR.parseMaterial());
+                    }
+                    
+                    if(inv.getItem(15)!=null){
+                        blocks[16]=inv.getItem(15);
+                    }else{
+                        blocks[16]=new ItemStack(XMaterial.AIR.parseMaterial());
+                    }
+                    
+                    
+                    
                     player.sendMessage("Skin saved");
                     
                     File customYml = new File(Main.plugin.getDataFolder() + "/userdata/" + player.getUniqueId() + ".yml");
@@ -175,6 +195,7 @@ public class Listen implements Listener {
                     customConfig.set("ghostI", blocks[13]);
                     customConfig.set("ghostJ", blocks[14]);
                     customConfig.set("ghostT", blocks[15]);
+                    customConfig.set("zone", blocks[16]);
                     customConfig.set("useSkinSlot", 1);
                     
                     Main.saveCustomYml(customConfig, customYml);
@@ -303,26 +324,6 @@ public class Listen implements Listener {
             }else if(event.getSlot()-10<Room.slist.getCount()) {
                 room.index = event.getSlot() - 10;
             }
-        }else if(event.getInventory().getHolder() instanceof ChooseJoinMethodMenu){
-            event.setCancelled(true);
-            switch(slot) {
-            case ChooseJoinMethodMenu.BACK_LOCATION:
-                new MultiplayerMenu(player);
-                break;
-            case ChooseJoinMethodMenu.ROOMLIST_LOCATION:
-                new JoinRoomMenu(player, 0);
-                break;
-            case ChooseJoinMethodMenu.ID_LOCATION:
-                new JoinByIdMenu(player);
-                break;
-            }
-        }else if(event.getInventory().getHolder() instanceof JoinByIdMenu){
-            event.setCancelled(true);
-            switch(slot) {
-            case ChooseJoinMethodMenu.BACK_LOCATION:
-                new MultiplayerMenu(player);
-                break;
-            }
         }
     }
     
@@ -332,39 +333,37 @@ public class Listen implements Listener {
         Player player=event.getPlayer();
         if(Main.inwhichroom.containsKey(player)){
             Table table=Main.inwhichroom.get(player).playerboards.get(player);
-            if(table!=null){
-                if(!table.getGameOver()){
-                    int itemId=event.getNewSlot();
-                    switch(itemId){
-                    case 0:
-                        table.userInput("left");
-                        break;
-                    case 1:
-                        table.userInput("right");
-                        break;
-                    case 2:
-                        table.userInput("instant");
-                        break;
-                    case 3:
-                        table.userInput("space");
-                        break;
-                    case 4:
-                        table.userInput("y");
-                        break;
-                    case 5:
-                        table.userInput("x");
-                        break;
-                    case 6:
-                        table.userInput("up");
-                        break;
-                    case 7:
-                        table.userInput("c");
-                        break;
-                    case 8:
-                        return;
-                    }
-                    player.getInventory().setHeldItemSlot(8);
+            if(table!=null && !table.gl.gameover){
+                int itemId=event.getNewSlot();
+                switch(itemId){
+                case 0:
+                    table.userInput("left");
+                    break;
+                case 1:
+                    table.userInput("right");
+                    break;
+                case 2:
+                    table.userInput("instant");
+                    break;
+                case 3:
+                    table.userInput("space");
+                    break;
+                case 4:
+                    table.userInput("y");
+                    break;
+                case 5:
+                    table.userInput("x");
+                    break;
+                case 6:
+                    table.userInput("up");
+                    break;
+                case 7:
+                    table.userInput("c");
+                    break;
+                case 8:
+                    return;
                 }
+                player.getInventory().setHeldItemSlot(8);
             }
         }
     }
@@ -372,11 +371,11 @@ public class Listen implements Listener {
     @EventHandler
     public void onPlayerToggleSneakEvent(PlayerToggleSneakEvent event) {
         Player player = event.getPlayer();
-        Table table=Main.inwhichroom.get(player).playerboards.get(player);
-        if(player.isSneaking()) {
-            if(table!=null){
-                if(!table.getGameOver()){
-                    Main.inwhichroom.get(player).playerboards.get(player).startZone();
+        if(Main.inwhichroom.containsKey(player)){
+            Table table=Main.inwhichroom.get(player).playerboards.get(player);
+            if(player.isSneaking()) {
+                if(table!=null && !table.gl.gameover){
+                    table.userInput("shift");
                 }
             }
         }

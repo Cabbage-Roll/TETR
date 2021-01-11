@@ -38,8 +38,6 @@ import funcs.Functions_1_8_R3;
 import funcs.Functions_1_9_R1;
 import funcs.Functions_1_9_R2;
 import tetr.minecraft.menus.Listen;
-import tetr.minecraft.xseries.XMaterial;
-
 public class Main extends JavaPlugin implements Listener{
     
     public static JavaPlugin plugin;
@@ -87,7 +85,7 @@ public class Main extends JavaPlugin implements Listener{
         numberofsongs=f.listFiles().length;
         if(numberofsongs>0){
             
-            getLogger().info("TETR: "+numberofsongs+" song(s) loaded");
+            getLogger().info("TETR: "+numberofsongs+" song(s) found");
             
             pathnames=new String[numberofsongs];
             songarray=new Song[numberofsongs];
@@ -203,7 +201,7 @@ public class Main extends JavaPlugin implements Listener{
     public void initSkin(Player player) {
         File customYml = new File(Main.plugin.getDataFolder() + "/userdata/" + player.getUniqueId() + ".yml");
         FileConfiguration customConfig = YamlConfiguration.loadConfiguration(customYml);
-        ItemStack[] blocks = new ItemStack[16];
+        ItemStack[] blocks = new ItemStack[17];
         blocks[0] = customConfig.getItemStack("blockZ");
         blocks[1] = customConfig.getItemStack("blockL");
         blocks[2] = customConfig.getItemStack("blockO");
@@ -212,7 +210,7 @@ public class Main extends JavaPlugin implements Listener{
         blocks[5] = customConfig.getItemStack("blockJ");
         blocks[6] = customConfig.getItemStack("blockT");
         blocks[7] = customConfig.getItemStack("background");
-        blocks[8] = /*customConfig.getItemStack("garbage");*/XMaterial.GRAY_WOOL.parseItem();
+        blocks[8] = customConfig.getItemStack("garbage");
         blocks[9] = customConfig.getItemStack("ghostZ");
         blocks[10] = customConfig.getItemStack("ghostL");
         blocks[11] = customConfig.getItemStack("ghostO");
@@ -220,6 +218,7 @@ public class Main extends JavaPlugin implements Listener{
         blocks[13] = customConfig.getItemStack("ghostI");
         blocks[14] = customConfig.getItemStack("ghostJ");
         blocks[15] = customConfig.getItemStack("ghostT");
+        blocks[16] = customConfig.getItemStack("zone");
         skinmap.put(player, blocks);
         Main.skineditorver.put(player, customConfig.getInt("useSkinSlot"));
     }

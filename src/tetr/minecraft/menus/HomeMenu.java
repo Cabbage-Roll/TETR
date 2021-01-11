@@ -16,8 +16,9 @@ import tetr.minecraft.xseries.XMaterial;
 public class HomeMenu implements InventoryHolder {
     private Inventory inventory = null;
 
-    protected final static int MULTIPLAYER_LOCATION = 9;
-    protected final static int SKINEDITOR_LOCATION = 10;
+    protected final static int MULTIPLAYER_LOCATION = 21;
+    protected final static int SINGLEPLAYER_LOCATION = 22;
+    protected final static int SKINEDITOR_LOCATION = 23;
     
     public HomeMenu(Player player){
         Main.lastui.put(player, "home");
@@ -32,6 +33,7 @@ public class HomeMenu implements InventoryHolder {
         }
         
         inventory.setItem(MULTIPLAYER_LOCATION, createItem(XMaterial.PLAYER_HEAD, ChatColor.WHITE + "Multiplayer"));
+        inventory.setItem(SINGLEPLAYER_LOCATION, createItem(XMaterial.PLAYER_HEAD, ChatColor.WHITE + "Singleplayer"));
         inventory.setItem(SKINEDITOR_LOCATION, createItem(XMaterial.SHEARS, ChatColor.WHITE + "Skin editor"));
         
         player.openInventory(inventory);

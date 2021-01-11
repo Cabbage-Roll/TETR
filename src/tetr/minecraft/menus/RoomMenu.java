@@ -23,7 +23,7 @@ public class RoomMenu implements InventoryHolder {
     
     public RoomMenu(Player player){
         Main.lastui.put(player, "room");
-        Inventory inventory=Bukkit.createInventory(this, 54, "Room - "+Main.inwhichroom.get(player).id);
+        Inventory inventory=Bukkit.createInventory(this, 54, Main.inwhichroom.get(player).name);
         ItemStack border=XMaterial.GLASS_PANE.parseItem();
         //fill the border with glass
         for(int i=0;i<9;i++){

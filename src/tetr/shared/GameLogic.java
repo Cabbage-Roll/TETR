@@ -7,10 +7,13 @@ import java.util.Collections;
 import org.bukkit.entity.Player;
 
 import tetr.minecraft.Main;
+import tetr.minecraft.xseries.XSound;
 
 public class GameLogic {
     
     private Player player;
+    public String magicString;
+    private int magicStringsActive = 0;
 
     public final Point[][][] pieces = Pieces.pieces;
     private final Point[][][] kicktable = Kicktable.kicktable_srsplus;
@@ -23,7 +26,7 @@ public class GameLogic {
     private int garbageCap = 4;
     
     private int zonelines;
-    private boolean zone;
+    public boolean zone;
     
     public final int STAGESIZEX = 10;
     public final int STAGESIZEY = 40;
@@ -37,6 +40,8 @@ public class GameLogic {
     public boolean held;
     public ArrayList<Integer> nextPieces = new ArrayList<Integer>();
     
+    private boolean tSpin;
+    private boolean tSpinMini;
     public int combo;
     public int b2b;
     public long score;
@@ -53,18 +58,62 @@ public class GameLogic {
         this.player = null;
     }
 
+    private boolean checkOOBE(int x, int y) {
+        if(y<0 || STAGESIZEY<=y || x<0 || STAGESIZEX<=x) {
+            return true;
+        }
+        return false;
+    }
+    
+    public int forGarbageTable(int l) {
+        if(l==1 && tSpin==false) {
+            setMagicString("single");
+            return 0;
+        }else if (l==2 && tSpin==false){
+            setMagicString("double");
+            return 1;
+        }else if (l==3 && tSpin==false){
+            setMagicString("triple");
+            return 2;
+        }else if (l==4 && tSpin==false){
+            setMagicString("quad");
+            return 3;
+        }else if (l==1 && tSpin==true && tSpinMini == true){
+            setMagicString("t spin mini single");
+            return 4;
+        }else if (l==1 && tSpin==true){
+            setMagicString("t spin single");
+            return 5;
+        }else if (l==2 && tSpin==true && tSpinMini == true){
+            setMagicString("t spin mini double");
+            return 6;
+        }else if (l==2 && tSpin==true){
+            setMagicString("t spin double");
+            return 7;
+        }else if (l==3 && tSpin==true){
+            setMagicString("t spin triple");
+            return 8;
+        }else {
+            return -1;
+        }
+    }
+    
     private void sendGarbage(int n) {
-        if(n>0) {
+        int garbageRemaining = n;
+        while(!garbageToCome.isEmpty() && garbageRemaining>0) {
+            garbageToCome.set(0, garbageToCome.get(0)-1);
+            if(garbageToCome.get(0)==0) {
+                garbageToCome.remove(0);
+                garbageHole=(int)(Math.random() * STAGESIZEX);
+            }
+            garbageRemaining--;
+        }
+        
+        if(garbageRemaining>0) {
             if(this.player == null) {
-                receiveGarbage(n);
+                receiveGarbage(garbageRemaining);
             }else {
-                int random = (int)Math.random()*Main.inwhichroom.get(player).playerlist.size();
-                Player target = Main.inwhichroom.get(player).playerlist.get(random);
-                if(target!=player) {
-                    Main.inwhichroom.get(player).forwardGarbage(n, target);
-                }else {
-                    sendGarbage(n);
-                }
+                Main.inwhichroom.get(player).forwardGarbage(garbageRemaining, player);
             }
         }
     }
@@ -76,7 +125,6 @@ public class GameLogic {
     private void tryToPutGarbage() {
         for(int h=0;h<garbageCap;h++) {
             if(!garbageToCome.isEmpty()) {
-                totalGarbageReceived++;
                 putGarbageLine(garbageHole);
                 
                 garbageToCome.set(0, garbageToCome.get(0)-1);
@@ -101,6 +149,8 @@ public class GameLogic {
                 stage[STAGESIZEY-1][j]=8;
             }
         }
+        
+        totalGarbageReceived++;
     }
     
     private Point[] getCurrentPiece() {
@@ -123,6 +173,7 @@ public class GameLogic {
     
     public void startZone() {
         zone = true;
+        magicString = "Zone activated";
     }
     
     private void stopZone() {
@@ -139,17 +190,71 @@ public class GameLogic {
     
     public boolean checkTSpin() {
         if(currentPiece == 6) {
-            switch(currentPieceRotation) {
-            case 0:
-                break;
-            case 1:
-                break;
-            case 2:
-                break;
-            case 3:
-                break;
+            boolean corners[] = {true, true, true, true};
+            if(!checkOOBE(currentPiecePosition.x, currentPiecePosition.y)) {
+                if(stage[currentPiecePosition.y][currentPiecePosition.x]==7) {
+                    corners[0] = false;
+                }
             }
-            return true;
+            
+            if(!checkOOBE(currentPiecePosition.x+2, currentPiecePosition.y)) {
+                if(stage[currentPiecePosition.y][currentPiecePosition.x+2]==7) {
+                    corners[1] = false;
+                }
+            }
+            
+            if(!checkOOBE(currentPiecePosition.x, currentPiecePosition.y+2)) {
+                if(stage[currentPiecePosition.y+2][currentPiecePosition.x]==7) {
+                    corners[2] = false;
+                }
+            }
+            
+            if(!checkOOBE(currentPiecePosition.x+2, currentPiecePosition.y+2)) {
+                if(stage[currentPiecePosition.y+2][currentPiecePosition.x+2]==7) {
+                    corners[3] = false;
+                }
+            }
+            
+            int cornersFilled = 0;
+            for(int i=0;i<4;i++) {
+                if(corners[i]==true) {
+                    cornersFilled++;
+                }
+            }
+            
+            if(cornersFilled>=3) {
+
+                if(player!=null) {
+                    for(int i=0;i<3;i++) {
+                        player.playSound(player.getEyeLocation(), XSound.BLOCK_END_PORTAL_FRAME_FILL.parseSound(), 1f, 1f);
+                    }
+                }
+                tSpinMini = true;
+                
+                switch(currentPieceRotation) {
+                case 0:
+                    if(corners[0] && corners[1]) {
+                        tSpinMini=false;
+                    }
+                    break;
+                case 1:
+                    if(corners[1] && corners[3]) {
+                        tSpinMini=false;
+                    }
+                    break;
+                case 2:
+                    if(corners[3] && corners[2]) {
+                        tSpinMini=false;
+                    }
+                    break;
+                case 3:
+                    if(corners[2] && corners[0]) {
+                        tSpinMini=false;
+                    }
+                    break;
+                }
+                return true;
+            }
         }
         return false;
     }
@@ -178,6 +283,8 @@ public class GameLogic {
         garbageToCome.clear();
         garbageHole=(int)(Math.random() * STAGESIZEX);
         
+        magicString = "";
+        
         makeNextPiece();
     }
     
@@ -195,7 +302,7 @@ public class GameLogic {
                 currentPiece = heldPiece;
                 heldPiece = temp;
                 
-                currentPiecePosition = new Point(3, 20);
+                currentPiecePosition = new Point(3, 17);
                 currentPieceRotation = 0;
                 
                 topOutCheck();
@@ -224,11 +331,12 @@ public class GameLogic {
     }
     
     public void spawnPiece() {
-        currentPiecePosition = new Point(3, 20);
+        currentPiecePosition = new Point(3, 17);
         currentPieceRotation = 0;
         currentPiece = nextPieces.get(0);
         nextPieces.remove(0);
         held = false;
+        tSpin = false;
     }
     
     public boolean collides(int x, int y, int rotation) {
@@ -246,7 +354,7 @@ public class GameLogic {
         return false;
     }
     
-    public void rotatePiece(int d) {
+    public boolean rotatePiece(int d) {
         int newRotation = (currentPieceRotation + d + 4) % 4;
         
         int special = -1;
@@ -282,18 +390,21 @@ public class GameLogic {
         int maxtries = kicktable[pieceType][special].length;
 
         for(int tries=0;tries<maxtries;tries++) {
-            if(!collides(currentPiecePosition.x + kicktable[pieceType][special][tries].x, currentPiecePosition.y - kicktable[pieceType][special][tries].y, newRotation)){
-                movePiece(currentPiecePosition.x + kicktable[pieceType][special][tries].x, currentPiecePosition.y - kicktable[pieceType][special][tries].y, newRotation);
-                break;
+            if(movePiece(currentPiecePosition.x + kicktable[pieceType][special][tries].x, currentPiecePosition.y - kicktable[pieceType][special][tries].y, newRotation)){
+                tSpin = checkTSpin();
+                return true;
             }
         }
+        
+        return false;
     }
     
-    public boolean movePiece(int x, int y, int r) {
-        if(!collides(x, y, r)) {
-            currentPiecePosition.x = x;
-            currentPiecePosition.y = y;
-            currentPieceRotation = r;
+    public boolean movePiece(int newX, int newY, int newR) {
+        if(!collides(newX, newY, newR)) {
+            currentPiecePosition.x = newX;
+            currentPiecePosition.y = newY;
+            currentPieceRotation = newR;
+            tSpin = false;
             return true;
         }
         return false;
@@ -304,24 +415,62 @@ public class GameLogic {
         while(!collides(currentPiecePosition.x, currentPiecePosition.y+lines+1, currentPieceRotation)) {
             lines++;
         }
-        movePiece(currentPiecePosition.x, currentPiecePosition.y+lines, currentPieceRotation);
-        score+=lines*2;
+        if(lines>0) {
+            movePiece(currentPiecePosition.x, currentPiecePosition.y+lines, currentPieceRotation);
+            score+=lines*2;
+        }
         placePiece();
     }
     
     public void placePiece() {
+
+        totalPiecesPlaced++;
+        
         for(Point point: getCurrentPiece()) {
             stage[currentPiecePosition.y + point.y][currentPiecePosition.x + point.x] = currentPiece;
         }
+        
         if(zone) {
             clearLinesZone();
         }else {
-            clearLines();
+            int linesCleared = clearLines();
+            
+            if(linesCleared>0) {
+                combo++;
+                if(player!=null) {
+                    for(int i=0;i<linesCleared*2;i++) {
+                        player.playSound(player.getEyeLocation(), XSound.BLOCK_NOTE_BLOCK_HARP.parseSound(), 1f, (float)Math.pow(2,(double)(combo*2-12)/12));
+                    }
+                    if(tSpin) {
+                        for(int i=0;i<linesCleared*2;i++) {
+                            player.playSound(player.getEyeLocation(), XSound.ENTITY_FIREWORK_ROCKET_BLAST.parseSound(), 1f, 0.5f);
+                        }
+                    }
+                }
+                if((totalLinesCleared-totalGarbageReceived)*STAGESIZEX+totalGarbageReceived==totalPiecesPlaced*4) {
+                    if(player!=null) {
+                        player.playSound(player.getEyeLocation(), XSound.BLOCK_ANVIL_LAND.parseSound(), 1f, 0.5f);
+                    }
+                    sendGarbage(garbagetable[forGarbageTable(linesCleared)][combo]+10);
+                }else {
+                    sendGarbage(garbagetable[forGarbageTable(linesCleared)][combo]);
+                }
+            }else {
+                combo = -1;
+                tryToPutGarbage();
+            }
+            
+            debug("tspin="+tSpin+";combo="+combo+";linescleared="+linesCleared);
+            
         }
+        
         makeNextPiece();
     }
     
-    public void clearLines() {
+    private void debug(String s) {
+    }
+    
+    public int clearLines() {
         int numClears = 0;
         boolean yes;
         for(int i=STAGESIZEY-1;i>0;i--) {
@@ -339,29 +488,22 @@ public class GameLogic {
             }
         }
         
-
-        System.out.println(numClears);
         switch (numClears) {
         case 1:
             score += 100;
-            sendGarbage(garbagetable[0][combo+1]);
             break;
         case 2:
             score += 300;
-            sendGarbage(garbagetable[1][combo+1]);
             break;
         case 3:
             score += 500;
-            sendGarbage(garbagetable[2][combo+1]);
             break;
         case 4:
             score += 800;
-            sendGarbage(garbagetable[3][combo+1]);
-            break;
-        default:
-            tryToPutGarbage();
             break;
         }
+        
+        return numClears;
     }
     
     public void clearLine(int line) {
@@ -375,6 +517,8 @@ public class GameLogic {
                 stage[i][j] = stage[i-1][j];
             }
         }
+        
+        totalLinesCleared++;
     }
     
     public void clearLinesZone() {
@@ -405,6 +549,29 @@ public class GameLogic {
         for(int j=0;j<STAGESIZEX;j++) {
             stage[STAGESIZEY-zonelines][j] = 16;
         }
+        
+        magicString = zonelines + " LINES";
+    }
+    
+    private void setMagicString(String s) {
+        new Thread() {
+            @Override
+            public void run() {
+                magicStringsActive++;
+                magicString = s + " " + combo + " combo";
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                if(magicStringsActive == 1) {
+                    magicString = "";
+                }
+                magicStringsActive--;
+                this.interrupt();
+            }
+        }.start();
     }
 
 }

@@ -19,6 +19,8 @@ public class SkinMenu implements InventoryHolder {
 
     protected final static int BACK_LOCATION = 0;
     protected final static int TORCH_LOCATION = 8;
+    protected final static int BLOCK_LOCATIONS[] = {28,29,30,31,32,33,34,11,13,37,38,39,40,41,42,43,15};
+    
     
     public SkinMenu(Player player){
         
@@ -32,26 +34,12 @@ public class SkinMenu implements InventoryHolder {
         
         ItemStack blocks[] = Main.skinmap.get(player);
         //changeable blocks
-        for(int i=0;i<7;i++){
+        for(int i=0;i<17;i++){
             if(Main.skineditorver.get(player)==0) {
-                inventory.setItem(28+i, Blocks.blocks[i]);
+                inventory.setItem(BLOCK_LOCATIONS[i], Blocks.blocks[i]);
             }else if(Main.skineditorver.get(player)==1) {
-                inventory.setItem(28+i, blocks[i]);
+                inventory.setItem(BLOCK_LOCATIONS[i], blocks[i]);
             }
-        }
-
-        for(int i=0;i<7;i++){
-            if(Main.skineditorver.get(player)==0) {
-                inventory.setItem(37+i, Blocks.blocks[i+9]);
-            }else if(Main.skineditorver.get(player)==1) {
-                inventory.setItem(37+i, blocks[i+9]);
-            }
-        }
-        
-        if(Main.skineditorver.get(player)==0) {
-            inventory.setItem(11, Blocks.blocks[7]);
-        }else if(Main.skineditorver.get(player)==1) {
-            inventory.setItem(11, blocks[7]);
         }
         
         inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));

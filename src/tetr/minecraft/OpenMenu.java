@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 
 import tetr.minecraft.menus.HomeMenu;
 import tetr.minecraft.menus.JoinRoomMenu;
-import tetr.minecraft.menus.MakeRoomMenu;
 import tetr.minecraft.menus.MultiplayerMenu;
 import tetr.minecraft.menus.RoomMenu;
 import tetr.minecraft.menus.SettingsMenu;
@@ -26,9 +25,6 @@ public class OpenMenu implements CommandExecutor{
             break;
         case "multiplayer":
             new MultiplayerMenu(player);
-            break;
-        case "makeroom":
-            new MakeRoomMenu(player);
             break;
         case "joinroom":
             new JoinRoomMenu(player, Main.joinroompage.get(player));

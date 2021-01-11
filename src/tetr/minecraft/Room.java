@@ -39,20 +39,21 @@ public class Room {
     public ArrayList<Player> playerlist=new ArrayList<Player>();
     public Map<Player,Table> playerboards=new HashMap<Player,Table>();
     public String id;
+    public String name;
     public Player host;
     public static Playlist slist;
     public RadioSongPlayer rsp;
     public boolean running;
-    public boolean multiplayer;
     public int playersalive;
     public boolean backfire = false;
-    public boolean unlisted;
+    public boolean isSingleplayer;
     
     public int index;
     
-    public Room(Player player, boolean unlisted){
+    public Room(Player player, boolean isSingleplayer){
         if(Main.numberofsongs>0){
             rsp=new RadioSongPlayer(slist);
+            rsp.setVolume((byte)50);
         }
         
         String mkID;
@@ -64,8 +65,12 @@ public class Room {
         host=player;
         addPlayer(player);
         Main.roommap.put(id, this);
-        multiplayer=false;
-        this.unlisted = unlisted;
+        this.isSingleplayer = isSingleplayer;
+        if(isSingleplayer) {
+            name = "Singleplayer (work in progress)";
+        }else {
+            name = "Room #" + id;
+        }
         index = -1;
     }
     
@@ -75,7 +80,7 @@ public class Room {
         }
         
         for(Player player: playerlist){
-            playerboards.get(player).setGameOver();
+            playerboards.get(player).setGameOver(true);
         }
         
         running=false;
@@ -104,7 +109,7 @@ public class Room {
             table.initGame(seed,seed2);
             
             if(Main.numberofsongs>0){
-                table.getPlayer().sendMessage("Playing: "+rsp.getSong().getPath().getName().replaceAll(".nbs$", ""));
+                table.getPlayer().sendMessage("[TETR] Playing: "+rsp.getSong().getPath().getName().replaceAll(".nbs$", ""));
             }
         }
         
@@ -117,12 +122,10 @@ public class Room {
         playerlist.add(player);
         Table table=new Table(player);
         playerboards.put(player,table);
-        multiplayer=true;
         
         if(Main.numberofsongs>0){
             rsp.addPlayer(player);
         }
-        
     }
     
     public void removePlayer(Player player) {
@@ -130,13 +133,11 @@ public class Room {
             rsp.removePlayer(player);
         }
         playerboards.get(player).destroyTable();
-        playerboards.get(player).setGameOver();
+        playerboards.get(player).setGameOver(true);
         playersalive--;
-        if(playersalive<=1){
+        if(playersalive<2){
             stopRoom();
         }
-        
-        
         playerlist.remove(player);
         playerboards.remove(player);
         Main.inwhichroom.remove(player);
@@ -145,24 +146,24 @@ public class Room {
                 Main.roommap.remove(id);
             }else {
                 host=playerlist.get(0);
+                host.sendMessage("[TETR] Since the old room host left, you became the new host.");
             }
-        }
-        if(playerlist.size()==1){
-            multiplayer=false;
         }
     }
     
-    public void forwardGarbage(int n, Player player) {
+    public void forwardGarbage(int n, Player sender) {
         if(n>0) {
-            int rand = (int) (Math.random()*playerlist.size());
-            if(playerboards.get(playerlist.get(rand)).getPlayer()!=player || (playerboards.get(playerlist.get(rand)).getPlayer()==player && backfire)) {
-                if(!playerboards.get(playerlist.get(rand)).getGameOver()) {
-                    playerboards.get(playerlist.get(rand)).gl.receiveGarbage(n);
-                }else {
-                    forwardGarbage(n, player);
+            int random = (int) (Math.random()*playerlist.size());
+            Table table = playerboards.get(playerlist.get(random));
+            Player receiver = table.getPlayer();
+            if(receiver!=sender || (receiver==sender && backfire)) {
+                if(!table.gl.gameover) {
+                    table.gl.receiveGarbage(n);
+                }else if(running){
+                    forwardGarbage(n, sender);
                 }
-            }else if(multiplayer) {
-                forwardGarbage(n, player);
+            }else if(!isSingleplayer){
+                forwardGarbage(n, sender);
             }
         }
     }

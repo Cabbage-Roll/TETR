@@ -12,6 +12,7 @@ import java.io.File;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import tetr.shared.GameLogic;
@@ -128,7 +129,8 @@ public class Main extends JPanel {
         g.drawString("hold: c\n", 50, 130);
         g.drawString("hard drop: space\n", 50, 140);
         g.drawString("soft drop: arrown down", 50, 150);
-        
+        g.drawString("zone: shift", 50, 160);
+        g.drawString(gl.magicString, 120, 200);
         
         
         drawPiece(g);
@@ -246,6 +248,7 @@ public class Main extends JPanel {
                         e.printStackTrace();
                     }
                 }
+                JOptionPane.showMessageDialog(f, "Hi, I am a familiar yet legally distinct block stacker game but because of poor technology in my country unfortunately I am not able to continue operating. \nPlease be so kind to restart the game yourself if you want to play again. \nMany thanks for your cooperation! \nBest regards, The familiar yet legally distinct block stacker game\n\n\nBe sure to also try out the minecraft version!");
             }
         }.start();
         

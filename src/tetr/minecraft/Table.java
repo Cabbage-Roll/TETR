@@ -3,6 +3,7 @@ package tetr.minecraft;
 import java.awt.Point;
 import java.util.Random;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -14,8 +15,11 @@ import org.bukkit.util.Vector;
 
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import tetr.minecraft.constants.Blocks;
 import tetr.minecraft.functions.SendBlockChangeCustom;
+import tetr.minecraft.xseries.XSound;
 import tetr.shared.GameLogic;
 
 public class Table {
@@ -62,13 +66,15 @@ public class Table {
     private double garbageCapIncreaseDelay = 1200;
     private double garbageCapIncrease = 1 / 20;
     
-    GameLogic gl = new GameLogic(player);
+    public GameLogic gl;
     
     Table(Player p) {
+        gl = new GameLogic(p);
         player=p;
         world=p.getWorld();
         Location location=player.getLocation();
         float yaw = player.getLocation().getYaw();
+        yaw = (yaw % 360 + 360) % 360;
         if(45<=yaw && yaw<135) {
             rotateTable("Y");
             rotateTable("Y");
@@ -107,19 +113,10 @@ public class Table {
         return player;
     }
     
-    //v4
-    public void startZone() {
-        gl.startZone();
+    public void setGameOver(boolean value) {
+        gl.gameover = value;
     }
     
-    public void setGameOver() {
-        gl.gameover = true;
-    }
-    
-    public boolean getGameOver() {
-        return gl.gameover;
-    }
-
     //v2
     public void initGame(long seed, long seed2) {
         coni=Math.max(Math.abs(m1x),Math.abs(m1y));
@@ -189,30 +186,18 @@ public class Table {
                     
                     this.cancel();
                 }else {
+                    render();
                     looptick++;
                 }
             }
         }.runTaskTimer(Main.plugin, 0, 1);
-        
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if(destroying) {
-                    this.cancel();
-                }else if(gl.gameover) {
-                    this.cancel();
-                }else {
-                    render();
-                }
-            }
-        }.runTaskTimer(Main.plugin, 0, 20);
         
         //thread safe code
         new Thread() {
             @Override
             public void run() {
                 while(!gl.gameover) {
-                    if(counter>=100) {
+                    if(counter>=1000) {
                         if(!gl.movePiece(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation)){
                             gl.placePiece();
                         }else {
@@ -220,7 +205,7 @@ public class Table {
                         }
                     }
     
-                    counter+=(gl.totalLinesCleared+4)/4;
+                    counter+=Math.max(looptick-1200, 0)/200+1;
                     
                     try {
                         Thread.sleep(10);
@@ -229,14 +214,19 @@ public class Table {
                         e.printStackTrace();
                     }
                 }
-                if(Main.inwhichroom.get(player) != null) {
-                    if(Main.roommap.containsKey(Main.inwhichroom.get(player).id)) {
-                        Main.inwhichroom.get(player).playersalive--;
-                        if(Main.inwhichroom.get(player).playersalive<=1) {
-                            Main.inwhichroom.get(player).stopRoom();
+                
+                Room room = Main.inwhichroom.get(player);
+                
+                if(room != null) {
+                    if(Main.roommap.containsKey(room.id)) {
+                        room.playersalive--;
+                        if(room.playersalive<2) {
+                            room.stopRoom();
                         }
                     }
                 }
+                
+                this.interrupt();
             }
         }.start();
     }
@@ -270,11 +260,12 @@ public class Table {
     private void sendScoreboard() {
         
         if(gl.combo>0) {
-            board.set("Combo: " + gl.combo, 6);
+            board.set("Combo: " + gl.combo, 7);
         }else{
             board.set("     ", 6);
         }
-        
+
+        board.set("Garbage received: " + gl.totalGarbageReceived, 6);
         board.set("Lines: " + gl.totalLinesCleared, 5);
         board.set("Pieces: " + gl.totalPiecesPlaced, 4);
         board.set("Score: " + gl.score, 3);
@@ -289,115 +280,70 @@ public class Table {
         board.set("Counter: " + counter, 0);
     }
     
-    private void sendTitleAndActionBar() {
-        /*
-        if(!Main.version.contains("1_8")) {
-            if(!zone) {
-                String s1="";
-                String s3="";
-                
-                if(spun) {
-                    if(mini) {
-                        s3="§5t-spin§r";
-                    }else{
-                        s3="§5T-SPIN§r";
-                    }
+    public boolean userInput(String input) {
+        if(!gl.gameover) {
+            switch(input) {
+            case "y":
+                if(gl.rotatePiece(-1)) {
+                    counter=0;
                 }
-                
-                if(lines==1) {
-                    s1="SINGLE";
-                }else if(lines==2) {
-                    s1="DOUBLE";
-                }else if(lines==3) {
-                    s1="TRIPLE";
-                }else if(lines==4) {
-                    s1="QUAD";
+                break;
+            case "x":
+                if(gl.rotatePiece(+1)) {
+                    counter=0;
                 }
-                
-                if(lines==0 && spun) {
-                    s1=" ";
+                break;
+            case "c":
+                if(gl.holdPiece()) {
+                    counter=0;   
+                }else {
+                    player.playSound(player.getEyeLocation(), XSound.ENTITY_SPLASH_POTION_BREAK.parseSound(), 1f, 1f);
                 }
+                break;
                 
-                if((gl.totalLinesCleared-gl.totalGarbageReceived)*gl.STAGESIZEX+gl.totalGarbageReceived==gl.totalPiecesPlaced*4) {
-                    player.sendTitle("", ChatColor.GOLD + "" + ChatColor.BOLD + "ALL CLEAR", 20, 40, 20);
+            case "left":
+                if(gl.movePiece(gl.currentPiecePosition.x-1, gl.currentPiecePosition.y, gl.currentPieceRotation)) {
+                    counter=0;
                 }
-                
-                //dont kill old title if its empty
-                if(s1!="") {
-                s1=s3+" "+s1;
-                
-                    //Main.functions.sendTitle(player, s1, s2, 0, 20, 10);
-                    
-                    //player.sendTitle(s1, s2, 0, 20, 10);
-    
-                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder(s1).create());
+                break;
+            case "right":
+                if(gl.movePiece(gl.currentPiecePosition.x+1, gl.currentPiecePosition.y, gl.currentPieceRotation)) {
+                    counter=0;
                 }
+                break;
+                
+            case "up":
+                if(gl.rotatePiece(+2)) {
+                    counter=0;
+                }
+                break;
+            case "down":
+                if(gl.movePiece(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation)) {
+                    counter=0;
+                    gl.score+=1;
+                }
+                break;
+            
+            case "space":
+                gl.hardDropPiece();
+                break;
+            case "l":
+                gl.gameover=true;
+                break;
+            case "instant":
+                int temp = gl.currentPiecePosition.y;
+                while(!gl.collides(gl.currentPiecePosition.x, temp+1, gl.currentPieceRotation)) {
+                    temp++;
+                }
+                gl.movePiece(gl.currentPiecePosition.x, temp, gl.currentPieceRotation);
+                break;
+            case "shift":
+                gl.startZone();
+            default:
+                System.out.println("wee woo wee woo");
             }
         }
-        */
-    }
-    
-    public void userInput(String input) {
-        switch(input) {
-        case "y":
-            gl.rotatePiece(-1);
-            counter=0;
-            break;
-        case "x":
-            gl.rotatePiece(+1);
-            counter=0;
-            break;
-        case "c":
-            if(gl.holdPiece()==true) {
-                counter=0;   
-            }else {
-                player.playSound(player.getEyeLocation(), SoundUtil.VILLAGER_NO, 1f, 1f);
-            }
-            break;
-            
-        case "left":
-            if(!gl.collides(gl.currentPiecePosition.x-1, gl.currentPiecePosition.y, gl.currentPieceRotation)) {
-                gl.movePiece(gl.currentPiecePosition.x-1, gl.currentPiecePosition.y, gl.currentPieceRotation);
-                counter=0;
-            }
-            break;
-        case "right":
-            if(!gl.collides(gl.currentPiecePosition.x+1, gl.currentPiecePosition.y, gl.currentPieceRotation)) {
-                gl.movePiece(gl.currentPiecePosition.x+1, gl.currentPiecePosition.y, gl.currentPieceRotation);
-                counter=0;
-            }
-            break;
-            
-        case "up":
-            gl.rotatePiece(+2);
-            counter=0;
-            break;
-        case "down":
-            if(!gl.collides(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation)) {
-                gl.movePiece(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation);
-                counter=0;
-                gl.score+=1;
-            }
-            break;
-        
-        case "space":
-            gl.hardDropPiece();
-            break;
-        case "l":
-            gl.gameover=true;
-            break;
-        case "instant":
-            int temp = gl.currentPiecePosition.y;
-            while(!gl.collides(gl.currentPiecePosition.x, temp+1, gl.currentPieceRotation)) {
-                temp++;
-            }
-            gl.movePiece(gl.currentPiecePosition.x, temp, gl.currentPieceRotation);
-            break;
-            
-        default:
-            System.out.println("wee woo wee woo");
-        }
-        render();
+        return false;
     }
    	
     private void debug(String s) {
@@ -447,22 +393,7 @@ public class Table {
         
         if(block != -1) {
             for(Point point: gl.pieces[block][0]) {
-                switch(block) {
-                case 2:
-                    colPrintNewRender(point.x+x+1, point.y+y+1, block);
-                    break;
-                case 0:
-                case 1:
-                case 3:
-                case 5:
-                case 6:
-                    ///something wrong
-                    colPrintNewRender(point.x+x+0.5f, point.y+y+1, block);
-                    break;
-                case 4:
-                    colPrintNewRender(point.x+x, point.y+y+0.5f, block);
-                    break;
-                }
+                colPrintNewRender(x + point.x, y + point.y, block);
             }
         }
     }
@@ -477,6 +408,7 @@ public class Table {
         }
         transparent = ot;
         gl.gameover = true;
+        if(board!=null)
         board.delete();
         board = null;
         destroying = true;
@@ -546,11 +478,14 @@ public class Table {
         transparent = ot;
     }
    	
+    public int[][] lastStageState = new int[40][10];
+    
    	private void render() {
-   	    //print board
+   	    int[][] newStageState = new int[40][10];
+   	    //update stage
    	    for(int i=0;i<gl.STAGESIZEY;i++) {
    	        for(int j=0;j<gl.STAGESIZEX;j++) {
-   	            colPrintNewRender(j, i, gl.stage[i][j]);
+   	            newStageState[i][j] = gl.stage[i][j];
    	        }
    	    }
    	    
@@ -562,19 +497,19 @@ public class Table {
         //print held piece
         printStaticPieceNewRender(-7, gl.STAGESIZEY/2, gl.heldPiece);
         
-        //print ghost
+        //update ghost
         int ghosty=gl.currentPiecePosition.y;
         while(!gl.collides(gl.currentPiecePosition.x, ghosty+1, gl.currentPieceRotation)) {
             ghosty++;
         }
 
         for(Point point: gl.pieces[gl.currentPiece][gl.currentPieceRotation]) {
-            colPrintNewRender(point.x+gl.currentPiecePosition.x, point.y+ghosty, 9+gl.currentPiece);
+            newStageState[point.y + ghosty][point.x + gl.currentPiecePosition.x] = 9+gl.currentPiece;
         }
         
-        //print current piece
-        for(Point point: gl.pieces[gl.currentPiece][gl.currentPieceRotation]) {
-            colPrintNewRender(point.x + gl.currentPiecePosition.x, point.y + gl.currentPiecePosition.y, gl.currentPiece);
+        //update current piece
+        for(Point point: gl.pieces[gl.currentPiece][gl.currentPieceRotation]) { 
+            newStageState[point.y + gl.currentPiecePosition.y][point.x + gl.currentPiecePosition.x] = gl.currentPiece;
         }
         
         //print garbage meter
@@ -591,9 +526,20 @@ public class Table {
             colPrintNewRender(-2, gl.STAGESIZEY-1-i%(gl.STAGESIZEY/2), (i/(gl.STAGESIZEY/2))%7);
         }
         
+        
+        //print stage+piece+ghost
+        for(int i=0;i<gl.STAGESIZEY;i++) {
+            for(int j=0;j<gl.STAGESIZEX;j++) {
+                lastStageState[i][j] = newStageState[i][j];
+                colPrintNewRender(j, i, newStageState[i][j]);
+            }
+        }
+        
         //send scoreboard
 
         sendScoreboard();
    	    
+        //send magic string action bar
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder((gl.zone==true?(ChatColor.DARK_GREEN + "" + ChatColor.BOLD):"") + gl.magicString).create());
    	}
 }
