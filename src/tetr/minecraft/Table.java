@@ -1,7 +1,6 @@
 package tetr.minecraft;
 
 import java.awt.Point;
-import java.util.Random;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -48,23 +47,9 @@ public class Table {
     private int conj;
     private int conk;
     
-    //bag variables
-    private Random gen;
+    public int[][] lastStageState = new int[GameLogic.STAGESIZEY][GameLogic.STAGESIZEX];
     
     public boolean ULTRAGRAPHICS = true;
-    
-    //if counter > gravity^-1  fall
-    private int counter = 0;//gravity variable
-    private double startingGravity = 20;
-    private int gravityIncreaseDelay = 600;
-    private double gravityIncrease = 1 / 20;
-    private int lockDelay = 20;
-    private int timesMoved = 0;
-    private static final int MAXIMUMMOVES = 15;
-    
-    //garbage
-    private double garbageCapIncreaseDelay = 1200;
-    private double garbageCapIncrease = 1 / 20;
     
     public GameLogic gl;
     
@@ -79,16 +64,16 @@ public class Table {
             rotateTable("Y");
             rotateTable("Y");
             rotateTable("Y");
-            moveTable(location.getBlockX()-gl.STAGESIZEY, location.getBlockY()+gl.STAGESIZEY-gl.VISIBLEROWS/2, location.getBlockZ()+gl.STAGESIZEX/2);
+            moveTable(location.getBlockX()-GameLogic.STAGESIZEY, location.getBlockY()+GameLogic.STAGESIZEY-GameLogic.VISIBLEROWS/2, location.getBlockZ()+GameLogic.STAGESIZEX/2);
         }else if(135<=yaw && yaw<225) {
-            moveTable(location.getBlockX()-gl.STAGESIZEX/2, location.getBlockY()+gl.STAGESIZEY-gl.VISIBLEROWS/2, location.getBlockZ()-gl.STAGESIZEY);
+            moveTable(location.getBlockX()-GameLogic.STAGESIZEX/2, location.getBlockY()+GameLogic.STAGESIZEY-GameLogic.VISIBLEROWS/2, location.getBlockZ()-GameLogic.STAGESIZEY);
         }else if(225<=yaw && yaw<315) {
             rotateTable("Y");
-            moveTable(location.getBlockX()+gl.STAGESIZEY, location.getBlockY()+gl.STAGESIZEY-gl.VISIBLEROWS/2, location.getBlockZ()-gl.STAGESIZEX/2);
+            moveTable(location.getBlockX()+GameLogic.STAGESIZEY, location.getBlockY()+GameLogic.STAGESIZEY-GameLogic.VISIBLEROWS/2, location.getBlockZ()-GameLogic.STAGESIZEX/2);
         }else if((315<=yaw && yaw<360) || (0<=yaw && yaw<45)) {
             rotateTable("Y");
             rotateTable("Y");
-            moveTable(location.getBlockX()+gl.STAGESIZEX/2, location.getBlockY()+gl.STAGESIZEY-gl.VISIBLEROWS/2, location.getBlockZ()+gl.STAGESIZEY);
+            moveTable(location.getBlockX()+GameLogic.STAGESIZEX/2, location.getBlockY()+GameLogic.STAGESIZEY-GameLogic.VISIBLEROWS/2, location.getBlockZ()+GameLogic.STAGESIZEY);
         }
         gl.gameover=true;
     }
@@ -105,10 +90,6 @@ public class Table {
         return gz;
     }
     
-    public BPlayerBoard getBoard() {
-        return board;
-    }
-    
     public Player getPlayer() {
         return player;
     }
@@ -117,7 +98,6 @@ public class Table {
         gl.gameover = value;
     }
     
-    //v2
     public void initGame(long seed, long seed2) {
         coni=Math.max(Math.abs(m1x),Math.abs(m1y));
         conj=Math.max(Math.abs(m2x),Math.abs(m2y));
@@ -171,15 +151,15 @@ public class Table {
                 }else if(gl.gameover) {
                     boolean ot = transparent;
                     transparent = true;
-                    for(int i=0;i<gl.STAGESIZEY;i++) {
-                        for(int j=0;j<gl.STAGESIZEX;j++) {
+                    for(int i=0;i<GameLogic.STAGESIZEY;i++) {
+                        for(int j=0;j<GameLogic.STAGESIZEX;j++) {
                             colPrintNewRender(j, i, 7);
                         }
                     }
                     transparent = ot;
                     
-                    for(int i=gl.STAGESIZEY-gl.VISIBLEROWS;i<gl.STAGESIZEY;i++) {
-                        for(int j=0;j<gl.STAGESIZEX;j++) {
+                    for(int i=GameLogic.STAGESIZEY-GameLogic.VISIBLEROWS;i<GameLogic.STAGESIZEY;i++) {
+                        for(int j=0;j<GameLogic.STAGESIZEX;j++) {
                             turnToFallingBlock(j, i, 1);
                         }
                     }
@@ -191,44 +171,6 @@ public class Table {
                 }
             }
         }.runTaskTimer(Main.plugin, 0, 1);
-        
-        //thread safe code
-        new Thread() {
-            @Override
-            public void run() {
-                while(!gl.gameover) {
-                    if(counter>=1000) {
-                        if(!gl.movePiece(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation)){
-                            gl.placePiece();
-                        }else {
-                            counter = 0;   
-                        }
-                    }
-    
-                    counter+=Math.max(looptick-1200, 0)/200+1;
-                    
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-                
-                Room room = Main.inwhichroom.get(player);
-                
-                if(room != null) {
-                    if(Main.roommap.containsKey(room.id)) {
-                        room.playersalive--;
-                        if(room.playersalive<2) {
-                            room.stopRoom();
-                        }
-                    }
-                }
-                
-                this.interrupt();
-            }
-        }.start();
     }
    	
     @SuppressWarnings("deprecation")
@@ -277,7 +219,7 @@ public class Table {
         }
 
         board.set("Time: " + looptick, 1);
-        board.set("Counter: " + counter, 0);
+        board.set("gl.counter: " + gl.counter, 0);
     }
     
     public boolean userInput(String input) {
@@ -285,17 +227,17 @@ public class Table {
             switch(input) {
             case "y":
                 if(gl.rotatePiece(-1)) {
-                    counter=0;
+                    gl.counter=0;
                 }
                 break;
             case "x":
                 if(gl.rotatePiece(+1)) {
-                    counter=0;
+                    gl.counter=0;
                 }
                 break;
             case "c":
                 if(gl.holdPiece()) {
-                    counter=0;   
+                    gl.counter=0;   
                 }else {
                     player.playSound(player.getEyeLocation(), XSound.ENTITY_SPLASH_POTION_BREAK.parseSound(), 1f, 1f);
                 }
@@ -303,23 +245,23 @@ public class Table {
                 
             case "left":
                 if(gl.movePiece(gl.currentPiecePosition.x-1, gl.currentPiecePosition.y, gl.currentPieceRotation)) {
-                    counter=0;
+                    gl.counter=0;
                 }
                 break;
             case "right":
                 if(gl.movePiece(gl.currentPiecePosition.x+1, gl.currentPiecePosition.y, gl.currentPieceRotation)) {
-                    counter=0;
+                    gl.counter=0;
                 }
                 break;
                 
             case "up":
                 if(gl.rotatePiece(+2)) {
-                    counter=0;
+                    gl.counter=0;
                 }
                 break;
             case "down":
                 if(gl.movePiece(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation)) {
-                    counter=0;
+                    gl.counter=0;
                     gl.score+=1;
                 }
                 break;
@@ -346,6 +288,7 @@ public class Table {
         return false;
     }
    	
+    @SuppressWarnings("unused")
     private void debug(String s) {
         System.out.println(s);
     }
@@ -368,7 +311,7 @@ public class Table {
    	
    	private void colPrintNewRender(float x, float y, int color) {
         int tex, tey, tez;
-        if(y>=gl.STAGESIZEY-gl.VISIBLEROWS) {
+        if(y>=GameLogic.STAGESIZEY-GameLogic.VISIBLEROWS) {
             for(int i=0;i<(coni!=0?coni:thickness);i++) {
                 tex = gx+(int)Math.floor(x*m1x)+(int)Math.floor(y*m1y)+i;
                 for(int j=0;j<(conj!=0?conj:thickness);j++) {
@@ -401,8 +344,8 @@ public class Table {
    	public void destroyTable() {
    	    boolean ot = transparent;
         transparent = true;
-        for(int i=0;i<gl.STAGESIZEY;i++) {
-            for(int j=0;j<gl.STAGESIZEX;j++) {
+        for(int i=0;i<GameLogic.STAGESIZEY;i++) {
+            for(int j=0;j<GameLogic.STAGESIZEX;j++) {
                 colPrintNewRender(j, i, 7);
             }
         }
@@ -417,16 +360,16 @@ public class Table {
     public void moveTable(int x, int y, int z) {
         boolean ot = transparent;
         transparent = true;
-        for(int i=0;i<gl.STAGESIZEY;i++) {
-            for(int j=0;j<gl.STAGESIZEX;j++) {
+        for(int i=0;i<GameLogic.STAGESIZEY;i++) {
+            for(int j=0;j<GameLogic.STAGESIZEX;j++) {
                 colPrintNewRender(j, i, 7);
             }
         }
         gx = x;
         gy = y;
         gz = z;
-        for(int i=0;i<gl.STAGESIZEY;i++) {
-            for(int j=0;j<gl.STAGESIZEX;j++) {
+        for(int i=0;i<GameLogic.STAGESIZEY;i++) {
+            for(int j=0;j<GameLogic.STAGESIZEX;j++) {
                 colPrintNewRender(j, i, 16);
             }
         }
@@ -436,8 +379,8 @@ public class Table {
     public void rotateTable(String input) {
         boolean ot = transparent;
         transparent = true;
-        for(int i=0;i<gl.STAGESIZEY;i++) {
-            for(int j=0;j<gl.STAGESIZEX;j++) {
+        for(int i=0;i<GameLogic.STAGESIZEY;i++) {
+            for(int j=0;j<GameLogic.STAGESIZEX;j++) {
                 colPrintNewRender(j, i, 7);
             }
         }
@@ -470,32 +413,30 @@ public class Table {
             break;
         }
         
-        for(int i=0;i<gl.STAGESIZEY;i++) {
-            for(int j=0;j<gl.STAGESIZEX;j++) {
+        for(int i=0;i<GameLogic.STAGESIZEY;i++) {
+            for(int j=0;j<GameLogic.STAGESIZEX;j++) {
                 colPrintNewRender(j, i, 16);
             }
         }
         transparent = ot;
     }
-   	
-    public int[][] lastStageState = new int[40][10];
     
    	private void render() {
    	    int[][] newStageState = new int[40][10];
    	    //update stage
-   	    for(int i=0;i<gl.STAGESIZEY;i++) {
-   	        for(int j=0;j<gl.STAGESIZEX;j++) {
+   	    for(int i=0;i<GameLogic.STAGESIZEY;i++) {
+   	        for(int j=0;j<GameLogic.STAGESIZEX;j++) {
    	            newStageState[i][j] = gl.stage[i][j];
    	        }
    	    }
    	    
    	    //print next queue
-        for(int i=0;i<gl.next_blocks;i++) {
-            printStaticPieceNewRender(gl.STAGESIZEX+3, gl.STAGESIZEY/2+i*4, gl.nextPieces.get(i));
+        for(int i=0;i<GameLogic.NEXTPIECESMAX;i++) {
+            printStaticPieceNewRender(GameLogic.STAGESIZEX+3, GameLogic.STAGESIZEY/2+i*4, gl.nextPieces.get(i));
         }
         
         //print held piece
-        printStaticPieceNewRender(-7, gl.STAGESIZEY/2, gl.heldPiece);
+        printStaticPieceNewRender(-7, GameLogic.STAGESIZEY/2, gl.heldPiece);
         
         //update ghost
         int ghosty=gl.currentPiecePosition.y;
@@ -514,22 +455,22 @@ public class Table {
         
         //print garbage meter
         int total=0;
-        for(int num: gl.garbageToCome) {
+        for(int num: gl.garbageQueue) {
             total+=num;
         }
         
-        for(int i=0;i<gl.STAGESIZEY/2;i++) {
-            colPrintNewRender(-2, gl.STAGESIZEY-1-i, 7);
+        for(int i=0;i<GameLogic.STAGESIZEY/2;i++) {
+            colPrintNewRender(-2, GameLogic.STAGESIZEY-1-i, 7);
         }
         
         for(int i=0;i<total;i++) {
-            colPrintNewRender(-2, gl.STAGESIZEY-1-i%(gl.STAGESIZEY/2), (i/(gl.STAGESIZEY/2))%7);
+            colPrintNewRender(-2, GameLogic.STAGESIZEY-1-i%(GameLogic.STAGESIZEY/2), (i/(GameLogic.STAGESIZEY/2))%7);
         }
         
         
         //print stage+piece+ghost
-        for(int i=0;i<gl.STAGESIZEY;i++) {
-            for(int j=0;j<gl.STAGESIZEX;j++) {
+        for(int i=0;i<GameLogic.STAGESIZEY;i++) {
+            for(int j=0;j<GameLogic.STAGESIZEX;j++) {
                 lastStageState[i][j] = newStageState[i][j];
                 colPrintNewRender(j, i, newStageState[i][j]);
             }

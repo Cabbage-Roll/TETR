@@ -3,10 +3,13 @@ package tetr.shared;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.bukkit.entity.Player;
 
 import tetr.minecraft.Main;
+import tetr.minecraft.Room;
 import tetr.minecraft.xseries.XSound;
 
 public class GameLogic {
@@ -21,17 +24,32 @@ public class GameLogic {
     
     public boolean gameover = false;
     
-    public ArrayList<Integer> garbageToCome = new ArrayList<Integer>();
+    public ArrayList<Integer> garbageQueue = new ArrayList<Integer>();
     private int garbageHole;
-    private int garbageCap = 4;
+    private double garbageCapBase = 4;
+    private int garbageCapIncreaseDelay = 60;
+    private double garbageCapIncrease = 1 / 20;
+    private double garbageCapMaximum = 8;
+
+    public double counter = 0;
+    private double gravityBase = 1;
+    private int gravityIncreaseDelay = 5;
+    private double gravityIncrease = 0.2d;
+    private double gravityMaximum = 5;
+    
+    private double lockDelay = 0.5d;
+    @SuppressWarnings("unused")
+    private int timesMoved = 0;
+    @SuppressWarnings("unused")
+    private static final int MAXIMUMMOVES = 15;
     
     private int zonelines;
     public boolean zone;
     
-    public final int STAGESIZEX = 10;
-    public final int STAGESIZEY = 40;
-    public final int VISIBLEROWS = 24;
-    public final int next_blocks = 5;
+    public static final int STAGESIZEX = 10;
+    public static final int STAGESIZEY = 40;
+    public static final int VISIBLEROWS = 24;
+    public static final int NEXTPIECESMAX = 5;
 
     public int currentPiece;
     public Point currentPiecePosition;
@@ -100,10 +118,10 @@ public class GameLogic {
     
     private void sendGarbage(int n) {
         int garbageRemaining = n;
-        while(!garbageToCome.isEmpty() && garbageRemaining>0) {
-            garbageToCome.set(0, garbageToCome.get(0)-1);
-            if(garbageToCome.get(0)==0) {
-                garbageToCome.remove(0);
+        while(!garbageQueue.isEmpty() && garbageRemaining>0) {
+            garbageQueue.set(0, garbageQueue.get(0)-1);
+            if(garbageQueue.get(0)==0) {
+                garbageQueue.remove(0);
                 garbageHole=(int)(Math.random() * STAGESIZEX);
             }
             garbageRemaining--;
@@ -119,17 +137,17 @@ public class GameLogic {
     }
     
     public void receiveGarbage(int n) {
-        garbageToCome.add(n);
+        garbageQueue.add(n);
     }
     
     private void tryToPutGarbage() {
-        for(int h=0;h<garbageCap;h++) {
-            if(!garbageToCome.isEmpty()) {
+        for(int h=0;h<garbageCapBase;h++) {
+            if(!garbageQueue.isEmpty()) {
                 putGarbageLine(garbageHole);
                 
-                garbageToCome.set(0, garbageToCome.get(0)-1);
-                if(garbageToCome.get(0)==0) {
-                    garbageToCome.remove(0);
+                garbageQueue.set(0, garbageQueue.get(0)-1);
+                if(garbageQueue.get(0)==0) {
+                    garbageQueue.remove(0);
                     garbageHole=(int)(Math.random() * STAGESIZEX);
                 }
             }
@@ -280,12 +298,13 @@ public class GameLogic {
         zone = false;
         zonelines = 0;
         
-        garbageToCome.clear();
+        garbageQueue.clear();
         garbageHole=(int)(Math.random() * STAGESIZEX);
         
         magicString = "";
         
         makeNextPiece();
+        gameLoop();
     }
     
     public boolean holdPiece() {
@@ -401,6 +420,7 @@ public class GameLogic {
     
     public boolean movePiece(int newX, int newY, int newR) {
         if(!collides(newX, newY, newR)) {
+            counter = 0;
             currentPiecePosition.x = newX;
             currentPiecePosition.y = newY;
             currentPieceRotation = newR;
@@ -573,5 +593,97 @@ public class GameLogic {
             }
         }.start();
     }
+    
+    private void gameLoop() {
+        new Thread() {
+            @Override
+            public void run() {
+                while(!gameover) {
+                    if(counter>=(isTouchingGround()?lockDelay * 1000:(Math.pow(gravityBase, -1) * 1000))) {
+                        if(!movePiece(currentPiecePosition.x, currentPiecePosition.y+1, currentPieceRotation)){
+                            placePiece();
+                        }
+                    }
+    
+                    counter+=10;
+                    
+                    try {
+                        Thread.sleep(10);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+                
+                if(player!=null) {
+                    Room room = Main.inwhichroom.get(player);
+                    
+                    if(room != null) {
+                        if(Main.roommap.containsKey(room.id)) {
+                            room.playersalive--;
+                            if(room.playersalive<2) {
+                                room.stopRoom();
+                            }
+                        }
+                    }
+                }
+                this.interrupt();
+            }
+        }.start();
+        
+        Timer gravityTimer = new Timer();
 
+        TimerTask gravityIncreaseTask = new TimerTask() {
+            @Override
+            public void run() {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        while(gravityBase<gravityMaximum) {
+                            gravityBase += gravityIncrease;
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }).start();
+            }
+        };
+
+        gravityTimer.schedule(gravityIncreaseTask, gravityIncreaseDelay * 1000);
+        
+        Timer garbageTimer = new Timer();
+
+        TimerTask garbageCapIncreaseTask = new TimerTask() {
+            @Override
+            public void run() {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        while(garbageCapBase<garbageCapMaximum) {
+                            garbageCapBase += garbageCapIncrease;
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }).start();
+            }
+        };
+
+        garbageTimer.schedule(garbageCapIncreaseTask, garbageCapIncreaseDelay * 1000);
+    }
+
+    private boolean isTouchingGround() {
+        if(collides(currentPiecePosition.x, currentPiecePosition.y+1, currentPieceRotation)){
+            return true;
+        }
+        return false;
+    }
 }

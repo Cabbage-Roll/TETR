@@ -56,24 +56,24 @@ public class Main extends JPanel {
     
     private void drawHold(Graphics g) {
         g.setColor(Color.BLACK);
-        g.fillRect(TOPLEFTCORNER.x -7 * PIXELSIZE, TOPLEFTCORNER.y + gl.STAGESIZEY/2 * PIXELSIZE, PIXELSIZE * 4, PIXELSIZE * 4);
+        g.fillRect(TOPLEFTCORNER.x -7 * PIXELSIZE, TOPLEFTCORNER.y + GameLogic.STAGESIZEY/2 * PIXELSIZE, PIXELSIZE * 4, PIXELSIZE * 4);
         if(gl.heldPiece!=-1) {
             g.setColor(tetrominoColors[gl.heldPiece]);
             for(Point point: gl.pieces[gl.heldPiece][0]) {
-                g.fillRect(TOPLEFTCORNER.x + (-7 + point.x) * PIXELSIZE, TOPLEFTCORNER.y + (point.y + gl.STAGESIZEY/2) * PIXELSIZE, PIXELSIZE, PIXELSIZE);
+                g.fillRect(TOPLEFTCORNER.x + (-7 + point.x) * PIXELSIZE, TOPLEFTCORNER.y + (point.y + GameLogic.STAGESIZEY/2) * PIXELSIZE, PIXELSIZE, PIXELSIZE);
             }
         }
     }
     
     private void drawQueue(Graphics g) {
         g.setColor(Color.BLACK);
-        g.fillRect(TOPLEFTCORNER.x + (3 + gl.STAGESIZEX) * PIXELSIZE, TOPLEFTCORNER.y + gl.STAGESIZEY/2 * PIXELSIZE, PIXELSIZE * 4, PIXELSIZE * 4 * 5);
+        g.fillRect(TOPLEFTCORNER.x + (3 + GameLogic.STAGESIZEX) * PIXELSIZE, TOPLEFTCORNER.y + GameLogic.STAGESIZEY/2 * PIXELSIZE, PIXELSIZE * 4, PIXELSIZE * 4 * 5);
         ///prints next blocks
         for(int i=0;i<5;i++){
             int piece = gl.nextPieces.get(i);
             g.setColor(tetrominoColors[piece]);
             for(Point point: gl.pieces[piece][0]) {
-                g.fillRect(TOPLEFTCORNER.x + (3 + point.x + gl.STAGESIZEX) * PIXELSIZE, TOPLEFTCORNER.y + (i * 4 + point.y + gl.STAGESIZEY/2) * PIXELSIZE, PIXELSIZE-GRIDSIZE, PIXELSIZE-GRIDSIZE);
+                g.fillRect(TOPLEFTCORNER.x + (3 + point.x + GameLogic.STAGESIZEX) * PIXELSIZE, TOPLEFTCORNER.y + (i * 4 + point.y + GameLogic.STAGESIZEY/2) * PIXELSIZE, PIXELSIZE-GRIDSIZE, PIXELSIZE-GRIDSIZE);
             }
         }
     }
@@ -91,21 +91,21 @@ public class Main extends JPanel {
     {
         // garbage meter
         int total=0;
-        for(int num: gl.garbageToCome) {
+        for(int num: gl.garbageQueue) {
             total+=num;
         }
         
         g.setColor(Color.BLACK);
-        g.fillRect(TOPLEFTCORNER.x - PIXELSIZE*2, TOPLEFTCORNER.y + gl.STAGESIZEY/2*PIXELSIZE, PIXELSIZE-GRIDSIZE, (PIXELSIZE-GRIDSIZE)*20);
+        g.fillRect(TOPLEFTCORNER.x - PIXELSIZE*2, TOPLEFTCORNER.y + GameLogic.STAGESIZEY/2*PIXELSIZE, PIXELSIZE-GRIDSIZE, (PIXELSIZE-GRIDSIZE)*20);
         
         for(int i=0;i<total;i++) {
-            g.setColor(intToColor((i/(gl.STAGESIZEY/2))%7));
-            g.fillRect(TOPLEFTCORNER.x - PIXELSIZE*2, TOPLEFTCORNER.y + (gl.STAGESIZEY - 1 - i%20)*PIXELSIZE, PIXELSIZE-GRIDSIZE, PIXELSIZE-GRIDSIZE);
+            g.setColor(intToColor((i/(GameLogic.STAGESIZEY/2))%7));
+            g.fillRect(TOPLEFTCORNER.x - PIXELSIZE*2, TOPLEFTCORNER.y + (GameLogic.STAGESIZEY - 1 - i%20)*PIXELSIZE, PIXELSIZE-GRIDSIZE, PIXELSIZE-GRIDSIZE);
         }
         
         // Paint the well
-        for(int i=gl.STAGESIZEY-gl.VISIBLEROWS;i<gl.STAGESIZEY;i++) {
-            for(int j=0;j<gl.STAGESIZEX;j++) {
+        for(int i=GameLogic.STAGESIZEY-GameLogic.VISIBLEROWS;i<GameLogic.STAGESIZEY;i++) {
+            for(int j=0;j<GameLogic.STAGESIZEX;j++) {
                 g.setColor(intToColor(gl.stage[i][j]));
                 g.fillRect(TOPLEFTCORNER.x + PIXELSIZE*j, TOPLEFTCORNER.y + PIXELSIZE*i, PIXELSIZE-GRIDSIZE, PIXELSIZE-GRIDSIZE);
             }
@@ -214,21 +214,6 @@ public class Main extends JPanel {
             public void keyReleased(KeyEvent e) {
             }
         });
-        
-        //gravity
-        new Thread() {
-            @Override public void run() {
-                while (!game.gl.gameover) {
-                    try {
-                        Thread.sleep(1000);
-                        game.gl.movePiece(game.gl.currentPiecePosition.x, game.gl.currentPiecePosition.y + 1, game.gl.currentPieceRotation);
-                    } catch ( InterruptedException e ) {}
-                }
-            }
-        }.start();
-
-        //lock delay
-        
         
         //random colors
         new Thread() {
