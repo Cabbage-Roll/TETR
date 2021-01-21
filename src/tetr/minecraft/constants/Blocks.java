@@ -5,7 +5,7 @@ import org.bukkit.inventory.ItemStack;
 import tetr.minecraft.xseries.XMaterial;
 
 public class Blocks {
-    public static ItemStack[] blocks;
+    public static ItemStack[] blocks = new ItemStack[17];
 
     static {
         blocks=new ItemStack[]{

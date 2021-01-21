@@ -8,6 +8,7 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
+import java.io.IOException;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -16,6 +17,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import tetr.shared.GameLogic;
+import tetr.shared.LoadConfig;
 
 public class Main extends JPanel {
     
@@ -139,7 +141,14 @@ public class Main extends JPanel {
     }
     
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        try {
+            LoadConfig.load(false);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
         try {
             Clip music = AudioSystem.getClip();
 

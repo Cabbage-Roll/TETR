@@ -14,10 +14,7 @@ import org.bukkit.util.Vector;
 
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import tetr.minecraft.constants.Blocks;
-import tetr.minecraft.functions.SendBlockChangeCustom;
 import tetr.minecraft.xseries.XSound;
 import tetr.shared.GameLogic;
 
@@ -188,7 +185,7 @@ public class Table {
                         FallingBlock lol = world.spawnFallingBlock(new Location(world, tex, tey, tez), blocks[color].getType(), blocks[color].getData().getData());
                         lol.setVelocity(new Vector(d*(2-Math.random()*4),d*(5-Math.random()*10),d*(2-Math.random()*4)));
                         lol.setDropItem(false);
-                        lol.addScoreboardTag("sand");
+                        //lol.addScoreboardTag("sand");
                     }
                 }
             }
@@ -299,13 +296,13 @@ public class Table {
         if(color==7 && transparent) {
             Block b=world.getBlockAt(x, y, z);
             for(Player player: Main.inwhichroom.get(player).playerlist) {
-                SendBlockChangeCustom.sendBlockChangeCustom(player, new Location(world, x, y, z), b);
+                Main.functions.sendBlockChangeCustom(player, new Location(world, x, y, z), b);
             }
             return;
         }
         
         for(Player player: Main.inwhichroom.get(player).playerlist) {
-            SendBlockChangeCustom.sendBlockChangeCustom(player, new Location(world, x, y, z), color);
+            Main.functions.sendBlockChangeCustom(player, new Location(world, x, y, z), color);
         }
     }
    	
@@ -481,6 +478,6 @@ public class Table {
         sendScoreboard();
    	    
         //send magic string action bar
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder((gl.zone==true?(ChatColor.DARK_GREEN + "" + ChatColor.BOLD):"") + gl.magicString).create());
+        Main.functions.sendActionBarCustom(player, (gl.zone==true?(ChatColor.DARK_GREEN + "" + ChatColor.BOLD):"") + gl.magicString);
    	}
 }

@@ -21,23 +21,24 @@ import com.xxmicloxx.NoteBlockAPI.model.Playlist;
 import com.xxmicloxx.NoteBlockAPI.model.Song;
 import com.xxmicloxx.NoteBlockAPI.utils.NBSDecoder;
 
-import funcs.Functions;
-import funcs.Functions_1_10_R1;
-import funcs.Functions_1_11_R1;
-import funcs.Functions_1_12_R1;
-import funcs.Functions_1_13_R1;
-import funcs.Functions_1_13_R2;
-import funcs.Functions_1_14_R1;
-import funcs.Functions_1_15_R1;
-import funcs.Functions_1_16_R1;
-import funcs.Functions_1_16_R2;
-import funcs.Functions_1_16_R3;
-import funcs.Functions_1_8_R1;
-import funcs.Functions_1_8_R2;
-import funcs.Functions_1_8_R3;
-import funcs.Functions_1_9_R1;
-import funcs.Functions_1_9_R2;
+import tetr.minecraft.functions.Functions;
+import tetr.minecraft.functions.Functions_1_10_R1;
+import tetr.minecraft.functions.Functions_1_11_R1;
+import tetr.minecraft.functions.Functions_1_12_R1;
+import tetr.minecraft.functions.Functions_1_13_R1;
+import tetr.minecraft.functions.Functions_1_13_R2;
+import tetr.minecraft.functions.Functions_1_14_R1;
+import tetr.minecraft.functions.Functions_1_15_R1;
+import tetr.minecraft.functions.Functions_1_16_R1;
+import tetr.minecraft.functions.Functions_1_16_R2;
+import tetr.minecraft.functions.Functions_1_16_R3;
+import tetr.minecraft.functions.Functions_1_8_R1;
+import tetr.minecraft.functions.Functions_1_8_R2;
+import tetr.minecraft.functions.Functions_1_8_R3;
+import tetr.minecraft.functions.Functions_1_9_R1;
+import tetr.minecraft.functions.Functions_1_9_R2;
 import tetr.minecraft.menus.Listen;
+import tetr.shared.LoadConfig;
 public class Main extends JavaPlugin implements Listener{
     
     public static JavaPlugin plugin;
@@ -66,13 +67,23 @@ public class Main extends JavaPlugin implements Listener{
     String[] pathnames;
     String xd;
     static Song[] songarray;
-    public static String version;
+    private static String version;
     
     @Override
     public void onEnable(){
+        long timeStart = System.currentTimeMillis();
+        
         plugin=this;
+        
+        try {
+            LoadConfig.load(true);
+        } catch (IOException e) {
+            getLogger().warning("Error");
+            // TODO Auto-generated catch block
+            // e.printStackTrace();
+        }
+        
         console=getServer().getConsoleSender();
-        System.out.println("Plugin started");
         this.getCommand("tetr").setExecutor(new OpenMenu());
         
         //detect events
@@ -85,7 +96,7 @@ public class Main extends JavaPlugin implements Listener{
         numberofsongs=f.listFiles().length;
         if(numberofsongs>0){
             
-            getLogger().info("TETR: "+numberofsongs+" song(s) found");
+            getLogger().info(numberofsongs+" song(s) found");
             
             pathnames=new String[numberofsongs];
             songarray=new Song[numberofsongs];
@@ -98,8 +109,10 @@ public class Main extends JavaPlugin implements Listener{
             Room.slist=new Playlist(songarray);
             //tRASH end
         }else{
-            getLogger().info("TETR: No songs detected. Please add some songs!");
+            getLogger().info("No songs detected. Please add some songs!");
         }
+        
+        getLogger().info("Split: " + (System.currentTimeMillis() - timeStart) + "ms");
         
         if (setupActionbar()) {
 
@@ -126,6 +139,14 @@ public class Main extends JavaPlugin implements Listener{
             initSkin(player);
         }
         
+        long timeEnd = System.currentTimeMillis();
+        
+        long timeElapsed = timeEnd - timeStart;
+        
+        getLogger().info("Done. Time elapsed: " + timeElapsed + "ms");
+        
+        //add update checker
+        //https://www.spigotmc.org/wiki/creating-an-update-checker-that-checks-for-updates/
         
     }
     
@@ -182,18 +203,18 @@ public class Main extends JavaPlugin implements Listener{
     
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event){
-        Player player=event.getPlayer();
+        Player player = event.getPlayer();
         lastui.put(player, "home");
         initSkin(player);
     }
     
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event){
-        Player player=event.getPlayer();
-        if(lastui.containsKey(player)){
+        Player player = event.getPlayer();
+        if(lastui.containsKey(player)) {
             lastui.remove(player);
         }
-        if(inwhichroom.containsKey(player)){
+        if(inwhichroom.containsKey(player)) {
             Main.inwhichroom.get(player).removePlayer(player);
         }
     }

@@ -8,7 +8,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
@@ -381,11 +380,11 @@ public class Listen implements Listener {
         }
     }
     
-    @EventHandler
+    /*@EventHandler
     public void onEntityChangeBlockEvent(EntityChangeBlockEvent event) {
         if(event.getEntity().getScoreboardTags().contains("sand")) {
             event.setCancelled(true);
         }
-    }
+    }*/
     
 }

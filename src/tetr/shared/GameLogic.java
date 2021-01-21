@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import tetr.minecraft.Main;
@@ -37,7 +38,7 @@ public class GameLogic {
     private double gravityIncrease = 0.2d;
     private double gravityMaximum = 5;
     
-    private double lockDelay = 0.5d;
+    private double lockDelay = 2d;
     @SuppressWarnings("unused")
     private int timesMoved = 0;
     @SuppressWarnings("unused")
@@ -46,10 +47,10 @@ public class GameLogic {
     private int zonelines;
     public boolean zone;
     
-    public static final int STAGESIZEX = 10;
-    public static final int STAGESIZEY = 40;
-    public static final int VISIBLEROWS = 24;
-    public static final int NEXTPIECESMAX = 5;
+    public static int STAGESIZEX = 10;
+    public static int STAGESIZEY = 40;
+    public static int VISIBLEROWS = 24;
+    public static int NEXTPIECESMAX = 5;
 
     public int currentPiece;
     public Point currentPiecePosition;
@@ -200,6 +201,8 @@ public class GameLogic {
             for(int j=0;j<STAGESIZEX;j++) {
                 if(STAGESIZEY-zonelines-1-i>=0) {
                     stage[STAGESIZEY-1-i][j] = stage[STAGESIZEY-zonelines-1-i][j];
+                }else {
+                    stage[STAGESIZEY-1-i][j] = 7;
                 }
             }
         }
@@ -470,6 +473,7 @@ public class GameLogic {
                 if((totalLinesCleared-totalGarbageReceived)*STAGESIZEX+totalGarbageReceived==totalPiecesPlaced*4) {
                     if(player!=null) {
                         player.playSound(player.getEyeLocation(), XSound.BLOCK_ANVIL_LAND.parseSound(), 1f, 0.5f);
+                        Main.functions.sendTitleCustom(player, "", ChatColor.GOLD + "" + ChatColor.BOLD + "ALL CLEAR", 20, 20, 20);
                     }
                     sendGarbage(garbagetable[forGarbageTable(linesCleared)][combo]+10);
                 }else {

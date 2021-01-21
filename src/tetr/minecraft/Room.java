@@ -16,7 +16,7 @@ import tetr.minecraft.constants.Constants;
 public class Room {
     
     private static String makeID() {
-        String charSet=Constants.charSet;
+        String charSet=Constants.idCharSet;
         StringBuilder result=new StringBuilder(Constants.idLength);
         for(int i=0;i<Constants.idLength;i++){
             int index = (int) (charSet.length()*Math.random());
