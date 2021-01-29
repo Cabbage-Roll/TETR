@@ -12,12 +12,16 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.server.MapInitializeEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.map.MapView;
+import org.bukkit.map.MapView.Scale;
 
 import net.md_5.bungee.api.ChatColor;
 import tetr.minecraft.Main;
+import tetr.minecraft.Renderer;
 import tetr.minecraft.Room;
 import tetr.minecraft.Table;
 import tetr.minecraft.xseries.XMaterial;

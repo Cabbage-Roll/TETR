@@ -6,6 +6,8 @@ import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.minecraft.server.v1_9_R2.IChatBaseComponent;
 import net.minecraft.server.v1_9_R2.IChatBaseComponent.ChatSerializer;
 import net.minecraft.server.v1_9_R2.PacketPlayOutTitle;
@@ -38,7 +40,6 @@ public class Functions_1_9_R2 implements Functions {
 
     @Override
     public void sendActionBarCustom(Player player, String message) {
-        // TODO Auto-generated method stub
-        
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder(message).create());
     }
 }

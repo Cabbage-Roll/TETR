@@ -4,6 +4,8 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import tetr.minecraft.functions.sendBlockChangeCustom.SendBlockChangeCustom_V2;
 
 public class Functions_1_15_R1 implements Functions {
@@ -25,7 +27,6 @@ public class Functions_1_15_R1 implements Functions {
 
     @Override
     public void sendActionBarCustom(Player player, String message) {
-        // TODO Auto-generated method stub
-        
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new ComponentBuilder(message).create());
     }
 }

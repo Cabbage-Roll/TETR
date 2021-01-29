@@ -33,7 +33,6 @@ public class Functions_1_8_R1 implements Functions {
         
         ((CraftPlayer) player).getHandle().playerConnection.sendPacket(iSubtitle);
         ((CraftPlayer) player).getHandle().playerConnection.sendPacket(subtitleLength);
-        
     }
 
     @Override

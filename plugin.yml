@@ -4,6 +4,4 @@ version: 1.3.1
 api-version: 1.13
 commands:
     tetr:
-        description: Open the game menu
-        usage: /<command>
 depend: [NoteBlockAPI, Netherboard]

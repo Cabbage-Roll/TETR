@@ -84,7 +84,7 @@ public class Main extends JavaPlugin implements Listener{
         }
         
         console=getServer().getConsoleSender();
-        this.getCommand("tetr").setExecutor(new OpenMenu());
+        this.getCommand("tetr").setExecutor(new CommandTetr());
         
         //detect events
         getServer().getPluginManager().registerEvents(new Listen(), this);
@@ -111,8 +111,6 @@ public class Main extends JavaPlugin implements Listener{
         }else{
             getLogger().info("No songs detected. Please add some songs!");
         }
-        
-        getLogger().info("Split: " + (System.currentTimeMillis() - timeStart) + "ms");
         
         if (setupActionbar()) {
 

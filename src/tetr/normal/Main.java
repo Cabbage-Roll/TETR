@@ -21,8 +21,17 @@ import tetr.shared.LoadConfig;
 
 public class Main extends JPanel {
     
-    private final Color[] tetrominoColors = { Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.CYAN, Color.BLUE, Color.MAGENTA };
-    public Color intToColor(int number) {
+    private static final Color[] tetrominoColors = {
+        Color.RED,
+        Color.ORANGE,
+        Color.YELLOW,
+        Color.GREEN,
+        Color.CYAN,
+        Color.BLUE,
+        Color.MAGENTA
+    };
+    
+    public static Color intToColor(int number) {
         if(number == 0){
             return tetrominoColors[0];
         }else if(number == 1){
@@ -49,7 +58,6 @@ public class Main extends JPanel {
     
     GameLogic gl = new GameLogic();
     
-
     private static final long serialVersionUID = 1L;
 
     private static final int PIXELSIZE = 12;
