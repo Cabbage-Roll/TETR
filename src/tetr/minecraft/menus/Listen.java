@@ -8,20 +8,17 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.event.server.MapInitializeEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.map.MapView;
-import org.bukkit.map.MapView.Scale;
 
 import net.md_5.bungee.api.ChatColor;
 import tetr.minecraft.Main;
-import tetr.minecraft.Renderer;
 import tetr.minecraft.Room;
 import tetr.minecraft.Table;
 import tetr.minecraft.xseries.XMaterial;
@@ -336,7 +333,7 @@ public class Listen implements Listener {
         Player player=event.getPlayer();
         if(Main.inwhichroom.containsKey(player)){
             Table table=Main.inwhichroom.get(player).playerboards.get(player);
-            if(table!=null && !table.gl.gameover){
+            if(table!=null && !table.getGameover()){
                 int itemId=event.getNewSlot();
                 switch(itemId){
                 case 0:
@@ -377,18 +374,18 @@ public class Listen implements Listener {
         if(Main.inwhichroom.containsKey(player)){
             Table table=Main.inwhichroom.get(player).playerboards.get(player);
             if(player.isSneaking()) {
-                if(table!=null && !table.gl.gameover){
+                if(table!=null && !table.getGameover()){
                     table.userInput("shift");
                 }
             }
         }
     }
     
-    /*@EventHandler
+    @EventHandler
     public void onEntityChangeBlockEvent(EntityChangeBlockEvent event) {
         if(event.getEntity().getScoreboardTags().contains("sand")) {
             event.setCancelled(true);
         }
-    }*/
+    }
     
 }

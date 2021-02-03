@@ -41,6 +41,9 @@ import tetr.minecraft.menus.Listen;
 import tetr.shared.LoadConfig;
 public class Main extends JavaPlugin implements Listener{
     
+    public static boolean noteBlockAPIIsPresent;
+    public static boolean netherBoardIsPresent;
+    
     public static JavaPlugin plugin;
     public static ConsoleCommandSender console;
     

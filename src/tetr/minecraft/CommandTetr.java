@@ -16,6 +16,7 @@ import tetr.minecraft.menus.SettingsMenu;
 import tetr.minecraft.menus.SimpleSettingsMenu;
 import tetr.minecraft.menus.SkinMenu;
 import tetr.minecraft.menus.SongMenu;
+import tetr.normal.Constants;
 
 public class CommandTetr implements CommandExecutor{
 
@@ -99,7 +100,7 @@ public class CommandTetr implements CommandExecutor{
             message.addExtra("\n" + ChatColor.BOLD + "Bottom text");
             
             player.spigot().sendMessage(message);
-        }else if(args[0].equalsIgnoreCase("spectate")) {
+        }else if(args[0].equalsIgnoreCase("spectate") && Constants.iKnowWhatIAmDoing) {
             if(args.length < 2) {
                 player.sendMessage("Room id is missing!");
             }else {
@@ -109,7 +110,7 @@ public class CommandTetr implements CommandExecutor{
                     player.sendMessage("Null pointer exception! This room id most likely doesn't exist");
                 }
             }
-        }else if(args[0].equalsIgnoreCase("fastjoin") && args.length==2) {
+        }else if(args[0].equalsIgnoreCase("fastjoin") && args.length==2 && Constants.iKnowWhatIAmDoing) {
             try {
                 Main.roommap.get(args[1]).addPlayer(player);
                 Main.lastui.put(player, "room");

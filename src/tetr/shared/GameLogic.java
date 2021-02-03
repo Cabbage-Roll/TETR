@@ -19,55 +19,365 @@ public class GameLogic {
     public String magicString;
     private int magicStringsActive = 0;
 
-    public final Point[][][] pieces = Pieces.pieces;
+    private final Point[][][] pieces = Pieces.pieces;
     private final Point[][][] kicktable = Kicktable.kicktable_srsplus;
     private final int[][] garbagetable = Garbagetable.tetrio;
     
-    public boolean gameover = false;
+    private boolean gameover = false;
     
-    public ArrayList<Integer> garbageQueue = new ArrayList<Integer>();
+    private ArrayList<Integer> garbageQueue = new ArrayList<Integer>();
     private int garbageHole;
     private double garbageCapBase = 4;
     private int garbageCapIncreaseDelay = 60;
     private double garbageCapIncrease = 1 / 20;
     private double garbageCapMaximum = 8;
 
-    public double counter = 0;
+    private double counter = 0;
     private double gravityBase = 1;
     private int gravityIncreaseDelay = 5;
     private double gravityIncrease = 0.2d;
     private double gravityMaximum = 5;
     
     private double lockDelay = 2d;
-    @SuppressWarnings("unused")
     private int timesMoved = 0;
-    @SuppressWarnings("unused")
     private static final int MAXIMUMMOVES = 15;
     
     private int zonelines;
-    public boolean zone;
+    private boolean zone;
     
     public static int STAGESIZEX = 10;
     public static int STAGESIZEY = 40;
     public static int VISIBLEROWS = 24;
     public static int NEXTPIECESMAX = 5;
 
-    public int currentPiece;
-    public Point currentPiecePosition;
-    public int currentPieceRotation;
-    public int heldPiece = -1;
-    public boolean held;
-    public ArrayList<Integer> nextPieces = new ArrayList<Integer>();
+    private int currentPiece;
+    private Point currentPiecePosition;
+    private int currentPieceRotation;
+    private int heldPiece = -1;
+    private boolean held;
+    private ArrayList<Integer> nextPieces = new ArrayList<Integer>();
     
     private boolean tSpin;
     private boolean tSpinMini;
-    public int combo;
-    public int b2b;
-    public long score;
-    public long totalLinesCleared = 0;
-    public long totalPiecesPlaced = 0;
-    public long totalGarbageReceived = 0;
-    public int[][] stage = new int[STAGESIZEY][STAGESIZEX];
+    private int combo;
+    private int b2b;
+    private long score;
+    private long totalLinesCleared = 0;
+    private long totalPiecesPlaced = 0;
+    private long totalGarbageReceived = 0;
+    private int[][] stage = new int[STAGESIZEY][STAGESIZEX];
+    
+    public int getCombo() {
+        return combo;
+    }
+    
+    public Player getPlayer() {
+        return player;
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
+    }
+
+    public int getMagicStringsActive() {
+        return magicStringsActive;
+    }
+
+    public void setMagicStringsActive(int magicStringsActive) {
+        this.magicStringsActive = magicStringsActive;
+    }
+
+    public boolean getGameover() {
+        return gameover;
+    }
+
+    public void setGameover(boolean gameover) {
+        this.gameover = gameover;
+    }
+
+    public ArrayList<Integer> getGarbageQueue() {
+        return garbageQueue;
+    }
+
+    public void setGarbageQueue(ArrayList<Integer> garbageQueue) {
+        this.garbageQueue = garbageQueue;
+    }
+
+    public int getGarbageHole() {
+        return garbageHole;
+    }
+
+    public void setGarbageHole(int garbageHole) {
+        this.garbageHole = garbageHole;
+    }
+
+    public double getGarbageCapBase() {
+        return garbageCapBase;
+    }
+
+    public void setGarbageCapBase(double garbageCapBase) {
+        this.garbageCapBase = garbageCapBase;
+    }
+
+    public int getGarbageCapIncreaseDelay() {
+        return garbageCapIncreaseDelay;
+    }
+
+    public void setGarbageCapIncreaseDelay(int garbageCapIncreaseDelay) {
+        this.garbageCapIncreaseDelay = garbageCapIncreaseDelay;
+    }
+
+    public double getGarbageCapIncrease() {
+        return garbageCapIncrease;
+    }
+
+    public void setGarbageCapIncrease(double garbageCapIncrease) {
+        this.garbageCapIncrease = garbageCapIncrease;
+    }
+
+    public double getGarbageCapMaximum() {
+        return garbageCapMaximum;
+    }
+
+    public void setGarbageCapMaximum(double garbageCapMaximum) {
+        this.garbageCapMaximum = garbageCapMaximum;
+    }
+
+    public double getCounter() {
+        return counter;
+    }
+
+    public void setCounter(double counter) {
+        this.counter = counter;
+    }
+
+    public double getGravityBase() {
+        return gravityBase;
+    }
+
+    public void setGravityBase(double gravityBase) {
+        this.gravityBase = gravityBase;
+    }
+
+    public int getGravityIncreaseDelay() {
+        return gravityIncreaseDelay;
+    }
+
+    public void setGravityIncreaseDelay(int gravityIncreaseDelay) {
+        this.gravityIncreaseDelay = gravityIncreaseDelay;
+    }
+
+    public double getGravityIncrease() {
+        return gravityIncrease;
+    }
+
+    public void setGravityIncrease(double gravityIncrease) {
+        this.gravityIncrease = gravityIncrease;
+    }
+
+    public double getGravityMaximum() {
+        return gravityMaximum;
+    }
+
+    public void setGravityMaximum(double gravityMaximum) {
+        this.gravityMaximum = gravityMaximum;
+    }
+
+    public double getLockDelay() {
+        return lockDelay;
+    }
+
+    public void setLockDelay(double lockDelay) {
+        this.lockDelay = lockDelay;
+    }
+
+    public int getTimesMoved() {
+        return timesMoved;
+    }
+
+    public void setTimesMoved(int timesMoved) {
+        this.timesMoved = timesMoved;
+    }
+
+    public int getZonelines() {
+        return zonelines;
+    }
+
+    public void setZonelines(int zonelines) {
+        this.zonelines = zonelines;
+    }
+
+    public boolean getZone() {
+        return zone;
+    }
+
+    public void setZone(boolean zone) {
+        this.zone = zone;
+    }
+
+    public static int getSTAGESIZEX() {
+        return STAGESIZEX;
+    }
+
+    public static void setSTAGESIZEX(int sTAGESIZEX) {
+        STAGESIZEX = sTAGESIZEX;
+    }
+
+    public static int getSTAGESIZEY() {
+        return STAGESIZEY;
+    }
+
+    public static void setSTAGESIZEY(int sTAGESIZEY) {
+        STAGESIZEY = sTAGESIZEY;
+    }
+
+    public static int getVISIBLEROWS() {
+        return VISIBLEROWS;
+    }
+
+    public static void setVISIBLEROWS(int vISIBLEROWS) {
+        VISIBLEROWS = vISIBLEROWS;
+    }
+
+    public static int getNEXTPIECESMAX() {
+        return NEXTPIECESMAX;
+    }
+
+    public static void setNEXTPIECESMAX(int nEXTPIECESMAX) {
+        NEXTPIECESMAX = nEXTPIECESMAX;
+    }
+
+    public Point getCurrentPiecePosition() {
+        return currentPiecePosition;
+    }
+
+    public void setCurrentPiecePosition(Point currentPiecePosition) {
+        this.currentPiecePosition = currentPiecePosition;
+    }
+
+    public int getCurrentPieceRotation() {
+        return currentPieceRotation;
+    }
+
+    public void setCurrentPieceRotation(int currentPieceRotation) {
+        this.currentPieceRotation = currentPieceRotation;
+    }
+
+    public int getHeldPiece() {
+        return heldPiece;
+    }
+
+    public void setHeldPiece(int heldPiece) {
+        this.heldPiece = heldPiece;
+    }
+
+    public boolean isHeld() {
+        return held;
+    }
+
+    public void setHeld(boolean held) {
+        this.held = held;
+    }
+
+    public ArrayList<Integer> getNextPieces() {
+        return nextPieces;
+    }
+
+    public void setNextPieces(ArrayList<Integer> nextPieces) {
+        this.nextPieces = nextPieces;
+    }
+
+    public boolean istSpin() {
+        return tSpin;
+    }
+
+    public void settSpin(boolean tSpin) {
+        this.tSpin = tSpin;
+    }
+
+    public boolean istSpinMini() {
+        return tSpinMini;
+    }
+
+    public void settSpinMini(boolean tSpinMini) {
+        this.tSpinMini = tSpinMini;
+    }
+
+    public int getB2b() {
+        return b2b;
+    }
+
+    public void setB2b(int b2b) {
+        this.b2b = b2b;
+    }
+
+    public long getScore() {
+        return score;
+    }
+
+    public void setScore(long score) {
+        this.score = score;
+    }
+
+    public long getTotalLinesCleared() {
+        return totalLinesCleared;
+    }
+
+    public void setTotalLinesCleared(long totalLinesCleared) {
+        this.totalLinesCleared = totalLinesCleared;
+    }
+
+    public long getTotalPiecesPlaced() {
+        return totalPiecesPlaced;
+    }
+
+    public void setTotalPiecesPlaced(long totalPiecesPlaced) {
+        this.totalPiecesPlaced = totalPiecesPlaced;
+    }
+
+    public long getTotalGarbageReceived() {
+        return totalGarbageReceived;
+    }
+
+    public void setTotalGarbageReceived(long totalGarbageReceived) {
+        this.totalGarbageReceived = totalGarbageReceived;
+    }
+
+    public int[][] getStage() {
+        return stage;
+    }
+
+    public void setStage(int[][] stage) {
+        this.stage = stage;
+    }
+
+    public String getMagicString() {
+        return magicString;
+    }
+
+    public Point[][][] getPieces() {
+        return pieces;
+    }
+
+    public Point[][][] getKicktable() {
+        return kicktable;
+    }
+
+    public int[][] getGarbagetable() {
+        return garbagetable;
+    }
+
+    public static int getMaximummoves() {
+        return MAXIMUMMOVES;
+    }
+
+    public void setCurrentPiece(int currentPiece) {
+        this.currentPiece = currentPiece;
+    }
+
+    public void setCombo(int combo) {
+        this.combo = combo;
+    }
     
     public GameLogic(Player player) {
         this.player = player;
@@ -172,8 +482,12 @@ public class GameLogic {
         totalGarbageReceived++;
     }
     
-    private Point[] getCurrentPiece() {
+    public Point[] getCurrentPiece() {
         return pieces[currentPiece][currentPieceRotation];
+    }
+    
+    public int getCurrentPieceInt() {
+        return currentPiece;
     }
     
     public boolean topOutCheck() {
@@ -689,5 +1003,9 @@ public class GameLogic {
             return true;
         }
         return false;
+    }
+    
+    public void playSound() {
+        debug("playsound of gamelogic");
     }
 }

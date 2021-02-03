@@ -17,8 +17,8 @@ public class LoadConfig {
         tetr.shared.GameLogic.STAGESIZEY = Integer.valueOf(br.readLine());
         tetr.shared.GameLogic.VISIBLEROWS = Integer.valueOf(br.readLine());
         tetr.shared.GameLogic.NEXTPIECESMAX = Integer.valueOf(br.readLine());
-        tetr.minecraft.constants.Constants.idLength = Integer.valueOf(br.readLine());
-        tetr.minecraft.constants.Constants.idCharSet = String.valueOf(br.readLine());
+        tetr.normal.Constants.idLength = Integer.valueOf(br.readLine());
+        tetr.normal.Constants.idCharSet = String.valueOf(br.readLine());
         if(mc) {
             for(int i=0;i<17;i++) {
                 tetr.minecraft.constants.Blocks.blocks[i] = XMaterial.valueOf(br.readLine()).parseItem();

@@ -20,7 +20,7 @@ import com.xxmicloxx.NoteBlockAPI.model.Playlist;
 import com.xxmicloxx.NoteBlockAPI.model.RepeatMode;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
 
-import tetr.minecraft.constants.Constants;
+import tetr.normal.Constants;
 import tetr.shared.GameLogic;
 
 public class Room {
@@ -131,73 +131,37 @@ public class Room {
         playersalive=playerlist.size();
         running=true;
         
-        mapView = Bukkit.createMap(Bukkit.getWorld("world"));
-        ItemStack mapI = new ItemStack(Material.MAP, 1, mapView.getId());
-        /*playerList.length==1 maxScale=4 showStats=true showOthers=true
-            playerList.length>=2 maxScale=2 showStats=true showOthers=true
-            playerList.length>=3 maxScale=2 showStats=false showOthers=true
-            playerList.length>=5 maxScale=1 showStats=false showOthers=false*/
+        if(Constants.iKnowWhatIAmDoing) {
         
-        mapView.getRenderers().clear();
-        mapView.addRenderer(new Renderer() {
-            @Override
-            public void render(MapView map, MapCanvas mapCanvas, Player player) {
-                if(dontRender) {
-                    return;
-                }
-                int iter = 0;
-                
-                if(isSingleplayer) {
-                    if(!playerboards.get(playerlist.get(0)).gl.gameover) {
-                        GameLogic gl = playerboards.get(playerlist.get(iter)).gl;
-                        int pixelSize = 4;
-                        Point topLeftCorner = new Point(64-GameLogic.STAGESIZEX/2*pixelSize, 64-GameLogic.STAGESIZEY/4*pixelSize);
-                        iter++;
-                    
-                        for(int i=20;i<40;i++) {
-                            for(int j=0;j<10;j++) {
-                                for(int k=0;k<pixelSize;k++) {
-                                    for(int l=0;l<pixelSize;l++) {
-                                        mapCanvas.setPixel(topLeftCorner.x + j*pixelSize + k, topLeftCorner.y + (i-20)*pixelSize + l, MapPalette.matchColor(tetr.normal.Main.intToColor(gl.stage[i][j])));
-                                    }
-                                }
-                            }
-                        }
-                        
-                        for(int i=0;i<GameLogic.NEXTPIECESMAX;i++) {
-                            for(int j=0;j<4;j++) {
-                                for(int k=0;k<4;k++) {
-                                    for(int l=0;l<pixelSize;l++) {
-                                        for(int m=0;m<pixelSize;m++) {
-                                            mapCanvas.setPixel(topLeftCorner.x + GameLogic.STAGESIZEX * pixelSize + pixelSize * 3 + j * pixelSize + l, topLeftCorner.y + i * 4 * pixelSize + k * pixelSize + m, MapPalette.matchColor(tetr.normal.Main.intToColor(7)));
-                                        }
-                                    }       
-                                }
-                            }
-                            
-                            for(Point point: gl.pieces[gl.nextPieces.get(i)][0]) {
-                                for(int j=0;j<pixelSize;j++) {
-                                    for(int k=0;k<pixelSize;k++) {
-                                        mapCanvas.setPixel(topLeftCorner.x + GameLogic.STAGESIZEX * pixelSize + pixelSize * 3 + point.x * pixelSize + j, topLeftCorner.y + i * 4 * pixelSize + point.y * pixelSize + k, MapPalette.matchColor(tetr.normal.Main.intToColor(gl.nextPieces.get(i))));
-                                    }    
-                                }    
-                            }
-                        }
-                        mapCanvas.drawText(0, 0, MinecraftFont.Font, playerlist.get(0).getName());
+            mapView = Bukkit.createMap(Bukkit.getWorld("world"));
+            ItemStack mapI = new ItemStack(Material.MAP, 1, mapView.getId());
+            /*playerList.length==1 maxScale=4 showStats=T/F true showOthers=T/F true
+                playerList.length>=2 maxScale=2 showStats=T/F true showOthers=T/F true
+                playerList.length>=3 maxScale=2 showStats=F false showOthers=T/F false
+                playerList.length>=5 maxScale=1 showStats=F false showOthers=F false
+                */
+            
+            mapView.getRenderers().clear();
+            mapView.addRenderer(new Renderer() {
+                @Override
+                public void render(MapView map, MapCanvas mapCanvas, Player player) {
+                    if(dontRender) {
+                        return;
                     }
-                }else if(playersalive==2) {
-                    for(Player player2: playerlist) {
-                        if(!playerboards.get(player2).gl.gameover) {
-                            GameLogic gl = playerboards.get(playerlist.get(iter)).gl;
-                            int pixelSize = 2;
-                            Point topLeftCorner = new Point(32+64*iter-GameLogic.STAGESIZEX/2*pixelSize, 64-GameLogic.STAGESIZEY/4*pixelSize);
+                    int iter = 0;
+                    
+                    if(isSingleplayer) {
+                        if(!playerboards.get(playerlist.get(0)).getGameover()) {
+                            Table ta = playerboards.get(playerlist.get(iter));
+                            int pixelSize = 4;
+                            Point topLeftCorner = new Point(64-GameLogic.STAGESIZEX/2*pixelSize, 64-GameLogic.STAGESIZEY/4*pixelSize);
                             iter++;
                         
                             for(int i=20;i<40;i++) {
                                 for(int j=0;j<10;j++) {
                                     for(int k=0;k<pixelSize;k++) {
                                         for(int l=0;l<pixelSize;l++) {
-                                            mapCanvas.setPixel(topLeftCorner.x + j*pixelSize + k, topLeftCorner.y + (i-20)*pixelSize + l, MapPalette.matchColor(tetr.normal.Main.intToColor(gl.stage[i][j])));
+                                            mapCanvas.setPixel(topLeftCorner.x + j*pixelSize + k, topLeftCorner.y + (i-20)*pixelSize + l, MapPalette.matchColor(tetr.normal.Table.intToColor(ta.getStage()[i][j])));
                                         }
                                     }
                                 }
@@ -208,53 +172,94 @@ public class Room {
                                     for(int k=0;k<4;k++) {
                                         for(int l=0;l<pixelSize;l++) {
                                             for(int m=0;m<pixelSize;m++) {
-                                                mapCanvas.setPixel(topLeftCorner.x + GameLogic.STAGESIZEX * pixelSize + pixelSize * 3 + j * pixelSize + l, topLeftCorner.y + i * 4 * pixelSize + k * pixelSize + m, MapPalette.matchColor(tetr.normal.Main.intToColor(7)));
+                                                mapCanvas.setPixel(topLeftCorner.x + GameLogic.STAGESIZEX * pixelSize + pixelSize * 3 + j * pixelSize + l, topLeftCorner.y + i * 4 * pixelSize + k * pixelSize + m, MapPalette.matchColor(tetr.normal.Table.intToColor(7)));
                                             }
                                         }       
                                     }
                                 }
                                 
-                                for(Point point: gl.pieces[gl.nextPieces.get(i)][0]) {
+                                for(Point point: ta.getPieces()[ta.getNextPieces().get(i)][0]) {
                                     for(int j=0;j<pixelSize;j++) {
                                         for(int k=0;k<pixelSize;k++) {
-                                            mapCanvas.setPixel(topLeftCorner.x + GameLogic.STAGESIZEX * pixelSize + pixelSize * 3 + point.x * pixelSize + j, topLeftCorner.y + i * 4 * pixelSize + point.y * pixelSize + k, MapPalette.matchColor(tetr.normal.Main.intToColor(gl.nextPieces.get(i))));
+                                            mapCanvas.setPixel(topLeftCorner.x + GameLogic.STAGESIZEX * pixelSize + pixelSize * 3 + point.x * pixelSize + j, topLeftCorner.y + i * 4 * pixelSize + point.y * pixelSize + k, MapPalette.matchColor(tetr.normal.Table.intToColor(ta.getNextPieces().get(i))));
                                         }    
                                     }    
                                 }
                             }
+                            mapCanvas.drawText(0, 0, MinecraftFont.Font, playerlist.get(0).getName());
                         }
+                        
+                    }else if(playersalive==2) {
+                        for(Player player2: playerlist) {
+                            if(!playerboards.get(player2).getGameover()) {
+                                Table ta = playerboards.get(playerlist.get(iter));
+                                int pixelSize = 2;
+                                Point topLeftCorner = new Point(32+64*iter-GameLogic.STAGESIZEX/2*pixelSize, 64-GameLogic.STAGESIZEY/4*pixelSize);
+                                iter++;
+                            
+                                for(int i=20;i<40;i++) {
+                                    for(int j=0;j<10;j++) {
+                                        for(int k=0;k<pixelSize;k++) {
+                                            for(int l=0;l<pixelSize;l++) {
+                                                mapCanvas.setPixel(topLeftCorner.x + j*pixelSize + k, topLeftCorner.y + (i-20)*pixelSize + l, MapPalette.matchColor(tetr.normal.Table.intToColor(ta.getStage()[i][j])));
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                for(int i=0;i<GameLogic.NEXTPIECESMAX;i++) {
+                                    for(int j=0;j<4;j++) {
+                                        for(int k=0;k<4;k++) {
+                                            for(int l=0;l<pixelSize;l++) {
+                                                for(int m=0;m<pixelSize;m++) {
+                                                    mapCanvas.setPixel(topLeftCorner.x + GameLogic.STAGESIZEX * pixelSize + pixelSize * 3 + j * pixelSize + l, topLeftCorner.y + i * 4 * pixelSize + k * pixelSize + m, MapPalette.matchColor(tetr.normal.Table.intToColor(7)));
+                                                }
+                                            }       
+                                        }
+                                    }
+                                    
+                                    for(Point point: ta.getPieces()[ta.getNextPieces().get(i)][0]) {
+                                        for(int j=0;j<pixelSize;j++) {
+                                            for(int k=0;k<pixelSize;k++) {
+                                                mapCanvas.setPixel(topLeftCorner.x + GameLogic.STAGESIZEX * pixelSize + pixelSize * 3 + point.x * pixelSize + j, topLeftCorner.y + i * 4 * pixelSize + point.y * pixelSize + k, MapPalette.matchColor(tetr.normal.Table.intToColor(ta.getNextPieces().get(i))));
+                                            }    
+                                        }    
+                                    }
+                                }
+                            }
+                        }
+                    }else if(playersalive==3) {
+                        mapCanvas.drawText(0, 0, MinecraftFont.Font, "not implemented yet");
+                        mapCanvas.drawText(30, 0, MinecraftFont.Font, "3 players alive");
+                    }else if(playersalive==4) {
+                        mapCanvas.drawText(0, 0, MinecraftFont.Font, "not implemented yet");
+                        mapCanvas.drawText(30, 0, MinecraftFont.Font, "4 players alive");
+                    }else if(playersalive==5) {
+                        mapCanvas.drawText(0, 0, MinecraftFont.Font, "room is too big");
+                        mapCanvas.drawText(30, 0, MinecraftFont.Font, "works only up to");
+                        mapCanvas.drawText(60, 0, MinecraftFont.Font, "4 players");
                     }
-                }else if(playersalive==3) {
-                    mapCanvas.drawText(0, 0, MinecraftFont.Font, "not implemented yet");
-                    mapCanvas.drawText(30, 0, MinecraftFont.Font, "3 players alive");
-                }else if(playersalive==4) {
-                    mapCanvas.drawText(0, 0, MinecraftFont.Font, "not implemented yet");
-                    mapCanvas.drawText(30, 0, MinecraftFont.Font, "4 players alive");
-                }else if(playersalive==5) {
-                    mapCanvas.drawText(0, 0, MinecraftFont.Font, "room is too big");
-                    mapCanvas.drawText(30, 0, MinecraftFont.Font, "works only up to");
-                    mapCanvas.drawText(60, 0, MinecraftFont.Font, "4 players");
-                }
-
-                dontRender = true;
-            }
-        });
-        for(Player player: spectators) {
-            player.getInventory().setItemInOffHand(mapI);
-            player.sendMap(mapView);
-        }
-        
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if(!running) {
-                    this.cancel();
-                }else {
-                    dontRender = false;
-                }
-            }
-        }.runTaskTimer(Main.plugin, 0, 40);
     
+                    dontRender = true;
+                }
+            });
+            for(Player player: spectators) {
+                player.getInventory().setItemInOffHand(mapI);
+                player.sendMap(mapView);
+            }
+            
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if(!running) {
+                        this.cancel();
+                    }else {
+                        dontRender = false;
+                    }
+                }
+            }.runTaskTimer(Main.plugin, 0, 40);
+        
+        }
     }
     
     public void addPlayer(Player player) {
@@ -306,8 +311,8 @@ public class Room {
             Table table = playerboards.get(playerlist.get(random));
             Player receiver = table.getPlayer();
             if(receiver!=sender || (receiver==sender && backfire)) {
-                if(!table.gl.gameover) {
-                    table.gl.receiveGarbage(n);
+                if(!table.getGameover()) {
+                    table.receiveGarbage(n);
                 }else if(running){
                     forwardGarbage(n, sender);
                 }

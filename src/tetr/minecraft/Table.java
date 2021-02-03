@@ -2,19 +2,13 @@ package tetr.minecraft;
 
 import java.awt.Point;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.map.MapCanvas;
-import org.bukkit.map.MapPalette;
-import org.bukkit.map.MapView;
-import org.bukkit.map.MinecraftFont;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -24,7 +18,7 @@ import tetr.minecraft.constants.Blocks;
 import tetr.minecraft.xseries.XSound;
 import tetr.shared.GameLogic;
 
-public class Table {
+public class Table extends GameLogic {
 
     public static boolean transparent=false;
     boolean destroying = false;
@@ -54,10 +48,8 @@ public class Table {
     
     public boolean ULTRAGRAPHICS = true;
     
-    public GameLogic gl;
-    
     Table(Player p) {
-        gl = new GameLogic(p);
+        super(p);
         player=p;
         world=p.getWorld();
         Location location=player.getLocation();
@@ -78,7 +70,7 @@ public class Table {
             rotateTable("Y");
             moveTable(location.getBlockX()+GameLogic.STAGESIZEX/2, location.getBlockY()+GameLogic.STAGESIZEY-GameLogic.VISIBLEROWS/2, location.getBlockZ()+GameLogic.STAGESIZEY);
         }
-        gl.gameover=true;
+        setGameover(true);
     }
     
     public int getGx() {
@@ -93,12 +85,8 @@ public class Table {
         return gz;
     }
     
-    public Player getPlayer() {
-        return player;
-    }
-    
     public void setGameOver(boolean value) {
-        gl.gameover = value;
+        setGameover(value);
     }
     
     public void initGame(long seed, long seed2) {
@@ -111,7 +99,7 @@ public class Table {
         
         looptick = 0;
         
-        gl.initGame();
+        initGame();
         initScoreboard();
         gameLoop();
     }
@@ -152,7 +140,7 @@ public class Table {
             public void run() {
                 if(destroying) {
                     this.cancel();
-                }else if(gl.gameover) {
+                }else if(getGameover()) {
                     boolean ot = transparent;
                     transparent = true;
                     for(int i=0;i<GameLogic.STAGESIZEY;i++) {
@@ -182,7 +170,7 @@ public class Table {
         if(ULTRAGRAPHICS == true) {
             int tex, tey, tez;
             ItemStack blocks[] = Blocks.blocks;
-            int color = gl.stage[y][x];
+            int color = getStage()[y][x];
             for(int i=0;i<(coni!=0?coni:thickness);i++) {
                 tex = gx+x*m1x+y*m1y+i;
                 for(int j=0;j<(conj!=0?conj:thickness);j++) {
@@ -192,7 +180,7 @@ public class Table {
                         FallingBlock lol = world.spawnFallingBlock(new Location(world, tex, tey, tez), blocks[color].getType(), blocks[color].getData().getData());
                         lol.setVelocity(new Vector(d*(2-Math.random()*4),d*(5-Math.random()*10),d*(2-Math.random()*4)));
                         lol.setDropItem(false);
-                        //lol.addScoreboardTag("sand");
+                        lol.addScoreboardTag("sand");
                     }
                 }
             }
@@ -205,86 +193,86 @@ public class Table {
     
     private void sendScoreboard() {
         
-        if(gl.combo>0) {
-            board.set("Combo: " + gl.combo, 7);
+        if(getCombo()>0) {
+            board.set("Combo: " + getCombo(), 7);
         }else{
             board.set("     ", 6);
         }
 
-        board.set("Garbage received: " + gl.totalGarbageReceived, 6);
-        board.set("Lines: " + gl.totalLinesCleared, 5);
-        board.set("Pieces: " + gl.totalPiecesPlaced, 4);
-        board.set("Score: " + gl.score, 3);
+        board.set("Garbage received: " + getTotalGarbageReceived(), 6);
+        board.set("Lines: " + getTotalLinesCleared(), 5);
+        board.set("Pieces: " + getTotalPiecesPlaced(), 4);
+        board.set("Score: " + getScore(), 3);
         
-        if(gl.b2b>0) {
-            board.set("Back to back: " + gl.b2b, 2);
+        if(getB2b()>0) {
+            board.set("Back to back: " + getB2b(), 2);
         }else{
             board.set(" ", 2);
         }
 
         board.set("Time: " + looptick, 1);
-        board.set("gl.counter: " + gl.counter, 0);
+        board.set("getcounter: " + getCounter(), 0);
     }
     
     public boolean userInput(String input) {
-        if(!gl.gameover) {
+        if(!getGameover()) {
             switch(input) {
             case "y":
-                if(gl.rotatePiece(-1)) {
-                    gl.counter=0;
+                if(rotatePiece(-1)) {
+                    setCounter(0);
                 }
                 break;
             case "x":
-                if(gl.rotatePiece(+1)) {
-                    gl.counter=0;
+                if(rotatePiece(+1)) {
+                    setCounter(0);
                 }
                 break;
             case "c":
-                if(gl.holdPiece()) {
-                    gl.counter=0;   
+                if(holdPiece()) {
+                    setCounter(0);   
                 }else {
                     player.playSound(player.getEyeLocation(), XSound.ENTITY_SPLASH_POTION_BREAK.parseSound(), 1f, 1f);
                 }
                 break;
                 
             case "left":
-                if(gl.movePiece(gl.currentPiecePosition.x-1, gl.currentPiecePosition.y, gl.currentPieceRotation)) {
-                    gl.counter=0;
+                if(movePiece(getCurrentPiecePosition().x-1, getCurrentPiecePosition().y, getCurrentPieceRotation())) {
+                    setCounter(0);
                 }
                 break;
             case "right":
-                if(gl.movePiece(gl.currentPiecePosition.x+1, gl.currentPiecePosition.y, gl.currentPieceRotation)) {
-                    gl.counter=0;
+                if(movePiece(getCurrentPiecePosition().x+1, getCurrentPiecePosition().y, getCurrentPieceRotation())) {
+                    setCounter(0);
                 }
                 break;
                 
             case "up":
-                if(gl.rotatePiece(+2)) {
-                    gl.counter=0;
+                if(rotatePiece(+2)) {
+                    setCounter(0);
                 }
                 break;
             case "down":
-                if(gl.movePiece(gl.currentPiecePosition.x, gl.currentPiecePosition.y+1, gl.currentPieceRotation)) {
-                    gl.counter=0;
-                    gl.score+=1;
+                if(movePiece(getCurrentPiecePosition().x, getCurrentPiecePosition().y+1, getCurrentPieceRotation())) {
+                    setCounter(0);
+                    setScore(getScore()+1);
                 }
                 break;
             
             case "space":
-                gl.hardDropPiece();
+                hardDropPiece();
                 break;
             case "l":
-                gl.gameover=true;
+                setGameOver(true);
                 break;
             case "instant":
-                int temp = gl.currentPiecePosition.y;
-                while(!gl.collides(gl.currentPiecePosition.x, temp+1, gl.currentPieceRotation)) {
+                int temp = getCurrentPiecePosition().y;
+                while(!collides(getCurrentPiecePosition().x, temp+1, getCurrentPieceRotation())) {
                     temp++;
                 }
-                gl.movePiece(gl.currentPiecePosition.x, temp, gl.currentPieceRotation);
+                movePiece(getCurrentPiecePosition().x, temp, getCurrentPieceRotation());
                 break;
             case "shift":
-                gl.startZone();
+                startZone();
             default:
                 System.out.println("wee woo wee woo");
             }
@@ -339,7 +327,7 @@ public class Table {
         }
         
         if(block != -1) {
-            for(Point point: gl.pieces[block][0]) {
+            for(Point point: getPieces()[block][0]) {
                 colPrintNewRender(x + point.x, y + point.y, block);
             }
         }
@@ -354,7 +342,7 @@ public class Table {
             }
         }
         transparent = ot;
-        gl.gameover = true;
+        setGameover(true);
         if(board!=null)
         board.delete();
         board = null;
@@ -430,36 +418,36 @@ public class Table {
    	    //update stage
    	    for(int i=0;i<GameLogic.STAGESIZEY;i++) {
    	        for(int j=0;j<GameLogic.STAGESIZEX;j++) {
-   	            newStageState[i][j] = gl.stage[i][j];
+   	            newStageState[i][j] = getStage()[i][j];
    	        }
    	    }
    	    
    	    //print next queue
         for(int i=0;i<GameLogic.NEXTPIECESMAX;i++) {
-            printStaticPieceNewRender(GameLogic.STAGESIZEX+3, GameLogic.STAGESIZEY/2+i*4, gl.nextPieces.get(i));
+            printStaticPieceNewRender(GameLogic.STAGESIZEX+3, GameLogic.STAGESIZEY/2+i*4, getNextPieces().get(i));
         }
         
         //print held piece
-        printStaticPieceNewRender(-7, GameLogic.STAGESIZEY/2, gl.heldPiece);
+        printStaticPieceNewRender(-7, GameLogic.STAGESIZEY/2, getHeldPiece());
         
         //update ghost
-        int ghosty=gl.currentPiecePosition.y;
-        while(!gl.collides(gl.currentPiecePosition.x, ghosty+1, gl.currentPieceRotation)) {
+        int ghosty=getCurrentPiecePosition().y;
+        while(!collides(getCurrentPiecePosition().x, ghosty+1, getCurrentPieceRotation())) {
             ghosty++;
         }
 
-        for(Point point: gl.pieces[gl.currentPiece][gl.currentPieceRotation]) {
-            newStageState[point.y + ghosty][point.x + gl.currentPiecePosition.x] = 9+gl.currentPiece;
+        for(Point point: getPieces()[getCurrentPieceInt()][getCurrentPieceRotation()]) {
+            newStageState[point.y + ghosty][point.x + getCurrentPiecePosition().x] = 9+getCurrentPieceInt();
         }
         
         //update current piece
-        for(Point point: gl.pieces[gl.currentPiece][gl.currentPieceRotation]) { 
-            newStageState[point.y + gl.currentPiecePosition.y][point.x + gl.currentPiecePosition.x] = gl.currentPiece;
+        for(Point point: getPieces()[getCurrentPieceInt()][getCurrentPieceRotation()]) { 
+            newStageState[point.y + getCurrentPiecePosition().y][point.x + getCurrentPiecePosition().x] = getCurrentPieceInt();
         }
         
         //print garbage meter
         int total=0;
-        for(int num: gl.garbageQueue) {
+        for(int num: getGarbageQueue()) {
             total+=num;
         }
         
@@ -485,6 +473,6 @@ public class Table {
         sendScoreboard();
    	    
         //send magic string action bar
-        Main.functions.sendActionBarCustom(player, (gl.zone==true?(ChatColor.DARK_GREEN + "" + ChatColor.BOLD):"") + gl.magicString);
+        Main.functions.sendActionBarCustom(player, (getZone()==true?(ChatColor.DARK_GREEN + "" + ChatColor.BOLD):"") + getMagicString());
    	}
 }
