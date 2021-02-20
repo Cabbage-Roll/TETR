@@ -12,7 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import com.cryptomorin.xseries.XMaterial;
 
 import net.md_5.bungee.api.ChatColor;
-import tetr.core.Main;
+import tetr.core.minecraft.Main;
 
 public class MultiplayerMenu implements InventoryHolder{
     private Inventory inventory=null;

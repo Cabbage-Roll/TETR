@@ -12,8 +12,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.cryptomorin.xseries.XMaterial;
 
-import tetr.core.Main;
 import tetr.core.minecraft.Blocks;
+import tetr.core.minecraft.Main;
 
 public class SkinMenu implements InventoryHolder {
     private Inventory inventory = null;

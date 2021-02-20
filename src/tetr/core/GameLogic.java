@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.messages.Titles;
 
+import tetr.core.minecraft.Main;
 import tetr.core.minecraft.Room;
 
 public class GameLogic {
@@ -54,16 +55,22 @@ public class GameLogic {
     class Property {
         private double base;
         private int delay;
-        private double increase;
-        private double maximum;
+        private double delta;
+        private boolean mode;
+        private double limit;
 
         private double workingValue;
 
-        private Property(double base, int delay, double increase, double maximum) {
+        private Property(double base, int delay, double delta, double limit) {
             this.base = base;
             this.delay = delay;
-            this.increase = increase;
-            this.maximum = maximum;
+            this.delta = delta;
+            if (delta > 0) {
+                mode = true;
+            } else {
+                mode = false;
+            }
+            this.limit = limit;
         }
 
         private double getWorkingValue() {
@@ -74,12 +81,12 @@ public class GameLogic {
             return delay;
         }
 
-        private double getMaximum() {
-            return maximum;
+        private double getLimit() {
+            return limit;
         }
 
         private void tick() {
-            workingValue += increase;
+            workingValue += delta;
         }
 
         private void start() {
@@ -93,7 +100,7 @@ public class GameLogic {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            while (getWorkingValue() < getMaximum()) {
+                            while (mode ? (getWorkingValue() < getLimit()) : (getLimit() < getWorkingValue())) {
                                 tick();
                                 try {
                                     Thread.sleep(1000);
@@ -101,7 +108,7 @@ public class GameLogic {
                                     e.printStackTrace();
                                 }
                             }
-                            workingValue = maximum;
+                            workingValue = limit;
                         }
                     }).start();
                 }
@@ -117,19 +124,21 @@ public class GameLogic {
     private int magicStringsActive = 0;
 
     private final Point[][][] pieces = Pieces.pieces;
-    private final Point[][][] kicktable = Kicktable.kicktable_srsplus;
+    private final Point[][][] kicktable = Kicktable.kicktable_srs_guideline_180;
     private final int[][] garbagetable = Garbagetable.tetrio;
 
     private boolean gameover = false;
 
     private ArrayList<Integer> garbageQueue = new ArrayList<Integer>();
     private int garbageHole;
-    private Property garbage = new Property(4, 60, 0.05d, 8);
+    private Property garbage = new Property(4d, 60, 0.05d, 8d);
+    private Property garbageMultiplier = new Property(1d, 30, 0.1d, 8d);
 
     private double counter = 0;
-    private Property gravity = new Property(1, 5, 0.2d, 5);
+    private Property gravity = new Property(1d, 30, 0.1d, 20d);
 
-    private double lockDelay = 2d;
+    private Property lockDelay = new Property(2d, 30, -0.02d, 0.5d);
+
     private int timesMoved = 0;
     private static final int MAXIMUMMOVES = 15;
 
@@ -148,7 +157,7 @@ public class GameLogic {
     private boolean held;
     private ArrayList<Integer> nextPieces = new ArrayList<Integer>();
 
-    private boolean tSpin;
+    private boolean currentPieceHasSpun;
     private boolean tSpinMini;
     private int combo;
     private int b2b;
@@ -159,7 +168,7 @@ public class GameLogic {
     private int[][] stage = new int[STAGESIZEY][STAGESIZEX];
 
     private String intToPieceName(int p) {
-        switch(p) {
+        switch (p) {
         case 0:
             return "z";
         case 1:
@@ -174,11 +183,25 @@ public class GameLogic {
             return "j";
         case 6:
             return "t";
+        case 7:
+            return "_";
+        case 8:
+            return "#";
+        case 16:
+            return "w";
         default:
             return null;
         }
     }
-    
+
+    private void addScore(int n) {
+        score += n;
+    }
+
+    protected void setScore(long l) {
+        score = l;
+    }
+
     public int getCombo() {
         return combo;
     }
@@ -211,10 +234,6 @@ public class GameLogic {
         return garbageQueue;
     }
 
-    public void setGarbageQueue(ArrayList<Integer> garbageQueue) {
-        this.garbageQueue = garbageQueue;
-    }
-
     public int getGarbageHole() {
         return garbageHole;
     }
@@ -229,14 +248,6 @@ public class GameLogic {
 
     public void setCounter(double counter) {
         this.counter = counter;
-    }
-
-    public double getLockDelay() {
-        return lockDelay;
-    }
-
-    public void setLockDelay(double lockDelay) {
-        this.lockDelay = lockDelay;
     }
 
     public int getTimesMoved() {
@@ -336,11 +347,11 @@ public class GameLogic {
     }
 
     public boolean istSpin() {
-        return tSpin;
+        return currentPieceHasSpun;
     }
 
     public void settSpin(boolean tSpin) {
-        this.tSpin = tSpin;
+        this.currentPieceHasSpun = tSpin;
     }
 
     public boolean istSpinMini() {
@@ -355,16 +366,12 @@ public class GameLogic {
         return b2b;
     }
 
-    public void setB2b(int b2b) {
+    private void setB2b(int b2b) {
         this.b2b = b2b;
     }
 
     public long getScore() {
         return score;
-    }
-
-    public void setScore(long score) {
-        this.score = score;
     }
 
     public long getTotalLinesCleared() {
@@ -442,35 +449,56 @@ public class GameLogic {
         return false;
     }
 
-    public int forGarbageTable(int l) {
-        if (l == 1 && tSpin == false) {
-            setMagicString((intToPieceName(currentPiece) + "-" + ClearType.SINGLE.getDescription()).toUpperCase());
-            return 0;
-        } else if (l == 2 && tSpin == false) {
-            setMagicString((intToPieceName(currentPiece) + "-" + ClearType.DOUBLE.getDescription()).toUpperCase());
-            return 1;
-        } else if (l == 3 && tSpin == false) {
-            setMagicString((intToPieceName(currentPiece) + "-" + ClearType.TRIPLE.getDescription()).toUpperCase());
-            return 2;
-        } else if (l == 4 && tSpin == false) {
-            setMagicString((intToPieceName(currentPiece) + "-" + ClearType.QUAD.getDescription()).toUpperCase());
-            return 3;
-        } else if (l == 1 && tSpin == true && tSpinMini == true) {
-            setMagicString((intToPieceName(currentPiece) + "-" + ClearType.SPIN_MINI_SINGLE.getDescription()).toUpperCase());
-            return 4;
-        } else if (l == 1 && tSpin == true) {
-            setMagicString((intToPieceName(currentPiece) + "-" + ClearType.SPIN_SINGLE.getDescription()).toUpperCase());
-            return 5;
-        } else if (l == 2 && tSpin == true && tSpinMini == true) {
-            setMagicString((intToPieceName(currentPiece) + "-" + ClearType.SPIN_MINI_DOUBLE.getDescription()).toUpperCase());
-            return 6;
-        } else if (l == 2 && tSpin == true) {
-            setMagicString((intToPieceName(currentPiece) + "-" + ClearType.SPIN_DOUBLE.getDescription()).toUpperCase());
-            return 7;
-        } else if (l == 3 && tSpin == true) {
-            setMagicString((intToPieceName(currentPiece) + "-" + ClearType.SPIN_TRIPLE.getDescription()).toUpperCase());
-            return 8;
+    
+    private ClearType getClearTypeNow(int l) {
+        if (l == 1 && currentPieceHasSpun == false) {
+            return ClearType.SINGLE;
+        } else if (l == 2 && currentPieceHasSpun == false) {
+            return ClearType.DOUBLE;
+        } else if (l == 3 && currentPieceHasSpun == false) {
+            return ClearType.TRIPLE;
+        } else if (l == 4 && currentPieceHasSpun == false) {
+            return ClearType.QUAD;
+        } else if (l == 1 && currentPieceHasSpun == true && tSpinMini == true) {
+            return ClearType.SPIN_MINI_SINGLE;
+        } else if (l == 1 && currentPieceHasSpun == true) {
+            return ClearType.SPIN_SINGLE;
+        } else if (l == 2 && currentPieceHasSpun == true && tSpinMini == true) {
+            return ClearType.SPIN_MINI_DOUBLE;
+        } else if (l == 2 && currentPieceHasSpun == true) {
+            return ClearType.SPIN_DOUBLE;
+        } else if (l == 3 && currentPieceHasSpun == true) {
+            return ClearType.SPIN_TRIPLE;
+        } else if (l == 4 && currentPieceHasSpun == true) {
+            return ClearType.SPIN_QUAD;
         } else {
+            return null;
+        }
+    }
+    
+    private int clearTypeToInt(ClearType c) {
+        switch(c) {
+        case SINGLE:
+            return 0;
+        case DOUBLE:
+            return 1;
+        case TRIPLE:
+            return 2;
+        case QUAD:
+            return 3;
+        case SPIN_MINI_SINGLE:
+            return 4;
+        case SPIN_SINGLE:
+            return 5;
+        case SPIN_MINI_DOUBLE:
+            return 6;
+        case SPIN_DOUBLE:
+            return 7;
+        case SPIN_TRIPLE:
+            return 8;
+        case SPIN_QUAD:
+            return 9;
+        default:
             return -1;
         }
     }
@@ -649,13 +677,13 @@ public class GameLogic {
                 stage[i][j] = 7;
             }
         }
-        gameover = false;
+        setGameover(false);
         nextPieces.clear();
-        heldPiece = -1;
-        held = false;
-        score = 0;
-        combo = -1;
-        b2b = -1;
+        setHeldPiece(-1);
+        setHeld(false);
+        setScore(0);
+        setCombo(-1);
+        setB2b(-1);
 
         totalLinesCleared = 0;
         totalPiecesPlaced = 0;
@@ -721,7 +749,7 @@ public class GameLogic {
         currentPiece = nextPieces.get(0);
         nextPieces.remove(0);
         held = false;
-        tSpin = false;
+        settSpin(false);
     }
 
     public boolean collides(int x, int y, int rotation) {
@@ -777,7 +805,7 @@ public class GameLogic {
         for (int tries = 0; tries < maxtries; tries++) {
             if (movePiece(currentPiecePosition.x + kicktable[pieceType][special][tries].x,
                     currentPiecePosition.y - kicktable[pieceType][special][tries].y, newRotation)) {
-                tSpin = checkTSpin();
+                settSpin(checkTSpin());
                 return true;
             }
         }
@@ -791,7 +819,7 @@ public class GameLogic {
             currentPiecePosition.x = newX;
             currentPiecePosition.y = newY;
             currentPieceRotation = newR;
-            tSpin = false;
+            settSpin(false);
             return true;
         }
         return false;
@@ -808,7 +836,7 @@ public class GameLogic {
         }
         if (lines > 0) {
             movePieceRelative(0, +lines);
-            score += lines * 2;
+            addScore(lines * 2);
         }
         placePiece();
     }
@@ -829,11 +857,27 @@ public class GameLogic {
             if (linesCleared > 0) {
                 combo++;
                 if (player != null) {
-                    for (int i = 0; i < linesCleared * 2; i++) {
-                        player.playSound(player.getEyeLocation(), XSound.BLOCK_NOTE_BLOCK_HARP.parseSound(), 1f,
-                                (float) Math.pow(2, (double) (combo * 2 - 12) / 12));
+                    if (linesCleared == 4 || currentPieceHasSpun) {
+                        setB2b(getB2b() + 1);
+                        if(getB2b() > 0) {
+                            for (int i = 0; i < getB2b() + 2; i++) {
+                                player.playSound(player.getEyeLocation(), XSound.BLOCK_NOTE_BLOCK_PLING.parseSound(), 1f,
+                                        (float) Math.pow(2, (double) (getB2b() * 2 - 12) / 12));
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < linesCleared * 2; i++) {
+                            player.playSound(player.getEyeLocation(), XSound.BLOCK_NOTE_BLOCK_HARP.parseSound(), 1f,
+                                    (float) Math.pow(2, (double) (combo * 2 - 12) / 12));
+                        }
+                        if(getB2b() > 1) {
+                            setB2b(-1);
+                            for (int i = 0; i < 5; i++) {
+                                player.playSound(player.getEyeLocation(), XSound.ENTITY_ARMOR_STAND_HIT.parseSound(), 1f, 1f);
+                            }
+                        }
                     }
-                    if (tSpin) {
+                    if (currentPieceHasSpun) {
                         for (int i = 0; i < linesCleared * 2; i++) {
                             player.playSound(player.getEyeLocation(), XSound.ENTITY_FIREWORK_ROCKET_BLAST.parseSound(),
                                     1f, 0.5f);
@@ -846,16 +890,23 @@ public class GameLogic {
                         player.playSound(player.getEyeLocation(), XSound.BLOCK_ANVIL_LAND.parseSound(), 1f, 0.5f);
                         Titles.sendTitle(player, 20, 20, 20, "", ChatColor.GOLD + "" + ChatColor.BOLD + "ALL CLEAR");
                     }
-                    sendGarbage(garbagetable[forGarbageTable(linesCleared)][combo] + 10);
+                    sendGarbage((int) ((garbagetable[clearTypeToInt(getClearTypeNow(linesCleared))][combo] + 10)
+                            * garbageMultiplier.getWorkingValue()));
                 } else {
-                    sendGarbage(garbagetable[forGarbageTable(linesCleared)][combo]);
+                    sendGarbage((int) (garbagetable[clearTypeToInt(getClearTypeNow(linesCleared))][combo]
+                            * garbageMultiplier.getWorkingValue()));
                 }
+                
+                setMagicString(
+                        (intToPieceName(currentPiece) + "-" + getClearTypeNow(linesCleared).getDescription()).toUpperCase());
+            
+                addScore(getClearTypeNow(linesCleared).getScore());
             } else {
                 combo = -1;
                 tryToPutGarbage();
             }
 
-            debug("tspin=" + tSpin + ";combo=" + combo + ";linescleared=" + linesCleared);
+            debug("tspin=" + currentPieceHasSpun + ";combo=" + combo + ";linescleared=" + linesCleared);
 
         }
 
@@ -881,21 +932,6 @@ public class GameLogic {
                 i++;
                 numClears++;
             }
-        }
-
-        switch (numClears) {
-        case 1:
-            score += 100;
-            break;
-        case 2:
-            score += 300;
-            break;
-        case 3:
-            score += 500;
-            break;
-        case 4:
-            score += 800;
-            break;
         }
 
         return numClears;
@@ -974,7 +1010,7 @@ public class GameLogic {
             @Override
             public void run() {
                 while (!gameover) {
-                    if (counter >= (isTouchingGround() ? lockDelay * 1000
+                    if (counter >= (isTouchingGround() ? lockDelay.getWorkingValue() * 1000
                             : (Math.pow(gravity.getWorkingValue(), -1) * 1000))) {
                         if (!movePieceRelative(0, +1)) {
                             placePiece();
@@ -1009,6 +1045,8 @@ public class GameLogic {
 
         gravity.start();
         garbage.start();
+        garbageMultiplier.start();
+        lockDelay.start();
     }
 
     private boolean isTouchingGround() {
@@ -1016,9 +1054,5 @@ public class GameLogic {
             return true;
         }
         return false;
-    }
-
-    public void playSound() {
-        debug("playsound of gamelogic");
     }
 }

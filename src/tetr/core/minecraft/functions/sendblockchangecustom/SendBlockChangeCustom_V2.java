@@ -5,8 +5,8 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import tetr.core.Main;
 import tetr.core.minecraft.Blocks;
+import tetr.core.minecraft.Main;
 
 public class SendBlockChangeCustom_V2 {
     

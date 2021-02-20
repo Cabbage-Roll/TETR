@@ -12,7 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import com.cryptomorin.xseries.XMaterial;
 
-import tetr.core.Main;
+import tetr.core.minecraft.Main;
 import tetr.core.minecraft.Room;
 
 public class JoinRoomMenu implements InventoryHolder {

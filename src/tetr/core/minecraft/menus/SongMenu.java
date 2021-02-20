@@ -13,7 +13,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import com.cryptomorin.xseries.XMaterial;
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
 
-import tetr.core.Main;
+import tetr.core.minecraft.Main;
 import tetr.core.minecraft.Room;
 
 public class SongMenu implements InventoryHolder {
@@ -35,10 +35,11 @@ private Inventory inventory = null;
         
         //clickable items
         
-        Playlist playlist = Room.slist;
-        
         inventory.setItem(BACK_LOCATION, createItem(XMaterial.BEDROCK, ChatColor.WHITE + "Back"));
         inventory.setItem(9, createItem(XMaterial.NOTE_BLOCK, ChatColor.YELLOW + "Random"));
+        
+
+        Playlist playlist = Main.playlist;
         for(int i=0;i<playlist.getCount();i++) {
             inventory.setItem(10+i, createItem(XMaterial.NOTE_BLOCK, ChatColor.WHITE + playlist.get(i).getPath().getName().replaceAll(".nbs$", "")));
         }

@@ -1,10 +1,11 @@
 name: TETR
-main: tetr.core.Main
-version: 1.3.2
+main: tetr.core.minecraft.Main
+version: 1.4.0.0
 api-version: 1.13
 softdepend: [NoteBlockAPI, Netherboard]
 commands:
     tetr:
+        description: Please use "/tetr help" for help
 permissions:
     tetr.*:
         description: Gives all permissions
@@ -15,14 +16,15 @@ permissions:
             tetr.skineditor: true
             tetr.singleplayer: true
             tetr.multiplayer: true
+            tetr.banned: false
     tetr.developer:
         description: Allows execution of unsafe commands. Pair with iKnowWhatIAmDoing = true
         default: false
     tetr.admin:
-        description: Allows the player to take host, delete rooms forcibly (unused)
+        description: Allows the player to take host, delete rooms forcibly (unused, might change in future)
         default: false
     tetr.reload:
-        description: Allows the player to reload, disable and enable the plugin (unused)
+        description: Allows the player to reload, disable and enable the plugin (only disable works for now)
         default: false
     tetr.skineditor:
         description: Allows the player to use skin editor
@@ -33,3 +35,6 @@ permissions:
     tetr.multiplayer:
         description: Allows the player to join a multiplayer game
         default: true
+    tetr.banned:
+        description: Does not let the player do anything at all
+        default: false

@@ -18,11 +18,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import com.xxmicloxx.NoteBlockAPI.model.Playlist;
 import com.xxmicloxx.NoteBlockAPI.model.RepeatMode;
+import com.xxmicloxx.NoteBlockAPI.model.playmode.MonoStereoMode;
 import com.xxmicloxx.NoteBlockAPI.songplayer.RadioSongPlayer;
 
 import tetr.core.Constants;
 import tetr.core.GameLogic;
-import tetr.core.Main;
 
 public class Room {
 
@@ -56,8 +56,6 @@ public class Room {
     public String id;
     public String name;
     public Player host;
-    public static Playlist slist;
-    public RadioSongPlayer rsp;
     public boolean running;
     public int playersalive;
     public boolean backfire = false;
@@ -67,10 +65,6 @@ public class Room {
     public int index;
 
     public Room(Player player, boolean isSingleplayer) {
-        if (Main.numberofsongs > 0) {
-            rsp = new RadioSongPlayer(slist);
-            rsp.setVolume((byte) 50);
-        }
 
         String mkID;
         do {
@@ -91,8 +85,8 @@ public class Room {
     }
 
     public void stopRoom() {
-        if (Main.numberofsongs > 0) {
-            rsp.setPlaying(false);
+        if (Main.noteBlockAPIIsPresent && Main.numberOfSongs > 0) {
+            Main.rsp.setPlaying(false);
         }
 
         for (Player player : playerlist) {
@@ -103,16 +97,16 @@ public class Room {
     }
 
     public void startRoom() {
-        if (Main.numberofsongs > 0) {
+        if (Main.noteBlockAPIIsPresent && Main.numberOfSongs > 0) {
             if (index == -1) {
-                int random = (int) (Math.random() * Main.numberofsongs);
-                rsp.playSong(random);
+                int random = (int) (Math.random() * Main.numberOfSongs);
+                Main.rsp.playSong(random);
             } else {
-                rsp.playSong(index);
+                Main.rsp.playSong(index);
             }
-            rsp.setRepeatMode(RepeatMode.ONE);
-            if (rsp.isPlaying() == false) {
-                rsp.setPlaying(true);
+            Main.rsp.setRepeatMode(RepeatMode.ONE);
+            if (Main.rsp.isPlaying() == false) {
+                Main.rsp.setPlaying(true);
             }
         }
 
@@ -124,9 +118,9 @@ public class Room {
             Table table = playerboards.get(player);
             table.initGame(seed, seed2);
 
-            if (Main.numberofsongs > 0) {
+            if (Main.noteBlockAPIIsPresent && Main.numberOfSongs > 0) {
                 table.getPlayer()
-                        .sendMessage("[TETR] Playing: " + rsp.getSong().getPath().getName().replaceAll(".nbs$", ""));
+                        .sendMessage("[TETR] Playing: " + Main.rsp.getSong().getPath().getName().replaceAll(".nbs$", ""));
             }
         }
 
@@ -297,8 +291,8 @@ public class Room {
         Table table = new Table(player);
         playerboards.put(player, table);
 
-        if (Main.numberofsongs > 0) {
-            rsp.addPlayer(player);
+        if (Main.noteBlockAPIIsPresent && Main.numberOfSongs > 0) {
+            Main.rsp.addPlayer(player);
         }
     }
 
@@ -312,8 +306,8 @@ public class Room {
     }
 
     public void removePlayer(Player player) {
-        if (Main.numberofsongs > 0) {
-            rsp.removePlayer(player);
+        if (Main.noteBlockAPIIsPresent && Main.numberOfSongs > 0) {
+            Main.rsp.removePlayer(player);
         }
         playerboards.get(player).destroyTable();
         playerboards.get(player).setGameOver(true);

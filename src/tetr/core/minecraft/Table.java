@@ -4,6 +4,7 @@ import java.awt.Point;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.FallingBlock;
@@ -19,7 +20,6 @@ import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
 import tetr.core.Constants;
 import tetr.core.GameLogic;
-import tetr.core.Main;
 
 public class Table extends GameLogic {
 
@@ -28,7 +28,7 @@ public class Table extends GameLogic {
 
     private World world;
     private Player player;
-    private int looptick;
+    public int looptick;
     private BPlayerBoard board;
 
     private int gx = 100;
@@ -82,6 +82,17 @@ public class Table extends GameLogic {
                     location.getBlockZ() + GameLogic.STAGESIZEY);
         }
         setGameover(true);
+    }
+
+    private void playSound(XSound xSound, float volume, float pitch) {
+        Sound sound = xSound.parseSound();
+        if (volume < 1) {
+            player.playSound(player.getEyeLocation(), sound, volume, pitch);
+        } else {
+            for (int i = 0; i < volume; i++) {
+                player.playSound(player.getEyeLocation(), sound, 1f, pitch);
+            }
+        }
     }
 
     public int getGx() {
@@ -258,7 +269,7 @@ public class Table extends GameLogic {
                 if (holdPiece()) {
                     setCounter(0);
                 } else {
-                    player.playSound(player.getEyeLocation(), XSound.ENTITY_SPLASH_POTION_BREAK.parseSound(), 1f, 1f);
+                    playSound(XSound.ENTITY_SPLASH_POTION_BREAK, 1f, 1f);
                 }
                 break;
 
